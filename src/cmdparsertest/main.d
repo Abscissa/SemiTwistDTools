@@ -6,7 +6,7 @@ Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 */
 
-module semitwist.test.cmdparser.main;
+module cmdparsertest.main;
 
 import tango.io.Stdout;
 
@@ -14,7 +14,47 @@ import semitwist.util;
 import semitwist.cmdlineparser;
 import semitwist.xmlout;
 
-void main()
+void main(char[][] args)
 {
-	Stdout.formatln("Hello!");
+	bool help;
+	bool detailhelp;
+	bool myBool;
+	bool myFlag;
+	bool myFlagX=true;
+	char[] myStr;
+	char[] myStrX="default";
+	bool _odd98_name;
+
+	scope cmd = new CmdLineParser();
+	mixin(defineArg!(cmd, "help",        help,        ArgFlag.Optional, "Displays a help summary and exits" ));
+	mixin(defineArg!(cmd, "detailhelp",  detailhelp,  ArgFlag.Optional, "Displays a detailed help message and exits" ));
+	mixin(defineArg!(cmd, "myBool",      myBool,      ArgFlag.Optional, "My Boolean" ));
+	mixin(defineArg!(cmd, "myFlag",      myFlag,      ArgFlag.Optional, "My Flag"    ));
+	mixin(defineArg!(cmd, "myFlagX",     myFlagX,     ArgFlag.Optional, "My Flag X"  ));
+	mixin(defineArg!(cmd, "myStr",       myStr,       ArgFlag.Optional, "My String"  ));
+	mixin(defineArg!(cmd, "myStrX",      myStrX,      ArgFlag.Optional, "My String X"));
+	mixin(defineArg!(cmd, "_odd98_name", _odd98_name, ArgFlag.Optional, "Odd name"));
+	
+	if(!cmd.parse(args) || help)
+	{
+		Stdout.formatln("");
+		Stdout.format(cmd.getUsage());
+		return;
+	}
+	if(detailhelp)
+	{
+		Stdout.formatln("");
+		Stdout.format(cmd.getDetailedUsage());
+		return;
+	}
+	Stdout.formatln("");
+	
+	mixin(traceVal!(
+		"myBool ",
+		"myFlag ",
+		"myFlagX",
+		"myStr  ",
+		"myStrX ",
+		"_odd98_name"
+	));
 }
