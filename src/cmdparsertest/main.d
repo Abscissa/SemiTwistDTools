@@ -26,10 +26,10 @@ void main(char[][] args)
 	bool _odd98_name;
 	
 	int myInt;
-	char[] required;
+	char[] required="hni";
 	char[][] switchless;
-
-	scope cmd = new CmdLineParser();
+	
+	auto cmd = new CmdLineParser();
 	mixin(defineArg!(cmd, "help",        help,        ArgFlag.Optional,   "Displays a help summary and exits" ));
 	mixin(defineArg!(cmd, "detailhelp",  detailhelp,  ArgFlag.Optional,   "Displays a detailed help message and exits" ));
 	mixin(defineArg!(cmd, "myBool",      myBool,      ArgFlag.Optional,   "My Boolean" ));
@@ -42,7 +42,7 @@ void main(char[][] args)
 	mixin(defineArg!(cmd, "r",           required,    ArgFlag.Required,   "This is required, and internal name differs"));
 	mixin(defineArg!(cmd, "switchless",  switchless,  ArgFlag.Switchless, "Switchless Multiple" ));
 	
-	if(!cmd.parse(args) || help)
+	if((!cmd.parse(args) && !detailhelp) || help)
 	{
 		Stdout.formatln("");
 		Stdout.format(cmd.getUsage());

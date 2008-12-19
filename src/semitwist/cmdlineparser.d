@@ -87,11 +87,22 @@ enum ArgFlag
 template defineArg(alias cmdLineParser, char[] name, alias var, int flags = cast(int)ArgFlag.Optional, char[] desc = "")
 //template defineArg(alias cmdLineParser, char[] name, alias var, ArgFlag flags = ArgFlag.Optional, char[] desc = "")
 {
-	const char[] defineArg =
-		"auto _cmdarg_refbox_"~name~" = new "~nameof!(RefBox)~"!("~typeof(var).stringof~")(&"~var.stringof~");"~
-		"auto _cmdarg_"~name~" = new Arg(_cmdarg_refbox_"~name~`, "`~name~`", `~desc.stringof~`);`~
-		cmdLineParser.stringof~".addArg(_cmdarg_"~name~", cast(ArgFlag)("~flags.stringof~"));";
-	//pragma(msg, "defineArg: " ~ defineArg);
+	//TODO: Is there a better way to do this? Ex. "static if(typeof(var) !contained_in listOfSupportedTypes)"
+	static if(!is(typeof(var) == int   ) && !is(typeof(var) == int[]   ) && 
+	          !is(typeof(var) == bool  ) && !is(typeof(var) == bool[]  ) && 
+			  !is(typeof(var) == char[]) && !is(typeof(var) == char[][]) )
+	{
+		static assert(false, `Attempted to pass variable '`~var.stringof~`' of type '`~typeof(var).stringof~`' to defineArg's 'var' param.`"\n"
+		                     `(The type must be one of, or an array of, one of the following: 'int' 'bool' 'char[]')`);
+	}
+	else
+	{
+		const char[] defineArg =
+			"auto _cmdarg_refbox_"~name~" = new "~nameof!(RefBox)~"!("~typeof(var).stringof~")(&"~var.stringof~");"~
+			"auto _cmdarg_"~name~" = new Arg(_cmdarg_refbox_"~name~`, "`~name~`", `~desc.stringof~`);`~
+			cmdLineParser.stringof~".addArg(_cmdarg_"~name~", cast(ArgFlag)("~flags.stringof~"));";
+		//pragma(msg, "defineArg: " ~ defineArg);
+	}
 }
 
 //TODO: If arg is required, don't allow a default value.
@@ -126,7 +137,10 @@ class Arg
 	
 	private void genDefaultValue()
 	{
-		mixin(dupRefBox!(value, "val", defaultValue));
+		if(!isRequired)
+		{
+			mixin(dupRefBox!(value, "val", defaultValue));
+		}
 	}
 	
 	void ensureValid()
@@ -339,8 +353,9 @@ class CmdLineParser
 				uint parseAte;
 				if(suffix.length > 1 && suffix[0] == ':')
 				{
-					val = convInt.parse(trim(suffix[1..$]), 0, &parseAte);
-					if(parseAte == suffix.length)
+					char[] trimmedSuffix = trim(suffix[1..$]);
+					val = convInt.parse(trimmedSuffix, 0, &parseAte);
+					if(parseAte == trimmedSuffix.length)
 					{
 						if(valAsInt)
 							valAsInt = val;
@@ -430,7 +445,7 @@ class CmdLineParser
 		{
 			if(arg.isRequired && !arg.isSet)
 			{
-				Stdout.formatln(`Missing switch: {}`, arg.name);
+				Stdout.formatln(`Missing switch: {} ({})`, arg.name, arg.desc);
 				error = true;
 			}
 		}
@@ -482,6 +497,9 @@ class CmdLineParser
 			char[] defaultValStr = defaultVal == "" ?
 				"" : " (default: {})".stformat(defaultVal);
 				
+			char[] requiredStr = arg.isRequired ?
+				"(Required) " : "";
+				
 			char[] argSuffix = valAsBool ? "" : ":<"~getRefBoxTypeName(arg.value)~">" ;
 
 			char[] argName = "/"~arg.name~argSuffix;
@@ -490,7 +508,7 @@ class CmdLineParser
 	
 			char[] nameColumnWidthStr = "{}".stformat(nameColumnWidth);
 			ret ~= stformat("{}{,-"~nameColumnWidthStr~"}{}{}\n",
-			                indent, argName~" ", arg.desc, defaultValStr);
+			                indent, argName~" ", requiredStr~arg.desc, defaultValStr);
 		}
 		return ret;
 	}
@@ -512,16 +530,28 @@ class CmdLineParser
 			mixin(unbox!(argDefaultValue, "val"));
 
 			char[] defaultVal;
+			char[] requiredStr;
+
 			if(valAsInt)
 				defaultVal = "{}".stformat(valAsInt());
+			else if(valAsInts)
+				defaultVal = "{}".stformat(valAsInts());
 			else if(valAsBool)
 				defaultVal = "{}".stformat(valAsBool());
+			else if(valAsBools)
+				defaultVal = "{}".stformat(valAsBools());
 			else if(valAsStr)
 				defaultVal = `"{}"`.stformat(valAsStr());
-			
+			else if(valAsStrs)  //TODO: Change this one from [ blah ] to [ "blah" ]
+				defaultVal = "{}".stformat(valAsStrs());
+
+			defaultVal  = arg.isRequired ? "" : ", Default: "~defaultVal;
+			requiredStr = arg.isRequired ? "Required" : "Optional";
+				
 			ret ~= "\n";
-			ret ~= stformat("{} ({}), default: {}\n",
-			                argName, getRefBoxTypeName(arg.value), defaultVal);
+			ret ~= stformat("{} ({}), {}{}\n",
+			                argName, getRefBoxTypeName(arg.value),
+							requiredStr, defaultVal);
 			ret ~= stformat("{}\n", arg.desc);
 		}
 		ret ~= "\n";
