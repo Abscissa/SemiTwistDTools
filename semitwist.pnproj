@@ -1,0 +1,1 @@
+<Project name="SemiTwist Library"><Folder name="Sources"><Folder name="semitwist"><File path="src\semitwist\util.d"></File><File path="src\semitwist\xmlout.d"></File><File path="src\semitwist\cmdlineparser.d"></File><File path="src\semitwist\refbox.d"></File></Folder></Folder></Project>
