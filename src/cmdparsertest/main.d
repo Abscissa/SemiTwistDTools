@@ -27,7 +27,7 @@ void main(char[][] args)
 	
 	int myInt;
 	char[] required;
-	char[] switchless;
+	char[][] switchless;
 
 	scope cmd = new CmdLineParser();
 	mixin(defineArg!(cmd, "help",        help,        ArgFlag.Optional,   "Displays a help summary and exits" ));
@@ -39,8 +39,8 @@ void main(char[][] args)
 	mixin(defineArg!(cmd, "myStrX",      myStrX,      ArgFlag.Optional,   "My String X"));
 	mixin(defineArg!(cmd, "_odd98_name", _odd98_name, ArgFlag.Optional,   "Odd name"   ));
 	mixin(defineArg!(cmd, "myInt",       myInt,       ArgFlag.Optional,   "My Int"));
-	mixin(defineArg!(cmd, "r",           required,    ArgFlag.Required,   "This is required"));
-	mixin(defineArg!(cmd, "switchless",  switchless,  ArgFlag.Switchless, "Switchless" ));
+	mixin(defineArg!(cmd, "r",           required,    ArgFlag.Required,   "This is required, and internal name differs"));
+	mixin(defineArg!(cmd, "switchless",  switchless,  ArgFlag.Switchless, "Switchless Multiple" ));
 	
 	if(!cmd.parse(args) || help)
 	{
