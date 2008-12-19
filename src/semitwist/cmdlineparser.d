@@ -94,6 +94,10 @@ template defineArg(alias cmdLineParser, char[] name, alias var, int flags = cast
 	//pragma(msg, "defineArg: " ~ defineArg);
 }
 
+//TODO: If arg is required, don't allow a default value.
+//TODO: Make help messages mention "required"
+//TODO: Make help messages mention "switchless"
+
 //TODO: Add float, double, byte, short, long, and unsigned of each.
 //TODO: Think about way to (or the need to) prevent adding
 //      the same Arg instance to multiple Parsers.
