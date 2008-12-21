@@ -45,7 +45,7 @@ void main(char[][] args)
 	if((!cmd.parse(args) && !detailhelp) || help)
 	{
 		Stdout.formatln("");
-		Stdout.format(cmd.getUsage());
+		Stdout.format(cmd.getUsage(18));
 		return;
 	}
 	if(detailhelp)

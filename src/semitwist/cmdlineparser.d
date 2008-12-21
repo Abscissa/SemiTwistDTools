@@ -80,7 +80,7 @@ enum ArgFlag
 	Optional   = 0b0000,
 	Required   = 0b0001,
 	Switchless = 0b0010, // There can be only one (arg set to Switchless)
-	//Multiple = 0b0100,
+	//Unique = 0b0100,
 	RequiredSwitchless = ArgFlag.Required | ArgFlag.Switchless,
 }
 
@@ -105,11 +105,8 @@ template defineArg(alias cmdLineParser, char[] name, alias var, int flags = cast
 	}
 }
 
-//TODO: If arg is required, don't allow a default value.
-//TODO: Make help messages mention "required"
-//TODO: Make help messages mention "switchless"
-
 //TODO: Add float, double, byte, short, long, and unsigned of each.
+//TODO: For numeric types, make sure provided values can fit in the type.
 //TODO: Think about way to (or the need to) prevent adding
 //      the same Arg instance to multiple Parsers.
 
@@ -121,7 +118,6 @@ class Arg
 
 	bool isSwitchless  = false;
 	bool isRequired    = false;
-	bool arrayMultiple = false;
 	bool arrayUnique   = false;
 	
 	private Object value;
@@ -479,6 +475,11 @@ class CmdLineParser
 		char[] ret;
 		char[] indent = "  ";
 		
+		if(switchlessArgExists)
+		{
+			ret ~= "Switchless arg: {} ({})\n\n".stformat(args[switchlessArg].name, args[switchlessArg].desc);
+		}
+		
 		ret ~= "Switches: (prefixes can be '/', '-' or '--')\n";
 		foreach(Arg arg; args)
 		{
@@ -531,6 +532,7 @@ class CmdLineParser
 
 			char[] defaultVal;
 			char[] requiredStr;
+			char[] switchlessStr;
 
 			if(valAsInt)
 				defaultVal = "{}".stformat(valAsInt());
@@ -545,13 +547,14 @@ class CmdLineParser
 			else if(valAsStrs)  //TODO: Change this one from [ blah ] to [ "blah" ]
 				defaultVal = "{}".stformat(valAsStrs());
 
-			defaultVal  = arg.isRequired ? "" : ", Default: "~defaultVal;
-			requiredStr = arg.isRequired ? "Required" : "Optional";
+			defaultVal    = arg.isRequired   ? "" : ", Default: "~defaultVal;
+			requiredStr   = arg.isRequired   ? "Required" : "Optional";
+			switchlessStr = arg.isSwitchless ? ", Switchless" : "";
 				
 			ret ~= "\n";
-			ret ~= stformat("{} ({}), {}{}\n",
+			ret ~= stformat("{} ({}), {}{}{}\n",
 			                argName, getRefBoxTypeName(arg.value),
-							requiredStr, defaultVal);
+							requiredStr, switchlessStr, defaultVal);
 			ret ~= stformat("{}\n", arg.desc);
 		}
 		ret ~= "\n";
