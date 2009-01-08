@@ -317,7 +317,8 @@ escape a string at compile-time.)
 */
 //TODO: Look into using tango.core.Traits.isCharType()
 //It seems DMD 1.039 can't do this func at compile-time.
-char[] multiTypeString(char[] name, char[] data, char[] access="public")
+//WTF? ^ does't seem to be the case anymore?
+/*char[] multiTypeString_(char[] name, char[] data, char[] access="public")
 {
 	return 
 	access~" T[] "~name~"(T)()"~
@@ -327,11 +328,11 @@ char[] multiTypeString(char[] name, char[] data, char[] access="public")
 	"	else static if(is(T == dchar)) { return \""~data~"\"d; }"~
 	"	else static assert(\"T must be char, wchar, or dchar\");"~
 	"}";
-}
+}*/
 
-template multiTypeStringTmpl(char[] name, char[] data, char[] access="public")
+template multiTypeString(char[] name, char[] data, char[] access="public")
 {
-	const char[] multiTypeStringTmpl = 
+	const char[] multiTypeString = 
 	access~" T[] "~name~"(T)()"~
 	"{"~
 	"		 static if(is(T ==  char)) { return \""~data~"\"c; }"~
@@ -349,14 +350,14 @@ private char[] ensureCharType(char[] typeName, char[] msg="")
 	return "static assert(is("~typeName~" == char) || is("~typeName~" == wchar) || is("~typeName~" == dchar), \""~msg~"\");";
 }
 
-mixin(multiTypeStringTmpl!("whitespaceChars", r" \n\r\t\v\f"));
-mixin(multiTypeStringTmpl!("emptyString", r""));
-mixin(multiTypeStringTmpl!("lowerLetterA", r"a"));
-mixin(multiTypeStringTmpl!("lowerLetterZ", r"z"));
-mixin(multiTypeStringTmpl!("upperLetterA", r"A"));
-mixin(multiTypeStringTmpl!("upperLetterZ", r"Z"));
-mixin(multiTypeStringTmpl!("digit0", r"0"));
-mixin(multiTypeStringTmpl!("digit9", r"9"));
+mixin(multiTypeString!("whitespaceChars", r" \n\r\t\v\f"));
+mixin(multiTypeString!("emptyString", r""));
+mixin(multiTypeString!("lowerLetterA", r"a"));
+mixin(multiTypeString!("lowerLetterZ", r"z"));
+mixin(multiTypeString!("upperLetterA", r"A"));
+mixin(multiTypeString!("upperLetterZ", r"Z"));
+mixin(multiTypeString!("digit0", r"0"));
+mixin(multiTypeString!("digit9", r"9"));
 
 T[] lowercaseLetters(T)()
 {
@@ -501,10 +502,10 @@ size_t findPrior(T)(T[] collection, bool delegate(T[], size_t) isFound, size_t s
 	return collection.length;
 }
 
-mixin(multiTypeStringTmpl!("winEOL",  r"\r\n"));
-mixin(multiTypeStringTmpl!("macEOL",  r"\r"));
-mixin(multiTypeStringTmpl!("unixEOL", r"\n"));
-mixin(multiTypeStringTmpl!("tabChar", r"\t"));
+mixin(multiTypeString!("winEOL",  r"\r\n"));
+mixin(multiTypeString!("macEOL",  r"\r"));
+mixin(multiTypeString!("unixEOL", r"\n"));
+mixin(multiTypeString!("tabChar", r"\t"));
 
 version(Windows)   char[] nativeEOL = "\r\n";
 version(Macintosh) char[] nativeEOL = "\r";   // This version string probably isn't right
@@ -603,16 +604,16 @@ private T[] _unescapeChar(T)(T[] str, T[] escapeSequence)
 	return ret;
 }
 
-mixin(multiTypeStringTmpl!("escSequence_SemiTwist_Digit",                r"\\d"));
-mixin(multiTypeStringTmpl!("escSequence_SemiTwist_UppercaseAlpha",       r"\\u"));
-mixin(multiTypeStringTmpl!("escSequence_SemiTwist_LowercaseAlpha",       r"\\l"));
-mixin(multiTypeStringTmpl!("escSequence_SemiTwist_Whitespace",           r"\\s"));
-mixin(multiTypeStringTmpl!("escSequence_SemiTwist_Backslash",            r"\\\\"));
-mixin(multiTypeStringTmpl!("escSequence_SemiTwist_OpeningSquareBracket", r"\\["));
-mixin(multiTypeStringTmpl!("escSequence_SemiTwist_ClosingSquareBracket", r"\\]"));
-mixin(multiTypeStringTmpl!("escSequence_SemiTwist_Caret",                r"\\^"));
-mixin(multiTypeStringTmpl!("escSequence_SemiTwist_Asterisk",             r"\\*"));
-mixin(multiTypeStringTmpl!("escSequence_SemiTwist_Plus",                 r"\\+"));
+mixin(multiTypeString!("escSequence_SemiTwist_Digit",                r"\\d"));
+mixin(multiTypeString!("escSequence_SemiTwist_UppercaseAlpha",       r"\\u"));
+mixin(multiTypeString!("escSequence_SemiTwist_LowercaseAlpha",       r"\\l"));
+mixin(multiTypeString!("escSequence_SemiTwist_Whitespace",           r"\\s"));
+mixin(multiTypeString!("escSequence_SemiTwist_Backslash",            r"\\\\"));
+mixin(multiTypeString!("escSequence_SemiTwist_OpeningSquareBracket", r"\\["));
+mixin(multiTypeString!("escSequence_SemiTwist_ClosingSquareBracket", r"\\]"));
+mixin(multiTypeString!("escSequence_SemiTwist_Caret",                r"\\^"));
+mixin(multiTypeString!("escSequence_SemiTwist_Asterisk",             r"\\*"));
+mixin(multiTypeString!("escSequence_SemiTwist_Plus",                 r"\\+"));
 
 T[] unescapeSemiTwist(T:char) (T[] str) {return _unescapeSemiTwist(str);}
 T[] unescapeSemiTwist(T:wchar)(T[] str) {return _unescapeSemiTwist(str);}
