@@ -549,23 +549,23 @@ T[] toNativeEOL(T)(T[] str)
 
 T[] toNativeEOLFromUnix(T)(T[] str)
 {
-	version(Windows)   return str.toNativeEOL();
-	version(Macintosh) return str.toNativeEOL();  // This version string probably isn't right
-	return str;
+	     version(Windows)   return str.toNativeEOL();
+	else version(Macintosh) return str.toNativeEOL();  // This version string probably isn't right
+	else return str;
 }
 
 T[] toNativeEOLFromWin(T)(T[] str)
 {
-	version(Macintosh) return str.toNativeEOL();  // This version string probably isn't right
-	version(Linux)     return str.toNativeEOL();  // Not sure if this version string is right
-	return str;
+	     version(Macintosh) return str.toNativeEOL();  // This version string probably isn't right
+	else version(Linux)     return str.toNativeEOL();  // Not sure if this version string is right
+	else return str;
 }
 
 T[] toNativeEOLFromMac(T)(T[] str)
 {
-	version(Windows)   return str.toNativeEOL();
-	version(Linux)     return str.toNativeEOL();  // Not sure if this is right
-	return str;
+	     version(Windows) return str.toNativeEOL();
+	else version(Linux)   return str.toNativeEOL();  // Not sure if this is right
+	else return str;
 }
 
 enum EscapeSequence
@@ -748,7 +748,7 @@ wchar[] readNullTerminatedWString(DataInput reader)
 	
 	do
 	{
-		c = reader.getShort();
+		c = cast(wchar)reader.getShort();
 		str ~= c;
 	} while(c != 0);
 

@@ -277,7 +277,7 @@ class CmdLineParser
 		suffix = suffixIndex < argNoPrefix.length ?
 				 argNoPrefix[suffixIndex..$] : "";
 	}
-
+//TODO: Detect and error when numerical arg is passed an out-of-range value
 	private ParseArgResult parseArg(char[] cmdArg, char[] cmdName, char[] suffix)
 	{
 		ParseArgResult ret = ParseArgResult.Error;
@@ -350,7 +350,7 @@ class CmdLineParser
 				if(suffix.length > 1 && suffix[0] == ':')
 				{
 					char[] trimmedSuffix = trim(suffix[1..$]);
-					val = convInt.parse(trimmedSuffix, 0, &parseAte);
+					val = cast(int)convInt.parse(trimmedSuffix, 0, &parseAte);
 					if(parseAte == trimmedSuffix.length)
 					{
 						if(valAsInt)
