@@ -79,7 +79,7 @@ enum ArgFlag
 {
 	Optional   = 0b0000,
 	Required   = 0b0001,
-	Switchless = 0b0010, // There can be only one (arg set to Switchless)
+	Switchless = 0b0010, // There can be only one [arg set to Switchless]
 	//Unique = 0b0100,
 	RequiredSwitchless = ArgFlag.Required | ArgFlag.Switchless,
 }
@@ -97,10 +97,10 @@ template defineArg(alias cmdLineParser, char[] name, alias var, int flags = cast
 	}
 	else
 	{
-		const char[] defineArg =
-			"auto _cmdarg_refbox_"~name~" = new "~nameof!(RefBox)~"!("~typeof(var).stringof~")(&"~var.stringof~");"~
-			"auto _cmdarg_"~name~" = new Arg(_cmdarg_refbox_"~name~`, "`~name~`", `~desc.stringof~`);`~
-			cmdLineParser.stringof~".addArg(_cmdarg_"~name~", cast(ArgFlag)("~flags.stringof~"));";
+		const char[] defineArg = "\n"~
+			"auto _cmdarg_refbox_"~name~" = new "~nameof!(RefBox)~"!("~typeof(var).stringof~")(&"~var.stringof~");\n"~
+			"auto _cmdarg_"~name~" = new Arg(_cmdarg_refbox_"~name~`, "`~name~`", `~desc.stringof~`);`~"\n"~
+			cmdLineParser.stringof~".addArg(_cmdarg_"~name~", cast(ArgFlag)("~flags.stringof~"));\n";
 		//pragma(msg, "defineArg: " ~ defineArg);
 	}
 }
