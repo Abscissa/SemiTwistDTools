@@ -39,28 +39,34 @@ abstract class TreeFormatter
 	char[] finalize(char[] content);
 }
 
-class XMLFormatter(bool Strip) : TreeFormatter
+class XMLFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
 {
+	char[] toValidName(char[] str)
+	{
+		str = str.map
+		(
+			(char a)
+		    { return isAlphaNumeric(a)? a : '_'; }
+		);
+
+		// Can XML names start with an underscore?
+		// Seems to work.
+		if(str.length > 0 && !isAlphaNumeric(str[0]) && str[0] != '_')
+			str = "_"~str;
+		
+		return str;
+	}
+	
 	char[] indent()
 	{
-		return "    ";
+		return _indent;
 	}
 	
 	bool strip()
 	{
-		return Strip;
+		return _strip;
 	}
 	
-/*	char[] toComment(char[] data)
-	{
-		return "<!--"~data~"-->";
-	}
-
-	char[] toData(char[] data)
-	{
-		return "<![CDATA["~data~"]]>";
-	}
-*/	
 	char[] processData(char[] content, int nodeDepth)
 	{
 		return fullIndent(nodeDepth)~"<![CDATA["~content~"]]>"~newline;
@@ -73,21 +79,20 @@ class XMLFormatter(bool Strip) : TreeFormatter
 	
 	char[] processAttribute(char[] name, char[] value, int nodeDepth)
 	{
-		return ` {}="{}"`.stformat(name, value);
+		return ` {}="{}"`.stformat(name.toValidName(), value);
 	}
 	
 	char[] processNode(char[] name, char[] attributes, char[] content, int nodeDepth)
 	{
-		if(content == "")
-			return 
-				"{0}<{2}{3} />{1}"
-				.stformat(fullIndent(nodeDepth), newline(), name, attributes);
-		else
-			return
-				"{0}<{2}{3}>{1}"
-				"{4}"
-				"{0}</{2}>{1}"
-				.stformat(fullIndent(nodeDepth), newline(), name, attributes, content);
+		auto formatStr =
+			(content=="")? 
+			"{0}<{2}{3} />{1}"
+			:
+			"{0}<{2}{3}>{1}"
+			"{4}"
+			"{0}</{2}>{1}";
+			
+		return formatStr.stformat(fullIndent(nodeDepth), newline(), name.toValidName(), attributes, content);
 	}
 	
 	char[] reduceAttributes(char[][] attributes, int nodeDepth)
@@ -107,7 +112,7 @@ class XMLFormatter(bool Strip) : TreeFormatter
 	}
 }
 
-class JSONFormatter(bool _strip) : TreeFormatter
+class JSONFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
 {
 	override char[] fullIndent(int nodeDepth)
 	{
@@ -116,7 +121,7 @@ class JSONFormatter(bool _strip) : TreeFormatter
 
 	char[] indent()
 	{
-		return "    ";
+		return _indent;
 	}
 	
 	bool strip()
@@ -166,14 +171,6 @@ class JSONFormatter(bool _strip) : TreeFormatter
 	
 	char[] processNode(char[] name, char[] attributes, char[] content, int nodeDepth, bool nameless)
 	{
-/*		attributes = (attributes=="")? "" : fullIndent(nodeDepth+1)~attributes~newline;
-		content    = (content   =="")? "" : fullIndent(nodeDepth+1)~content   ~newline;
-			
-		char[] attrAndContent =
-			(attributes != "" && content != "")?
-			"":
-			attributes;
-*/
 		char[] attrAndContent = 
 			(attributes == "" && content == "")? "" :
 			(attributes != "" && content == "")? fullIndent(nodeDepth+1)~attributes~newline :
@@ -209,14 +206,14 @@ class JSONFormatter(bool _strip) : TreeFormatter
 	}
 }
 
-XMLFormatter!(true)   formatterTrimmedXML;
-XMLFormatter!(false)  formatterPrettyXML;
-JSONFormatter!(true)  formatterTrimmedJSON;
-JSONFormatter!(false) formatterPrettyJSON;
+TreeFormatter formatterTrimmedXML;
+TreeFormatter formatterPrettyXML;
+TreeFormatter formatterTrimmedJSON;
+TreeFormatter formatterPrettyJSON;
 static this()
 {
-	formatterTrimmedXML  = new XMLFormatter!(true);
-	formatterPrettyXML   = new XMLFormatter!(false);
+	formatterTrimmedXML  = new XMLFormatter !(true);
+	formatterPrettyXML   = new XMLFormatter !(false);
 	formatterTrimmedJSON = new JSONFormatter!(true);
 	formatterPrettyJSON  = new JSONFormatter!(false);
 }
@@ -226,6 +223,7 @@ abstract class TreeNodeBase
 	abstract char[] toString(TreeFormatter formatter, char[] content, int nodeDepth);
 }
 
+/// NOTE: Might not be implemented correctly by the formatters, atm.
 class TreeNodeData : TreeNodeBase 
 {
 	char[] data;
@@ -296,7 +294,7 @@ class TreeNode : TreeNodeBase
 		this(name, cast(TreeNode)null, attributes);
 	}
 	
-	this(char[] name, TreeNodeBase content=null, char[][char[]] attributes=null)
+	this(char[] name, TreeNodeBase subNodes=null, char[][char[]] attributes=null)
 	{
 		TreeNodeBase[] contentArray;
 		if(subNodes !is null)
@@ -356,11 +354,6 @@ class TreeNode : TreeNodeBase
 		return formatter.finalize(this.toString(formatter, "", 0));
 	}
 	
-/*	char[] toString(TreeFormatter formatter, char[] content, int nodeDepth=0)
-	{
-		return toString(formatter, content, 0);
-	}
-*/	
 	char[] toString(TreeFormatter formatter, char[] content, int nodeDepth)
 	{
 		auto reduceAttributes = &formatter.reduceAttributes;
