@@ -12,20 +12,30 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 module semitwist.treeout;
 
 import tango.io.Stdout;
-import tango.text.Util;
+import tango.text.Util; //char[] indent, char[] newline
 
 import semitwist.util;
 
 abstract class TreeFormatter
 {
+	char[] fullIndent(int nodeDepth)
+	{
+		return strip()? "" : indent().repeat(nodeDepth);
+	}
+	
+	char[] newline()
+	{
+		return strip()? "" : "\n";
+	}
+	
 	char[] indent();
 	bool strip();
-	char[] processData(char[] content, char[] indent, char[] newline);
-	char[] processComment(char[] content, char[] indent, char[] newline);
-	char[] processAttribute(char[] name, char[] value, char[] indent, char[] newline);
-	char[] processNode(char[] name, char[] attributes, char[] content, char[] indent, char[] newline);
-	char[] reduceAttributes(char[][] attributes, char[] indent, char[] newline);
-	char[] reduceNodes(char[][] nodes, char[] indent, char[] newline);
+	char[] processData(char[] content, int nodeDepth);
+	char[] processComment(char[] content, int nodeDepth);
+	char[] processAttribute(char[] name, char[] value, int nodeDepth);
+	char[] processNode(char[] name, char[] attributes, char[] content, int nodeDepth);
+	char[] reduceAttributes(char[][] attributes, int nodeDepth);
+	char[] reduceNodes(char[][] nodes, int nodeDepth);
 	char[] finalize(char[] content);
 }
 
@@ -51,42 +61,42 @@ class XMLFormatter(bool Strip) : TreeFormatter
 		return "<![CDATA["~data~"]]>";
 	}
 */	
-	char[] processData(char[] content, char[] indent, char[] newline)
+	char[] processData(char[] content, int nodeDepth)
 	{
-		return indent~"<![CDATA["~content~"]]>"~newline;
+		return fullIndent(nodeDepth)~"<![CDATA["~content~"]]>"~newline;
 	}
 	
-	char[] processComment(char[] content, char[] indent, char[] newline)
+	char[] processComment(char[] content, int nodeDepth)
 	{
-		return indent~"<!--"~content~"-->"~newline;
+		return fullIndent(nodeDepth)~"<!--"~content~"-->"~newline;
 	}
 	
-	char[] processAttribute(char[] name, char[] value, char[] indent, char[] newline)
+	char[] processAttribute(char[] name, char[] value, int nodeDepth)
 	{
 		return ` {}="{}"`.stformat(name, value);
 	}
 	
-	char[] processNode(char[] name, char[] attributes, char[] content, char[] indent, char[] newline)
+	char[] processNode(char[] name, char[] attributes, char[] content, int nodeDepth)
 	{
 		if(content == "")
 			return 
 				"{0}<{2}{3} />{1}"
-				.stformat(indent, newline, name, attributes);
+				.stformat(fullIndent(nodeDepth), newline(), name, attributes);
 		else
 			return
 				"{0}<{2}{3}>{1}"
 				"{4}"
 				"{0}</{2}>{1}"
-				.stformat(indent, newline, name, attributes, content);
+				.stformat(fullIndent(nodeDepth), newline(), name, attributes, content);
 	}
 	
-	char[] reduceAttributes(char[][] attributes, char[] indent, char[] newline)
+	char[] reduceAttributes(char[][] attributes, int nodeDepth)
 	{
 		return reduce!(`a~b`)(attributes);
 //		return attributes.reduce!(`a~" "~b`)(); // Don't work
 	}
 	
-	char[] reduceNodes(char[][] nodes, char[] indent, char[] newline)
+	char[] reduceNodes(char[][] nodes, int nodeDepth)
 	{
 		return reduce!(`a~b`)(nodes);
 	}
@@ -99,6 +109,11 @@ class XMLFormatter(bool Strip) : TreeFormatter
 
 class JSONFormatter(bool _strip) : TreeFormatter
 {
+	override char[] fullIndent(int nodeDepth)
+	{
+		return super.fullIndent(nodeDepth+1);
+	}
+
 	char[] indent()
 	{
 		return "    ";
@@ -114,18 +129,13 @@ class JSONFormatter(bool _strip) : TreeFormatter
 		return `"` ~ content.substitute(`"`, `\"`) ~ `"`;
 	}
 	
-	char[] processObject(char[] content)
-	{
-		return "{"~content~"}";
-	}
-	
-	char[] processList(char[][] elements, char[] indent, char[] newline)
+	char[] processList(char[][] elements, int nodeDepth)
 	{
 		return elements.length==0? "" :
 			elements.reduce
 			(
 				(char[] a, char[] b)
-				{ return a~", "~newline~indent~b; }
+				{ return a~", "~newline~fullIndent(nodeDepth)~b; }
 			);
 	}
 	
@@ -134,54 +144,68 @@ class JSONFormatter(bool _strip) : TreeFormatter
 		return "{}: {}".stformat(name.processString(), content);
 	}
 	
-	char[] processComment(char[] content, char[] indent, char[] newline)
+	char[] processComment(char[] content, int nodeDepth)
 	{
 		return "";
 	}
 
-	char[] processData(char[] content, char[] indent, char[] newline)
+	char[] processData(char[] content, int nodeDepth)
 	{
 		return content.processString();
 	}
 	
-	char[] processAttribute(char[] name, char[] value, char[] indent, char[] newline)
+	char[] processAttribute(char[] name, char[] value, int nodeDepth)
 	{
 		return processPair(name, value.processString());
 	}
 	
-	char[] processNode(char[] name, char[] attributes, char[] content, char[] indent, char[] newline)
+	char[] processNode(char[] name, char[] attributes, char[] content, int nodeDepth)
 	{
+		return processNode(name, attributes, content, nodeDepth, false);
+	}
+	
+	char[] processNode(char[] name, char[] attributes, char[] content, int nodeDepth, bool nameless)
+	{
+/*		attributes = (attributes=="")? "" : fullIndent(nodeDepth+1)~attributes~newline;
+		content    = (content   =="")? "" : fullIndent(nodeDepth+1)~content   ~newline;
+			
 		char[] attrAndContent =
+			(attributes != "" && content != "")?
+			"":
+			attributes;
+*/
+		char[] attrAndContent = 
 			(attributes == "" && content == "")? "" :
-			(attributes != "" && content == "")? indent~attributes~newline :
-			(attributes == "" && content != "")? content :
-				indent~attributes~", "~newline~content;
+			(attributes != "" && content == "")? fullIndent(nodeDepth+1)~attributes~newline :
+			(attributes == "" && content != "")? fullIndent(nodeDepth+1)~content~newline :
+				fullIndent(nodeDepth+1)~attributes~", "~newline~fullIndent(nodeDepth+1)~content~newline;
 		
+		name = nameless? "" : name.processString()~": ";
+			
 		return
-			"{0}{2}: {{{1}"
+			"{2}{{{1}"
 			"{3}"
-			"{0}}{1}"
+			"{0}}"
 			.stformat
 			(
-				indent, newline,
-				name.processString(),
-				attrAndContent
+				fullIndent(nodeDepth), newline,
+				name, attrAndContent
 			);
 	}
 	
-	char[] reduceAttributes(char[][] attributes, char[] indent, char[] newline)
+	char[] reduceAttributes(char[][] attributes, int nodeDepth)
 	{
-		return attributes.processList(indent, newline);
+		return attributes.processList(nodeDepth+1);
 	}
 	
-	char[] reduceNodes(char[][] nodes, char[] indent, char[] newline)
+	char[] reduceNodes(char[][] nodes, int nodeDepth)
 	{
-		return nodes.processList(indent, newline);
+		return nodes.processList(nodeDepth+1);
 	}
 	
 	char[] finalize(char[] content)
 	{
-		return content.processObject();
+		return processNode("", "", content, -1, true);
 	}
 }
 
@@ -199,7 +223,7 @@ static this()
 
 abstract class TreeNodeBase
 {
-	abstract char[] toString(TreeFormatter formatter, char[] content, char[] indent, char[] newline, uint subTreeLevel=0);
+	abstract char[] toString(TreeFormatter formatter, char[] content, int nodeDepth);
 }
 
 class TreeNodeData : TreeNodeBase 
@@ -226,9 +250,9 @@ class TreeNodeData : TreeNodeBase
 		this.data = data;
 	}
 
-	char[] toString(TreeFormatter formatter, char[] content, char[] indent, char[] newline, uint subTreeLevel=0)
+	char[] toString(TreeFormatter formatter, char[] content, int nodeDepth)
 	{
-		return formatter.processData(content, indent, newline);
+		return formatter.processData(content, nodeDepth);
 	}
 }
 
@@ -240,9 +264,9 @@ class TreeNodeComment : TreeNodeData
 		super(data);
 	}
 
-	char[] toString(TreeFormatter formatter, char[] content, char[] indent, char[] newline, uint subTreeLevel=0)
+	char[] toString(TreeFormatter formatter, char[] content, int nodeDepth)
 	{
-		return formatter.processComment(content, indent, newline);
+		return formatter.processComment(content, nodeDepth);
 	}
 }
 
@@ -329,10 +353,15 @@ class TreeNode : TreeNodeBase
 	
 	char[] format(TreeFormatter formatter)
 	{
-		return formatter.finalize(this.toString(formatter, "", "", "", 0));
+		return formatter.finalize(this.toString(formatter, "", 0));
 	}
 	
-	char[] toString(TreeFormatter formatter, char[] content, char[] indent, char[] newline, uint subTreeLevel=0)
+/*	char[] toString(TreeFormatter formatter, char[] content, int nodeDepth=0)
+	{
+		return toString(formatter, content, 0);
+	}
+*/	
+	char[] toString(TreeFormatter formatter, char[] content, int nodeDepth)
 	{
 		auto reduceAttributes = &formatter.reduceAttributes;
 		auto reduceNodes      = &formatter.reduceNodes;
@@ -341,23 +370,20 @@ class TreeNode : TreeNodeBase
 		alias typeof(attributes[""]) AttributeType;
 		alias typeof(subNodes[0])    SubNodeType;
 		
-		indent  = formatter.strip()? "" : formatter.indent().repeat(subTreeLevel);
-		newline = formatter.strip()? "" : "\n";
-			
 		auto attrStr =
 			attributes
 			.mapAAtoA((AttributeType a, AttributeType b) {
-				return formatter.processAttribute(a, b, indent, newline);
+				return formatter.processAttribute(a, b, nodeDepth);
 			})
-			.reduceAttributes(indent, newline);
+			.reduceAttributes(nodeDepth);
 		
 		auto contentStr =
 			subNodes
 			.map((SubNodeType a){
-				return a.toString(formatter, "", indent, newline, subTreeLevel+1);
+				return a.toString(formatter, "", nodeDepth+1);
 			})
-			.reduceNodes(indent, newline);
+			.reduceNodes(nodeDepth);
 		
-		return formatter.processNode(name, attrStr, contentStr, indent, newline);
+		return formatter.processNode(name, attrStr, contentStr, nodeDepth);
 	}
 }
