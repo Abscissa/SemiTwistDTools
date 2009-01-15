@@ -12,7 +12,7 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 module semitwist.treeout;
 
 import tango.io.Stdout;
-import tango.text.Util; //char[] indent, char[] newline
+import tango.text.Util;
 
 import semitwist.util;
 
@@ -49,8 +49,6 @@ class XMLFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
 		    { return isAlphaNumeric(a)? a : '_'; }
 		);
 
-		// Can XML names start with an underscore?
-		// Seems to work.
 		if(str.length > 0 && !isAlphaNumeric(str[0]) && str[0] != '_')
 			str = "_"~str;
 		
