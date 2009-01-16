@@ -11,6 +11,7 @@ module semitwist.cmdlineparser;
 import tango.core.Array;
 import tango.io.Stdout;
 import tango.math.Math;
+import tango.text.Unicode;
 import tango.text.Util;
 import convInt = tango.text.convert.Integer;
 
@@ -81,6 +82,7 @@ enum ArgFlag
 	Required   = 0b0001,
 	Switchless = 0b0010, // There can be only one [arg set to Switchless]
 	//Unique = 0b0100,
+	ToLower    = 0b1000, // If arg is char[], the value gets converted to all lower-case (for case-insensitivity)
 	RequiredSwitchless = ArgFlag.Required | ArgFlag.Switchless,
 }
 
@@ -119,6 +121,7 @@ class Arg
 	bool isSwitchless  = false;
 	bool isRequired    = false;
 	bool arrayUnique   = false;
+	bool toLower       = false;
 	
 	private Object value;
 	private Object defaultValue;
@@ -222,8 +225,9 @@ class CmdLineParser
 
 		bool isSwitchless = ((flags & ArgFlag.Switchless) != 0);
 		bool isRequired   = ((flags & ArgFlag.Required)   != 0);
+		bool toLower      = ((flags & ArgFlag.ToLower)    != 0);
 		
-		arg.isRequired = isRequired;
+		mixin(initMemberTo!(arg, isRequired, toLower));
 		
 		if(isSwitchless)
 		{
@@ -335,6 +339,9 @@ class CmdLineParser
 				{
 					val = trim(suffix[1..$]);
 
+					if(argDef.toLower)
+						val = val.toLower();
+						
 					if(valAsStr)
 						valAsStr = val;
 					else
@@ -453,23 +460,45 @@ class CmdLineParser
 
 	private char[] switchTypesMsg =
 `Switch types:
-  bool (default):
+  flag (default):
     Set s to true: /s /s+ /s:true
     Set s to false: /s- /s:false
     Default value: false (unless otherwise noted)
-				  
-  char[]:
-    Set s to "text": /s:text
+
+  text:
+    Set s to "Hello": /s:Hello
     Default value: "" (unless otherwise noted)
-				  
-  int:
+    Case-sensitive unless otherwise noted.
+
+  num:
     Set s to 3: /s:3
     Default value: 0 (unless otherwise noted)
   
-  An extra "[]" at the end of the type
-  indicates multiple values are accepted.
+  If "[]" appears at the end of the type,
+  this means multiple values are accepted.
+  Ex:
+    /s:<text[]>: /s:file1 /s:file2 /s:anotherfile
+  
+  Switchless: This means the "/s:" portion can be omitted
+  Ex:
+    /s:true -> true
+    /s:Hello -> Hello
+    /s:12 -> 12
 `;
 
+	char[] getArgTypeName(Arg arg)
+	{
+		char[] typeName = getRefBoxTypeName(arg.value);
+		return
+			(typeName == "char[]"  )? "text"   :
+			(typeName == "char[][]")? "text[]" :
+			(typeName == "bool"    )? "flag"   :
+			(typeName == "bool[]"  )? "flag[]" :
+			(typeName == "int"     )? "num"    :
+			(typeName == "int[]"   )? "num[]"  :
+			typeName;
+	}
+	
 	char[] getUsage(int nameColumnWidth=20)
 	{
 		char[] ret;
@@ -500,8 +529,8 @@ class CmdLineParser
 				
 			char[] requiredStr = arg.isRequired ?
 				"(Required) " : "";
-				
-			char[] argSuffix = valAsBool ? "" : ":<"~getRefBoxTypeName(arg.value)~">" ;
+			
+			char[] argSuffix = valAsBool ? "" : ":<"~getArgTypeName(arg)~">" ;
 
 			char[] argName = "/"~arg.name~argSuffix;
 			if(arg.altName != "")
@@ -532,6 +561,7 @@ class CmdLineParser
 
 			char[] defaultVal;
 			char[] requiredStr;
+			char[] toLowerStr;
 			char[] switchlessStr;
 
 			if(valAsInt)
@@ -549,12 +579,13 @@ class CmdLineParser
 
 			defaultVal    = arg.isRequired   ? "" : ", Default: "~defaultVal;
 			requiredStr   = arg.isRequired   ? "Required" : "Optional";
+			toLowerStr    = arg.toLower      ? ", Case-Insensitive" : "";
 			switchlessStr = arg.isSwitchless ? ", Switchless" : "";
-				
+			
 			ret ~= "\n";
-			ret ~= stformat("{} ({}), {}{}{}\n",
-			                argName, getRefBoxTypeName(arg.value),
-							requiredStr, switchlessStr, defaultVal);
+			ret ~= stformat("{} ({}), {}{}{}{}\n",
+			                argName, getArgTypeName(arg),
+							requiredStr, switchlessStr, toLowerStr, defaultVal);
 			ret ~= stformat("{}\n", arg.desc);
 		}
 		ret ~= "\n";

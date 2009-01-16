@@ -12,7 +12,6 @@ import tango.io.Stdout;
 
 import semitwist.util;
 import semitwist.cmdlineparser;
-import semitwist.xmlout;
 
 void main(char[][] args)
 {
@@ -31,7 +30,7 @@ void main(char[][] args)
 	
 	auto cmd = new CmdLineParser();
 	mixin(defineArg!(cmd, "help",        help,        ArgFlag.Optional,   "Displays a help summary and exits" ));
-	mixin(defineArg!(cmd, "detailhelp",  detailhelp,  ArgFlag.Optional,   "Displays a detailed help message and exits" ));
+	mixin(defineArg!(cmd, "detail",      detailhelp,  ArgFlag.Optional,   "Displays a detailed help message and exits" ));
 	mixin(defineArg!(cmd, "myBool",      myBool,      ArgFlag.Optional,   "My Boolean" ));
 	mixin(defineArg!(cmd, "myFlag",      myFlag,      ArgFlag.Optional,   "My Flag"    ));
 	mixin(defineArg!(cmd, "myFlagX",     myFlagX,     ArgFlag.Optional,   "My Flag X"  ));
