@@ -125,6 +125,7 @@ class Arg
 	
 	private Object value;
 	private Object defaultValue;
+	private Object[] allowableValues;
 	
 	bool isSet = false;
 	
@@ -142,10 +143,25 @@ class Arg
 		}
 	}
 	
+	// Note: AllowableValues are ignored for bool and bool[]
+	private void setAllowableValues(T)(T[] allowableValues)
+	{
+		this.allowableValues.length = 0;
+		foreach(T val; allowableValues)
+		{
+			auto box = new RefBox!(T)();
+			box = val;
+			this.allowableValues ~= box;
+		}
+	}
+	
 	void ensureValid()
 	{
 		//TODO: arrayMultiple and arrayUnique cannot both be set
-			
+		//TODO: ensure each of allowableValues is the same type as value
+		//TODO: enforce allowableValues on defaultValue
+		//TODO: reflect allowableValues in generated help
+		
 		if(!isKnownRefBox!(value))
 		{
 			throw new Exception("Param to Arg contructor must be "~RefBox.stringof~", where T is int, bool or char[] or an array of such types.");
@@ -341,7 +357,24 @@ class CmdLineParser
 
 					if(argDef.toLower)
 						val = val.toLower();
-						
+					
+					//TODO: DRY this
+					if(argDef.allowableValues.length > 0)
+					{
+						bool matchFound=false;
+						foreach(Object allowedObj; argDef.allowableValues)
+						{
+							mixin(unbox!(allowedObj, "allowedVal"));
+							if(val == allowedValAsStr)
+							{
+								matchFound = true;
+								break;
+							}
+						}
+						if(!matchFound)
+							HandleMalformedArgument();
+					}
+
 					if(valAsStr)
 						valAsStr = val;
 					else
@@ -360,6 +393,23 @@ class CmdLineParser
 					val = cast(int)convInt.parse(trimmedSuffix, 0, &parseAte);
 					if(parseAte == trimmedSuffix.length)
 					{
+						//TODO: DRY this
+						if(argDef.allowableValues.length > 0)
+						{
+							bool matchFound=false;
+							foreach(Object allowedObj; argDef.allowableValues)
+							{
+								mixin(unbox!(allowedObj, "allowedVal"));
+								if(val == allowedValAsInt)
+								{
+									matchFound = true;
+									break;
+								}
+							}
+							if(!matchFound)
+								HandleMalformedArgument();
+						}
+
 						if(valAsInt)
 							valAsInt = val;
 						else
@@ -373,7 +423,7 @@ class CmdLineParser
 			}
 			else
 				throw new Exception("Internal Error: Failed to process an Arg.value type that hasn't been set as unsupported.");
-		
+
 			argDef.isSet = true;
 		}
 		else
