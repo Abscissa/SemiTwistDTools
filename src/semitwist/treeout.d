@@ -273,20 +273,6 @@ class TreeNode : TreeNodeBase
 	
 	TreeNodeBase[] subNodes;
 	
-/*	this(char[] name, TreeNode subNodes=null)
-	{
-		TreeNode[] contentArray;
-		if(subNodes !is null)
-			contentArray ~= subNodes;
-			
-		this(name, contentArray);
-	}
-	
-	this(char[] name, TreeNode[] subNodes)
-	{
-		mixin(initMember!(name, subNodes));
-	}
-*/	
 	this(char[] name, char[][char[]] attributes)
 	{
 		this(name, cast(TreeNode)null, attributes);

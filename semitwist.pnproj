@@ -1,1 +1,1 @@
-<Project name="semitwist"><Folder name="Sources"><File path="src\semitwist\xmlout.d"></File><File path="src\semitwist\util.d"></File><File path="src\semitwist\refbox.d"></File><File path="src\semitwist\cmdlineparser.d"></File><File path="src\semitwist\treeout.d"></File></Folder></Project>
+<Project name="semitwist"><Folder name="Sources"><File path="src\semitwist\util.d"></File><File path="src\semitwist\refbox.d"></File><File path="src\semitwist\cmdlineparser.d"></File><File path="src\semitwist\treeout.d"></File></Folder></Project>
