@@ -70,6 +70,6 @@ void main(char[][] args)
 		"myInt      ",
 		"required   ",
 		"switchless ",
-		"myEnum"
+		"myEnum     "
 	));
 }

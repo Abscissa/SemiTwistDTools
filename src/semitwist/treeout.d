@@ -129,7 +129,7 @@ class JSONFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
 	
 	char[] processString(char[] content)
 	{
-		return `"` ~ content.substitute(`"`, `\"`) ~ `"`;
+		return `"` ~ content.substitute(`\`, `\\`).substitute(`"`, `\"`) ~ `"`;
 	}
 	
 	char[] processList(char[][] elements, int nodeDepth)
