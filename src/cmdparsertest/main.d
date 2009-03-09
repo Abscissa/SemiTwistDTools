@@ -10,7 +10,7 @@ module cmdparsertest.main;
 
 import tango.io.Stdout;
 
-import semitwist.util;
+import semitwist.util.all;
 import semitwist.cmdlineparser;
 
 void main(char[][] args)

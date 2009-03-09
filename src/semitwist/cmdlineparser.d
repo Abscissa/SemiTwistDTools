@@ -16,7 +16,7 @@ import tango.text.Util;
 import convInt = tango.text.convert.Integer;
 
 public import semitwist.refbox;
-import semitwist.util;
+import semitwist.util.all;
 
 /**
 Usage:

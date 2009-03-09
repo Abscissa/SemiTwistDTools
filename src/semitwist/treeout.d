@@ -14,7 +14,7 @@ module semitwist.treeout;
 import tango.io.Stdout;
 import tango.text.Util;
 
-import semitwist.util;
+import semitwist.util.all;
 
 abstract class TreeFormatter
 {
