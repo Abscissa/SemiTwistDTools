@@ -488,6 +488,17 @@ size_t findPrior(T)(T[] collection, bool delegate(T[], size_t) isFound, size_t s
 	return collection.length;
 }
 
+bool startsWith(T)(T[] source, T[] match)
+{
+	return (source.locatePattern(match) == 0);
+}
+
+//TODO: test this
+bool endsWith(T)(T[] source, T[] match)
+{
+	return (source.locatePatternPrior(match) == source.length - match.length);
+}
+
 mixin(multiTypeString!("winEOL",  r"\r\n"));
 mixin(multiTypeString!("macEOL",  r"\r"));
 mixin(multiTypeString!("unixEOL", r"\n"));

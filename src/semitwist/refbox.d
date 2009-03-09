@@ -16,6 +16,7 @@ import convInt = tango.text.convert.Integer;
 
 import semitwist.util;
 
+//TODO? convert to struct
 /// A boxable wrapper useful for variables of primitive types.
 class RefBox(T)
 {
