@@ -9,6 +9,7 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 module semitwist.util.nonFatalAssert;
 
 import tango.io.Stdout;
+import tango.util.Convert;
 
 /**
 Sounds like a contradiction of terms, but this is just
@@ -41,4 +42,22 @@ uint getNonFatalAssertCount()
 void resetNonFatalAssertCount()
 {
 	nonFatalAssertCount = 0;
+}
+
+void FatalizeAsserts()
+{
+	if(getNonFatalAssertCount() > 0)
+	{
+		Stdout.flush();
+/*		assert(false, stformat("{} Assert Failure{}",
+		                       getNonFatalAssertCount(),
+					           getNonFatalAssertCount() == 1 ? "" : "s")
+		      );
+*/
+		assert(false,
+			to!(char[])(getNonFatalAssertCount()) ~
+			" Assert Failure" ~
+			(getNonFatalAssertCount() == 1 ? "" : "s")
+		);
+	}
 }

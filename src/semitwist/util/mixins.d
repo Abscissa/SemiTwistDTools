@@ -100,6 +100,24 @@ private template _initMemberTo(char[] to, variables...)
 	}
 }
 
+template initFrom(alias from, variables...)
+{
+	const char[] initFrom = _initFrom!(from.stringof ~ ".", variables);
+//	pragma(msg, "initFrom: " ~ initFrom);
+}
+
+private template _initFrom(char[] from, variables...)
+{
+	static if(variables.length == 0)
+		const char[] _initFrom = "";
+	else
+	{
+		const char[] _initFrom =
+			variables[0].stringof~" = "~from~variables[0].stringof~";\n"
+			~ _initFrom!(from, variables[1..$]);
+//		pragma(msg, "_initFrom:\n" ~ _initFrom);
+	}
+}
 /**
 A DRY way to display an expression and its value to Stdout.
 
