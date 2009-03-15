@@ -4,6 +4,10 @@
 /** 
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
+
+In SVN comments:
+(b): Breaking changes
+(nb): Non-Breaking changes
 */
 
 // DMD output capturing for Programmer's Notepad:

@@ -49,11 +49,6 @@ void FatalizeAsserts()
 	if(getNonFatalAssertCount() > 0)
 	{
 		Stdout.flush();
-/*		assert(false, stformat("{} Assert Failure{}",
-		                       getNonFatalAssertCount(),
-					           getNonFatalAssertCount() == 1 ? "" : "s")
-		      );
-*/
 		assert(false,
 			to!(char[])(getNonFatalAssertCount()) ~
 			" Assert Failure" ~
