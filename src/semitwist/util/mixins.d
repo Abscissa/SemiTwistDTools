@@ -28,7 +28,7 @@ this.c = c;
 template initMember(variables...)
 {
 	const char[] initMember = _initMemberFrom!("", variables);
-//	pragma(msg, "initMember: " ~ initMember);
+	//pragma(msg, "initMember: " ~ initMember);
 }
 
 /**

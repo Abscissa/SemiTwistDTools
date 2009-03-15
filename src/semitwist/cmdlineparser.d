@@ -18,8 +18,11 @@ import convInt = tango.text.convert.Integer;
 public import semitwist.refbox;
 import semitwist.util.all;
 
+//TODO: Add "switch A implies switches B and C"
+//TODO: Convert errors from Stdout to a string
+//TODO: Make "success" a member of CmdLineParser instead of just the .parse() return value
 /**
-Usage:
+Usage: (outdated)
 
 void main(char[][] args)
 {
@@ -78,12 +81,13 @@ Switches: (prefixes can be '/', '-' or '--')
 
 enum ArgFlag
 {
-	Optional   = 0b0000,
-	Required   = 0b0001,
-	Switchless = 0b0010, // There can be only one [arg set to Switchless]
-	//Unique = 0b0100,
-	ToLower    = 0b1000, // If arg is char[], the value gets converted to all lower-case (for case-insensitivity)
+	Optional   = 0b0000_0000,
+	Required   = 0b0000_0001,
+	Switchless = 0b0000_0010, // There can be only one [arg set to Switchless]
+	//Unique = 0b0000_0100,
+	ToLower    = 0b0000_1000, // If arg is char[], the value gets converted to all lower-case (for case-insensitivity)
 	RequiredSwitchless = ArgFlag.Required | ArgFlag.Switchless,
+	Advanced   = 0b0001_0000,
 }
 
 template defineArg(alias cmdLineParser, char[] name, alias var, int flags = cast(int)ArgFlag.Optional, char[] desc = "")
@@ -129,7 +133,7 @@ private template _setArgAllowableValues(char[] name, allowableValues...)
 }
 
 //TODO: Add float, double, byte, short, long, and unsigned of each.
-//TODO: For numeric types, make sure provided values can fit in the type.
+//TODO: For numeric types, make sure provided values can fit in the type. (Using "to!()"?)
 //TODO: Think about way to (or the need to) prevent adding
 //      the same Arg instance to multiple Parsers.
 
@@ -143,6 +147,7 @@ class Arg
 	bool isRequired    = false;
 	bool arrayUnique   = false;
 	bool toLower       = false;
+	bool isAdvanced    = false;
 	
 	private Object value;
 	private Object defaultValue;
@@ -263,8 +268,9 @@ class CmdLineParser
 		bool isSwitchless = ((flags & ArgFlag.Switchless) != 0);
 		bool isRequired   = ((flags & ArgFlag.Required)   != 0);
 		bool toLower      = ((flags & ArgFlag.ToLower)    != 0);
+		bool isAdvanced   = ((flags & ArgFlag.Advanced)   != 0);
 		
-		mixin(initMemberTo!(arg, isRequired, toLower));
+		mixin(initMemberTo!(arg, isRequired, toLower, isAdvanced));
 		
 		if(isSwitchless)
 		{
@@ -318,7 +324,8 @@ class CmdLineParser
 		suffix = suffixIndex < argNoPrefix.length ?
 				 argNoPrefix[suffixIndex..$] : "";
 	}
-//TODO: Detect and error when numerical arg is passed an out-of-range value
+	
+	//TODO: Detect and error when numerical arg is passed an out-of-range value
 	private ParseArgResult parseArg(char[] cmdArg, char[] cmdName, char[] suffix)
 	{
 		ParseArgResult ret = ParseArgResult.Error;
@@ -508,6 +515,9 @@ class CmdLineParser
 		if(!verify())
 			error = true;
 		
+		if(error)
+			Stdout.formatln("");
+
 		return !error;
 	}
 	
@@ -547,11 +557,11 @@ class CmdLineParser
   
   If "[]" appears at the end of the type,
   this means multiple values are accepted.
-  Ex:
+  Example:
     /s:<text[]>: /s:file1 /s:file2 /s:anotherfile
   
   Switchless: This means the "/s:" portion can be omitted
-  Ex:
+  Example:
     /s:true -> true
     /s:Hello -> Hello
     /s:12 -> 12
@@ -570,19 +580,22 @@ class CmdLineParser
 			typeName;
 	}
 	
+	//TODO: Fix word wrapping
 	char[] getUsage(int nameColumnWidth=20)
 	{
 		char[] ret;
 		char[] indent = "  ";
-		
-		if(switchlessArgExists)
-		{
-			ret ~= "Switchless arg: {} ({})\n\n".stformat(args[switchlessArg].name, args[switchlessArg].desc);
-		}
+		char[] basicArgStr;
+		char[] advancedArgStr;
 		
 		ret ~= "Switches: (prefixes can be '/', '-' or '--')\n";
+		if(switchlessArgExists)
+			ret ~= "Switchless arg: {} ({})\n".stformat(args[switchlessArg].name, args[switchlessArg].desc);
+
 		foreach(Arg arg; args)
 		{
+			char[]* argStr = arg.isAdvanced? &advancedArgStr : &basicArgStr;
+			
 			// For some reason, unbox can't see Arg's private member "defaultValue"
 			auto argDefaultValue = arg.defaultValue;
 			mixin(unbox!(argDefaultValue, "val"));
@@ -606,22 +619,30 @@ class CmdLineParser
 			char[] argName = "/"~arg.name~argSuffix;
 			if(arg.altName != "")
 				argName ~= ", /"~arg.altName~argSuffix;
+			
+			char[] switchless = arg.isSwitchless? " (Switch name can be omitted)" : "";
 	
 			char[] nameColumnWidthStr = "{}".stformat(nameColumnWidth);
-			ret ~= stformat("{}{,-"~nameColumnWidthStr~"}{}{}\n",
-			                indent, argName~" ", requiredStr~arg.desc, defaultValStr);
+			*argStr ~= stformat("{}{,-"~nameColumnWidthStr~"}{}{}\n",
+			                    indent, argName~" ", requiredStr~arg.desc~switchless, defaultValStr);
 		}
-		return ret;
+		if(basicArgStr != "") basicArgStr = "\nBasic: \n"~basicArgStr;
+		if(advancedArgStr != "") advancedArgStr = "\nAdvanced: \n"~advancedArgStr;
+		return ret~basicArgStr~advancedArgStr;
 	}
 
 	char[] getDetailedUsage()
 	{
 		char[] ret;
 		char[] indent = "  ";
+		char[] basicArgStr;
+		char[] advancedArgStr;
 		
 		ret ~= "Switches: (prefixes can be '/', '-' or '--')\n";
 		foreach(Arg arg; args)
 		{
+			char[]* argStr = arg.isAdvanced? &advancedArgStr : &basicArgStr;
+
 			char[] argName = "/"~arg.name;
 			if(arg.altName != "")
 				argName ~= ", /"~arg.altName;
@@ -634,6 +655,7 @@ class CmdLineParser
 			char[] requiredStr;
 			char[] toLowerStr;
 			char[] switchlessStr;
+			char[] advancedStr;
 
 			if(valAsInt)
 				defaultVal = "{}".stformat(valAsInt());
@@ -652,13 +674,16 @@ class CmdLineParser
 			requiredStr   = arg.isRequired   ? "Required" : "Optional";
 			toLowerStr    = arg.toLower      ? ", Case-Insensitive" : "";
 			switchlessStr = arg.isSwitchless ? ", Switchless" : "";
+			advancedStr   = arg.isAdvanced   ? ", Advanced" : ", Basic";
 			
-			ret ~= "\n";
-			ret ~= stformat("{} ({}), {}{}{}{}\n",
-			                argName, getArgTypeName(arg),
-							requiredStr, switchlessStr, toLowerStr, defaultVal);
-			ret ~= stformat("{}\n", arg.desc);
+			*argStr ~= "\n";
+			*argStr ~= stformat("{} ({}), {}{}{}{}\n",
+			                    argName, getArgTypeName(arg),
+							    requiredStr, switchlessStr, toLowerStr, advancedStr, defaultVal);
+			*argStr ~= stformat("{}\n", arg.desc);
 		}
+		ret ~= basicArgStr;
+		ret ~= advancedArgStr;
 		ret ~= "\n";
 		ret ~= switchTypesMsg;
 		return ret;

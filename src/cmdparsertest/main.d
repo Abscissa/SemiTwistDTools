@@ -46,16 +46,15 @@ void main(char[][] args)
 	
 	mixin(setArgAllowableValues!("myEnum", "char[][]", "tea", "coffee"));
 
-	if((!cmd.parse(args) && !detailhelp) || help)
-	{
-		Stdout.formatln("");
-		Stdout.format(cmd.getUsage(18));
-		return;
-	}
+	bool success = cmd.parse(args);
 	if(detailhelp)
 	{
-		Stdout.formatln("");
-		Stdout.format(cmd.getDetailedUsage());
+		Stdout.format("{}", cmd.getDetailedUsage());
+		return;
+	}
+	if(!success || help)
+	{
+		Stdout.format("{}", cmd.getUsage(18));
 		return;
 	}
 	Stdout.formatln("");
