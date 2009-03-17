@@ -8,6 +8,8 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 
 module semitwist.util.mixins;
 
+import tango.core.Traits;
+
 /**
 Useful in constructors for DRY.
 
@@ -196,6 +198,7 @@ char[] traceVal(char[][] varNames/*, uint nameLength=0*/)
 
 /**
 Generates a public getter, private setter, and a hidden private var.
+If the type is an array, the getter automatically returns a shallow ".dup".
 Useful in class/struct declarations for DRY.
 
 Usage:
@@ -203,6 +206,7 @@ Usage:
 ----
 mixin(getter!(int, "myVar"));
 mixin(getter!(float, "someFloat", "2.5"));
+mixin(getter!(char[], "str"));
 ----
 
 Turns Into:
@@ -229,15 +233,33 @@ public float someFloat()
 {
 	return _someFloat;
 }
+
+private char[] _str;
+private char[] str(char[] _NEW_VAL_)
+{
+	_str = _NEW_VAL_;
+	return _str;
+}
+public char[] str()
+{
+	return _str.dup;
+}
 ----
 */
 //TODO: Test initialValue on varType of char[]
-//TODO: Create "return array.dup;" version
 template getter(varType, char[] name, char[] initialValue="")
 {
 	const char[] getter =
 		"private "~varType.stringof~" _"~name~(initialValue == "" ? "" : "=" ~ initialValue)~";\n"~
 		"private "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
-		"public "~varType.stringof~" "~name~"() {return _"~name~";}\n";
-//	pragma(msg, "getter: " ~ getter);
+		"public "~varType.stringof~" "~name~"() {return _"~name~(isArrayType!(varType)?".dup":"")~";}\n";
+	//pragma(msg, "getter: " ~ getter);
+}
+
+template isArrayType(T)
+{
+	const bool isArrayType =
+		isDynamicArrayType!(T) ||
+		isStaticArrayType!(T)  ||
+		isAssocArrayType!(T);
 }
