@@ -263,3 +263,13 @@ template isArrayType(T)
 		isStaticArrayType!(T)  ||
 		isAssocArrayType!(T);
 }
+
+/*
+//TODO: Need newer version of Tango to get ElementTypeOfArray
+void foo() { arrayToDynamicArray!(int) bar; }
+template arrayToDynamicArray(T)
+{
+	static assert(isArrayType!(T), "arrayToDynamicArray was given a '"~T.stringof~"', but expects an array");
+	alias ElementTypeOfArray!(T)[] arrayToDynamicArray;
+}
+*/

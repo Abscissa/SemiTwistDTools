@@ -44,7 +44,7 @@ void main(char[][] args)
 	mixin(defineArg!(cmd, "switchless",  switchless,  ArgFlag.Switchless, "Switchless Multiple" ));
 	mixin(defineArg!(cmd, "myEnum",      myEnum,      ArgFlag.Optional,   `My Enum ("tea" or "coffee")` ));
 	
-	mixin(setArgAllowableValues!("myEnum", "char[][]", "tea", "coffee"));
+	mixin(setArgAllowableValues!("myEnum", "tea"[], "coffee"));
 
 	bool success = cmd.parse(args);
 	if(detailhelp)

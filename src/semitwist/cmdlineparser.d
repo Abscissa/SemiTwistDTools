@@ -110,11 +110,10 @@ template defineArg(alias cmdLineParser, char[] name, alias var, int flags = cast
 	}
 }
 
-//TODO: Find a way to eliminate the type paramater
-template setArgAllowableValues(char[] name, char[] type, allowableValues...)
+template setArgAllowableValues(char[] name, allowableValues...)
 {
 	const char[] setArgAllowableValues =
-		type~" _cmdarg_allowablevals_"~name~";\n"
+		typeof(allowableValues[0]).stringof~"[] _cmdarg_allowablevals_"~name~";\n"
 		~_setArgAllowableValues!(name, allowableValues)
 		~"_cmdarg_"~name~".setAllowableValues(_cmdarg_allowablevals_"~name~");\n";
 	//pragma(msg, "setArgAllowableValues:\n" ~ setArgAllowableValues);
