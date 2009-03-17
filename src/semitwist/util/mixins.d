@@ -195,26 +195,49 @@ char[] traceVal(char[][] varNames/*, uint nameLength=0*/)
 +/
 
 /**
+Generates a public getter, private setter, and a hidden private var.
 Useful in class/struct declarations for DRY.
 
 Usage:
 
 ----
-mixin(getter("int", "myVar", "getMyVar"));
+mixin(getter!(int, "myVar"));
+mixin(getter!(float, "someFloat", "2.5"));
 ----
 
 Turns Into:
 
 ----
-private int myVar;
-public int getMyVar()
+private int _myVar;
+private int myVar(int _NEW_VAL_)
 {
-	return myVar;
+	_myVar = _NEW_VAL_;
+	return _myVar;
+}
+public int myVar()
+{
+	return _myVar;
+}
+
+private float _someFloat = 2.5;
+private float someFloat(float _NEW_VAL_)
+{
+	_someFloat = _NEW_VAL_;
+	return _someFloat;
+}
+public float someFloat()
+{
+	return _someFloat;
 }
 ----
 */
-char[] getter(char[] varType, char[] varName, char[] getterName, char[] initialValue="")
+//TODO: Test initialValue on varType of char[]
+//TODO: Create "return array.dup;" version
+template getter(varType, char[] name, char[] initialValue="")
 {
-	return "private "~varType~" "~varName~(initialValue == "" ? "" : "=" ~ initialValue)~"; "~
-		   "public "~varType~" "~getterName~"() {return "~varName~";}";
+	const char[] getter =
+		"private "~varType.stringof~" _"~name~(initialValue == "" ? "" : "=" ~ initialValue)~";\n"~
+		"private "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
+		"public "~varType.stringof~" "~name~"() {return _"~name~";}\n";
+//	pragma(msg, "getter: " ~ getter);
 }

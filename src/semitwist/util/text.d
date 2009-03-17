@@ -304,15 +304,41 @@ private T[] _unescapeSemiTwist(T)(T[] str)
 	return ret;
 }
 
-/// Suggested usage:
-///   "Hello {}!".stformat("World");
-Layout!(char)  stformat;
-Layout!(wchar) stformatw;
-Layout!(dchar) stformatd;
+private Layout!(char)  _stformatc;
+private Layout!(wchar) _stformatw;
+private Layout!(dchar) _stformatd;
 static this()
 {
-	stformat  = new Layout!( char)();
-	stformatw = new Layout!(wchar)();
-	stformatd = new Layout!(dchar)();
+	_stformatc = new Layout!( char)();
+	_stformatw = new Layout!(wchar)();
+	_stformatd = new Layout!(dchar)();
 }
 
+private template _stformat(T)
+{
+	static assert(
+		is(T==char)||is(T==wchar)||is(T==dchar),
+		"T in stformat(T) is '"~T.stringof~"', but must be char, wchar or dchar"
+	);
+	T[] _stformat(TypeInfo[] arguments, ArgList args, T[] formatStr)
+	{
+		static if(is(T==char))
+			return _stformatc(arguments, args, formatStr);
+		else static if(is(T==wchar))
+			return _stformatw(arguments, args, formatStr);
+		else
+			return _stformatd(arguments, args, formatStr);
+	}
+}
+
+/// Suggested usage:
+///   "Hello {}!".stformat("World");
+T[] stformat(T)(T[] formatStr, ...)
+{
+	return _stformat!(T)(_arguments, _argptr, formatStr);
+}
+
+T[] stformatln(T)(T[] formatStr, ...)
+{
+	return _stformat!(T)(_arguments, _argptr, formatStr)~"\n";
+}

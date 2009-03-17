@@ -9,7 +9,6 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 module semitwist.cmdlineparser;
 
 import tango.core.Array;
-import tango.io.Stdout;
 import tango.math.Math;
 import tango.text.Unicode;
 import tango.text.Util;
@@ -19,8 +18,8 @@ public import semitwist.refbox;
 import semitwist.util.all;
 
 //TODO: Add "switch A implies switches B and C"
-//TODO: Convert errors from Stdout to a string
-//TODO: Make "success" a member of CmdLineParser instead of just the .parse() return value
+
+//TODO: Convert the following sample code into an actual sample app
 /**
 Usage: (outdated)
 
@@ -214,6 +213,9 @@ class CmdLineParser
 	private bool switchlessArgExists=false;
 	private size_t switchlessArg;
 	
+	mixin(getter!(bool, "success"));
+	mixin(getter!(char[], "errorMsg"));
+	
 	private enum Prefix
 	{
 		Invalid, DoubleDash, SingleDash, Slash
@@ -332,7 +334,7 @@ class CmdLineParser
 
 		void HandleMalformedArgument()
 		{
-			Stdout.formatln(`Invalid value: "{}"`, cmdArg);
+			_errorMsg ~= `Invalid value: "{}"`.stformatln(cmdArg);
 			ret = ParseArgResult.Error;
 		}
 		
@@ -456,7 +458,7 @@ class CmdLineParser
 		}
 		else
 		{
-			Stdout.formatln(`Unknown switch: "{}"`, cmdArg);
+			_errorMsg ~= `Unknown switch: "{}"`.stformatln(cmdArg);
 			ret = ParseArgResult.NotFound;
 		}
 		
@@ -489,7 +491,7 @@ class CmdLineParser
 				}
 				else
 				{
-					Stdout.formatln(`Unexpected value: "{}"`, argStr);
+					_errorMsg ~= `Unexpected value: "{}"`.stformatln(argStr);
 					error = true;
 					continue;
 				}
@@ -515,10 +517,8 @@ class CmdLineParser
 		if(!verify())
 			error = true;
 		
-		if(error)
-			Stdout.formatln("");
-
-		return !error;
+		_success = !error;
+		return _success;
 	}
 	
 	private bool verify()
@@ -529,7 +529,7 @@ class CmdLineParser
 		{
 			if(arg.isRequired && !arg.isSet)
 			{
-				Stdout.formatln(`Missing switch: {} ({})`, arg.name, arg.desc);
+				_errorMsg ~= `Missing switch: {} ({})`.stformatln(arg.name, arg.desc);
 				error = true;
 			}
 		}
