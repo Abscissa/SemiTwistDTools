@@ -11,6 +11,7 @@ void main()
 unittest
 {
 	int foo = 2;
+	char[] bar = "hello";
 	
 	// *REALLY* need a way for a template to automatically get
 	// the file/line of instantiation.
@@ -20,4 +21,8 @@ unittest
 	mixin(NonFatalAssert!(__LINE__, __FILE__, `foo == 3 || foo > 5`, "foo is bad"));
 	mixin(NonFatalAssert!(__LINE__, __FILE__, `2 + 2 == 4`, "Basic arithmetic"));
 	mixin(NonFatalAssert!(__LINE__, __FILE__, `false`));
+	
+	mixin(NonFatalEnsure!(__LINE__, __FILE__, foo, `_ == 3 || _ > 5`, "ensure foo failed"));
+	mixin(NonFatalEnsure!(__LINE__, __FILE__, foo, `_ > 0`));
+	mixin(NonFatalEnsure!(__LINE__, __FILE__, bar, `_ == "hola"`));
 }
