@@ -4,6 +4,8 @@
 /** 
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
+
+Consider this to be under the zlib license.
 */
 
 module semitwist.util.nonFatalAssert;
@@ -16,22 +18,30 @@ Sounds like a contradiction of terms, but this is just
 intended to allow unittests to output ALL failures instead
 of only outputting the first one and then stopping.
 */
-//Automatic __LINE__ and __FILE__ don't work
-//template NonFatalAssert(int line = __LINE__, char[] file = __FILE__)
-template NonFatalAssert(int line, char[] file)
+// *REALLY* need a way to get file/line of template's instantiation
+template NonFatalAssert(long line, char[] file, char[] cond, char[] msg="")
 {
-	bool NonFatalAssert(bool cond, char[] msg="")
+	const char[] NonFatalAssert =
+	"{\n"~
+	"bool _NonFatalAssert_result = "~cond~";\n"~
+	"_NonFatalAssert!("~line.stringof~", "~file.stringof~", "~cond.stringof~", "~msg.stringof~")(_NonFatalAssert_result);"~
+	"}";
+	//pragma(msg, "NonFatalAssert: "~NonFatalAssert);
+}
+
+template _NonFatalAssert(long line, char[] file, char[] cond, char[] msg="")
+{
+	bool _NonFatalAssert(bool result)
 	{
-		if(!cond)
+		if(!result)
 		{
 			nonFatalAssertCount++;
-			Stdout.formatln("{}({}): Assert Failure{}", //"{}({}): Assert Failure ({}){}",
-			                file, line,
-//						    cond.stringof,
+			Stdout.formatln("{}({}): Assert Failure ({}){}",
+			                file, line, cond,
 						    msg=="" ? "" : ": " ~ msg);
 		}
 		
-		return cond;
+		return result;
 	}
 }
 private uint nonFatalAssertCount=0;
