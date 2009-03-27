@@ -9,14 +9,14 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 module semitwist.util.io;
 
 import tango.io.FilePath;
-import tango.io.protocol.Reader;
-import tango.io.stream.DataStream;
+//import tango.io.protocol.Reader;
+import tango.io.stream.Data;
 
 version(Win32)
 	import tango.sys.win32.UserGdi;
 else
 	import tango.stdc.posix.unistd;
-
+/+
 char[] readNullTerminatedString(Reader reader)
 {
 	ubyte[] str;
@@ -56,7 +56,7 @@ wchar[] readNullTerminatedWString(Reader reader)
 
 	return str[0..$-1];
 }
-
++/
 wchar[] readNullTerminatedWString(DataInput reader)
 {
 	wchar[] str;
