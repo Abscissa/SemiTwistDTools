@@ -10,6 +10,8 @@ module semitwist.util.mixins;
 
 import tango.core.Traits;
 
+import semitwist.util.reflect;
+
 /**
 Useful in constructors for DRY.
 
@@ -257,37 +259,3 @@ template getter(varType, char[] name, varType initialValue=varType.init)
 	//pragma(msg, "getter: " ~ getter);
 }
 
-template isAnyArrayType(T)
-{
-	const bool isAnyArrayType =
-		isArray!(T) ||
-		isAssocArrayType!(T);
-}
-
-// From Tango trunk
-template isArray(T)
-{
-	static if (is( T U : U[] ))
-		const bool isArray=true;
-	else
-		const bool isArray=false;
-}
-
-// From Tango trunk
-template KeyTypeOfAA(T){
-	alias typeof(T.init.keys[0]) KeyTypeOfAA;
-}
-
-// From Tango trunk
-template ValTypeOfAA(T){
-	alias typeof(T.init.values[0]) ValTypeOfAA;
-}
-
-// If T is a static array, it's changed to a dynamic array, otherwise just returns T.
-template PreventStaticArray(T)
-{
-	static if(isArray!(T))
-		private alias ElementTypeOfArray!(T)[] PreventStaticArray;
-	else
-		private alias T PreventStaticArray;
-}
