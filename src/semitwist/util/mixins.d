@@ -253,42 +253,41 @@ template getter(varType, char[] name, varType initialValue=varType.init)
 	const char[] getter =
 		"private "~varType.stringof~" _"~name~(initialValue == varType.init ? "" : "=" ~ initialValue.stringof)~";\n"~
 		"private "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
-		"public "~varType.stringof~" "~name~"() {return _"~name~(isArrayType!(varType)?".dup":"")~";}\n";
+		"public "~varType.stringof~" "~name~"() {return _"~name~(isAnyArrayType!(varType)?".dup":"")~";}\n";
 	//pragma(msg, "getter: " ~ getter);
 }
 
-template isArrayType(T)
+template isAnyArrayType(T)
 {
-	const bool isArrayType =
-		isDynamicArrayType!(T) ||
-		isStaticArrayType!(T)  ||
+	const bool isAnyArrayType =
+		isArray!(T) ||
 		isAssocArrayType!(T);
 }
 
-template dynamicArrayTypeOf(T)
+// From Tango trunk
+template isArray(T)
 {
-	static if(isArrayType!(T))
-		alias elementTypeOfArray!(T)[] dynamicArrayTypeOf;
+	static if (is( T U : U[] ))
+		const bool isArray=true;
 	else
-		static assert(false, "dynamicArrayTypeOf was given a type '"~T.stringof~"', but expects an array");
+		const bool isArray=false;
 }
 
-// Like tango.core.Traits.ElementTypeOfArray, but for AA's.
-private template elementTypeOfAssocArray(T:T[U], U)
-{
-	alias T elementTypeOfAssocArray;
+// From Tango trunk
+template KeyTypeOfAA(T){
+	alias typeof(T.init.keys[0]) KeyTypeOfAA;
 }
 
-// Like tango.core.Traits.ElementTypeOfArray, but also works on AA's.
-template elementTypeOfArray(T)
+// From Tango trunk
+template ValTypeOfAA(T){
+	alias typeof(T.init.values[0]) ValTypeOfAA;
+}
+
+// If T is a static array, it's changed to a dynamic array, otherwise just returns T.
+template PreventStaticArray(T)
 {
-	static if(isArrayType!(T))
-	{
-		static if(isAssocArrayType!(T))
-			alias elementTypeOfAssocArray!(T) elementTypeOfArray;
-		else
-			alias ElementTypeOfArray!(T) elementTypeOfArray;
-	}
+	static if(isArray!(T))
+		private alias ElementTypeOfArray!(T)[] PreventStaticArray;
 	else
-		static assert(false, "elementTypeOfArray was given a type '"~T.stringof~"', but expects an array");
+		private alias T PreventStaticArray;
 }

@@ -344,8 +344,8 @@ class TreeNode : TreeNodeBase
 		auto reduceAttributes = &formatter.reduceAttributes;
 		auto reduceNodes      = &formatter.reduceNodes;
 		
-		alias elementTypeOfArray!(typeof(attributes)) AttributeType;
-		alias elementTypeOfArray!(typeof(subNodes))   SubNodeType;
+		alias ValTypeOfAA!(typeof(attributes))      AttributeType;
+		alias ElementTypeOfArray!(typeof(subNodes)) SubNodeType;
 		
 		auto attrStr =
 			attributes

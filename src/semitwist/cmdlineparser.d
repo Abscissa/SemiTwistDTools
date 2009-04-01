@@ -113,37 +113,22 @@ template defineArg(alias cmdLineParser, char[] name, alias var, int flags = cast
 
 template setArgAllowableValues(char[] name, allowableValues...)
 {
-	// Can't add other members here without requiring templ!(...).templ syntax,
-	// so do that here and shove the rest into _setArgAllowableValues.
 	const char[] setArgAllowableValues =
-		_setArgAllowableValues!(name, allowableValues)._setArgAllowableValues;
+		PreventStaticArray!(typeof(allowableValues[0])).stringof~"[] _cmdarg_allowablevals_"~name~";\n"
+		~_setArgAllowableValues!(name, allowableValues)
+		~"_cmdarg_"~name~".setAllowableValues(_cmdarg_allowablevals_"~name~");\n";
 	//pragma(msg, "setArgAllowableValues:\n" ~ setArgAllowableValues);
 }
 
 private template _setArgAllowableValues(char[] name, allowableValues...)
 {
-	private alias typeof(allowableValues[0]) valueType;
-	static if(isArrayType!(valueType))
-		private alias dynamicArrayTypeOf!(valueType) adjustedValueType;
-	else
-		private alias valueType adjustedValueType;
-
-	const char[] _setArgAllowableValues =
-		adjustedValueType.stringof~"[] _cmdarg_allowablevals_"~name~";\n"
-		~_setArgAllowableVal!(name, allowableValues)
-		~"_cmdarg_"~name~".setAllowableValues(_cmdarg_allowablevals_"~name~");\n";
-	//pragma(msg, "_setArgAllowableValues:\n" ~ _setArgAllowableValues);
-}
-
-private template _setArgAllowableVal(char[] name, allowableValues...)
-{
 	static if(allowableValues.length == 0)
-		const char[] _setArgAllowableVal = "";
+		const char[] _setArgAllowableValues = "";
 	else
-		const char[] _setArgAllowableVal =
+		const char[] _setArgAllowableValues =
 			"_cmdarg_allowablevals_"~name~" ~= "~allowableValues[0].stringof~";\n"
-			~ _setArgAllowableVal!(name, allowableValues[1..$]);
-	//	pragma(msg, "_setArgAllowableVal:" ~ _setArgAllowableVal);
+			~ _setArgAllowableValues!(name, allowableValues[1..$]);
+	//	pragma(msg, "_setArgAllowableValues:" ~ _setArgAllowableValues);
 }
 
 //TODO: Add float, double, byte, short, long, and unsigned of each.
