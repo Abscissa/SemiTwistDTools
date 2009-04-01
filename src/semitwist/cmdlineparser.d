@@ -21,7 +21,8 @@ import semitwist.util.all;
 
 //TODO: Convert the following sample code into an actual sample app
 /**
-Usage: (outdated)
+OUTDATED COMMENT
+Usage:
 
 void main(char[][] args)
 {
@@ -112,22 +113,37 @@ template defineArg(alias cmdLineParser, char[] name, alias var, int flags = cast
 
 template setArgAllowableValues(char[] name, allowableValues...)
 {
+	// Can't add other members here without requiring templ!(...).templ syntax,
+	// so do that here and shove the rest into _setArgAllowableValues.
 	const char[] setArgAllowableValues =
-		typeof(allowableValues[0]).stringof~"[] _cmdarg_allowablevals_"~name~";\n"
-		~_setArgAllowableValues!(name, allowableValues)
-		~"_cmdarg_"~name~".setAllowableValues(_cmdarg_allowablevals_"~name~");\n";
+		_setArgAllowableValues!(name, allowableValues)._setArgAllowableValues;
 	//pragma(msg, "setArgAllowableValues:\n" ~ setArgAllowableValues);
 }
 
 private template _setArgAllowableValues(char[] name, allowableValues...)
 {
-	static if(allowableValues.length == 0)
-		const char[] _setArgAllowableValues = "";
+	private alias typeof(allowableValues[0]) valueType;
+	static if(isArrayType!(valueType))
+		private alias dynamicArrayTypeOf!(valueType) adjustedValueType;
 	else
-		const char[] _setArgAllowableValues =
+		private alias valueType adjustedValueType;
+
+	const char[] _setArgAllowableValues =
+		adjustedValueType.stringof~"[] _cmdarg_allowablevals_"~name~";\n"
+		~_setArgAllowableVal!(name, allowableValues)
+		~"_cmdarg_"~name~".setAllowableValues(_cmdarg_allowablevals_"~name~");\n";
+	//pragma(msg, "_setArgAllowableValues:\n" ~ _setArgAllowableValues);
+}
+
+private template _setArgAllowableVal(char[] name, allowableValues...)
+{
+	static if(allowableValues.length == 0)
+		const char[] _setArgAllowableVal = "";
+	else
+		const char[] _setArgAllowableVal =
 			"_cmdarg_allowablevals_"~name~" ~= "~allowableValues[0].stringof~";\n"
-			~ _setArgAllowableValues!(name, allowableValues[1..$]);
-	//	pragma(msg, "_setArgAllowableValues:" ~ _setArgAllowableValues);
+			~ _setArgAllowableVal!(name, allowableValues[1..$]);
+	//	pragma(msg, "_setArgAllowableVal:" ~ _setArgAllowableVal);
 }
 
 //TODO: Add float, double, byte, short, long, and unsigned of each.
@@ -214,7 +230,7 @@ class CmdLineParser
 	
 	mixin(getter!(bool, "success"));
 	mixin(getter!(char[], "errorMsg"));
-	
+
 	private enum Prefix
 	{
 		Invalid, DoubleDash, SingleDash, Slash

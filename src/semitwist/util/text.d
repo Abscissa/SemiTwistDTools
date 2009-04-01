@@ -52,7 +52,7 @@ template multiTypeString(char[] name, char[] data, char[] access="public")
 
 // Note: Almost useless. The compiler doesn't report the file/line where the
 //       template function that called this was instantiated.
-//       (TODO: Maybe I could fix that with templates...?)
+//       (TODO: Maybe I could fix that with templates...? No, I can't.)
 private char[] ensureCharType(char[] typeName, char[] msg="")
 {
 	return "static assert(is("~typeName~" == char) || is("~typeName~" == wchar) || is("~typeName~" == dchar), \""~msg~"\");";

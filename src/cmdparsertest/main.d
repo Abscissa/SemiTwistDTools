@@ -44,16 +44,19 @@ void main(char[][] args)
 	mixin(defineArg!(cmd, "switchless",  switchless,  ArgFlag.Switchless, "Switchless Multiple" ));
 	mixin(defineArg!(cmd, "myEnum",      myEnum,      ArgFlag.Optional,   `My Enum ("tea" or "coffee")` ));
 	
-	mixin(setArgAllowableValues!("myEnum", "tea"[], "coffee"));
+	mixin(setArgAllowableValues!("myEnum", "tea", "coffee"));
+	//mixin(setArgAllowableValues!("myInt", 3, 7));
 
-	bool success = cmd.parse(args);
+	cmd.parse(args);
 	if(detailhelp)
 	{
+		Stdout.formatln("{}", cmd.errorMsg);
 		Stdout.format("{}", cmd.getDetailedUsage());
 		return;
 	}
-	if(!success || help)
+	if(!cmd.success || help)
 	{
+		Stdout.formatln("{}", cmd.errorMsg);
 		Stdout.format("{}", cmd.getUsage(18));
 		return;
 	}

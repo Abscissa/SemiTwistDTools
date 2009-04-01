@@ -11,6 +11,7 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 
 module semitwist.treeout;
 
+import tango.core.Traits;
 import tango.io.Stdout;
 import tango.text.Util;
 
@@ -343,9 +344,8 @@ class TreeNode : TreeNodeBase
 		auto reduceAttributes = &formatter.reduceAttributes;
 		auto reduceNodes      = &formatter.reduceNodes;
 		
-		//TODO: tango.core.Traits.ElementTypeOfArray doesn't seem to be defined
-		alias typeof(attributes[""]) AttributeType;
-		alias typeof(subNodes[0])    SubNodeType;
+		alias elementTypeOfArray!(typeof(attributes)) AttributeType;
+		alias elementTypeOfArray!(typeof(subNodes))   SubNodeType;
 		
 		auto attrStr =
 			attributes

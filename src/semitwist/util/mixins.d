@@ -152,6 +152,11 @@ max(4,7): 7
 ----
 */
 
+//TODO: Add ability to specify format (binary, hex, etc)
+//TODO: Make nameLength work by using Layout.format (at runtime)
+//      on data passed to Stdout.formatln
+//      (ie, align name/value)
+//TODO?: Find way to convert nameLength to string at compile time
 /// 'values' should be strings
 template traceVal(values...)
 {
@@ -163,9 +168,6 @@ template traceVal(values...)
 			~ traceVal!(values[1..$]);
 }
 /+
-//TODO: Add ability to specify format (binary, hex, etc)
-//TODO: Make nameLength work by using Layout.format (at runtime)
-//      on data passed to Stdout.formatln
 char[] traceVal(char[] varName/*, uint nameLength=0*/)
 {
 	//TODO: Find way to convert nameLength to string at compile time
@@ -205,7 +207,7 @@ Usage:
 
 ----
 mixin(getter!(int, "myVar"));
-mixin(getter!(float, "someFloat", "2.5"));
+mixin(getter!(float, "someFloat", 2.5));
 mixin(getter!(char[], "str"));
 ----
 
@@ -246,11 +248,10 @@ public char[] str()
 }
 ----
 */
-//TODO: Test initialValue on varType of char[]
-template getter(varType, char[] name, char[] initialValue="")
+template getter(varType, char[] name, varType initialValue=varType.init)
 {
 	const char[] getter =
-		"private "~varType.stringof~" _"~name~(initialValue == "" ? "" : "=" ~ initialValue)~";\n"~
+		"private "~varType.stringof~" _"~name~(initialValue == varType.init ? "" : "=" ~ initialValue.stringof)~";\n"~
 		"private "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
 		"public "~varType.stringof~" "~name~"() {return _"~name~(isArrayType!(varType)?".dup":"")~";}\n";
 	//pragma(msg, "getter: " ~ getter);
@@ -264,12 +265,30 @@ template isArrayType(T)
 		isAssocArrayType!(T);
 }
 
-/*
-//TODO: Need newer version of Tango to get ElementTypeOfArray
-void foo() { arrayToDynamicArray!(int) bar; }
-template arrayToDynamicArray(T)
+template dynamicArrayTypeOf(T)
 {
-	static assert(isArrayType!(T), "arrayToDynamicArray was given a '"~T.stringof~"', but expects an array");
-	alias ElementTypeOfArray!(T)[] arrayToDynamicArray;
+	static if(isArrayType!(T))
+		alias elementTypeOfArray!(T)[] dynamicArrayTypeOf;
+	else
+		static assert(false, "dynamicArrayTypeOf was given a type '"~T.stringof~"', but expects an array");
 }
-*/
+
+// Like tango.core.Traits.ElementTypeOfArray, but for AA's.
+private template elementTypeOfAssocArray(T:T[U], U)
+{
+	alias T elementTypeOfAssocArray;
+}
+
+// Like tango.core.Traits.ElementTypeOfArray, but also works on AA's.
+template elementTypeOfArray(T)
+{
+	static if(isArrayType!(T))
+	{
+		static if(isAssocArrayType!(T))
+			alias elementTypeOfAssocArray!(T) elementTypeOfArray;
+		else
+			alias ElementTypeOfArray!(T) elementTypeOfArray;
+	}
+	else
+		static assert(false, "elementTypeOfArray was given a type '"~T.stringof~"', but expects an array");
+}
