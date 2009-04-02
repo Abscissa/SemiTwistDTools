@@ -29,17 +29,17 @@ template nameof(alias T)
 template isAnyArrayType(T)
 {
 	const bool isAnyArrayType =
-		isArray!(T) ||
+		isArrayType!(T) ||
 		isAssocArrayType!(T);
 }
 
 // From Tango trunk
-template isArray(T)
+template isArrayType(T)
 {
 	static if (is( T U : U[] ))
-		const bool isArray=true;
+		const bool isArrayType=true;
 	else
-		const bool isArray=false;
+		const bool isArrayType=false;
 }
 
 // From Tango trunk
@@ -55,7 +55,7 @@ template ValTypeOfAA(T){
 // If T is a static array, it's changed to a dynamic array, otherwise just returns T.
 template PreventStaticArray(T)
 {
-	static if(isArray!(T))
+	static if(isArrayType!(T))
 		private alias ElementTypeOfArray!(T)[] PreventStaticArray;
 	else
 		private alias T PreventStaticArray;
