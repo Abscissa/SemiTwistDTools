@@ -5,9 +5,14 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
+Requires:
+- DMD 1.041
+- Tango 0.99.8
+
 In SVN comments:
 (B): Breaking changes
 (NB): Non-Breaking changes
+
 */
 
 // DMD output capturing for Programmer's Notepad:
