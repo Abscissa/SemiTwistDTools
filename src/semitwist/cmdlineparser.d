@@ -18,6 +18,7 @@ public import semitwist.refbox;
 import semitwist.util.all;
 
 //TODO: Add "switch A implies switches B and C"
+//TODO: Don't show "Basic:" or "Advanced:" label if only one type exists
 
 //TODO: Convert the following sample code into an actual sample app
 /**

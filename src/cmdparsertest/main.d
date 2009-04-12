@@ -16,7 +16,7 @@ import semitwist.cmdlineparser;
 void main(char[][] args)
 {
 	bool help;
-	bool detailhelp;
+	bool detailHelp;
 	bool myBool;
 	bool myFlag;
 	bool myFlagX=true;
@@ -32,7 +32,7 @@ void main(char[][] args)
 	
 	auto cmd = new CmdLineParser();
 	mixin(defineArg!(cmd, "help",        help,        ArgFlag.Optional,   "Displays a help summary and exits" ));
-	mixin(defineArg!(cmd, "detail",      detailhelp,  ArgFlag.Optional,   "Displays a detailed help message and exits" ));
+	mixin(defineArg!(cmd, "detail",      detailHelp,  ArgFlag.Optional,   "Displays a detailed help message and exits" ));
 	mixin(defineArg!(cmd, "myBool",      myBool,      ArgFlag.Optional,   "My Boolean" ));
 	mixin(defineArg!(cmd, "myFlag",      myFlag,      ArgFlag.Optional,   "My Flag"    ));
 	mixin(defineArg!(cmd, "myFlagX",     myFlagX,     ArgFlag.Optional,   "My Flag X"  ));
@@ -48,7 +48,7 @@ void main(char[][] args)
 	//mixin(setArgAllowableValues!("myInt", 3, 7));
 
 	cmd.parse(args);
-	if(detailhelp)
+	if(detailHelp)
 	{
 		Stdout.formatln("{}", cmd.errorMsg);
 		Stdout.format("{}", cmd.getDetailedUsage());

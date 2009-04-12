@@ -201,9 +201,15 @@ char[] traceVal(char[][] varNames/*, uint nameLength=0*/)
 +/
 
 /**
-Generates a public getter, private setter, and a hidden private var.
-If the type is an array, the getter automatically returns a shallow ".dup".
 Useful in class/struct declarations for DRY.
+
+Generates a public getter, private setter, and a hidden private var.
+If the type is an array, the getter automatically returns a
+shallow ".dup" (for safety).
+
+As with any getter in D1, care should be taken when using this for
+reference types, as there is no general way to prevent a caller from
+changing the data pointed to by the underlying reference.
 
 Usage:
 
@@ -257,5 +263,88 @@ template getter(varType, char[] name, varType initialValue=varType.init)
 		"private "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
 		"public "~varType.stringof~" "~name~"() {return _"~name~(isAnyArrayType!(varType)?".dup":"")~";}\n";
 	//pragma(msg, "getter: " ~ getter);
+}
+
+/**
+Similar to "getter", but for values that are to be lazily generated
+(ie, values that are complex to generate, not always used, and rarely
+change). The first time the getter is called, it generates
+the value (by calling "_myVarName_gen()") and caches it. On subsequent
+calls, the cached value is returned. The cache can be cleared (privately)
+by setting "_myVarName_cached" to false.
+
+As with "getter", if the type is an array, the getter automatically
+returns a shallow ".dup" (for safety).
+
+As with any getter in D1, care should be taken when using this for
+reference types, as there is no general way to prevent a caller from
+changing the data pointed to by the cached reference.
+
+Usage:
+
+----
+mixin(getterLazy!(int, "myVar"));
+private int _myVar_gen()
+{
+	// Ordinarily, this function would be more complex
+	return 7;
+}
+
+mixin(getterLazy!(char[], "str", "customGenFunc"));
+private char[] customGenFunc()
+{
+	return "Hello";
+}
+----
+
+Turns Into:
+
+----
+private int _myVar;
+private bool _myVar_cached = false;
+public int myVar() {
+	if(!_myVar_cached) {
+		_myVar = _myVar_gen();
+		_myVar_cached = true;
+	}
+	return _myVar;
+}
+private int _myVar_gen()
+{
+	// Ordinarily, this function would be more complex
+	return 7;
+}
+
+private char[] _str;
+private bool _str_cached = false;
+public char[] str() {
+	if(!_str_cached) {
+		_str = customGenFunc();
+		_str_cached = true;
+	}
+	return _str.dup;
+}
+private char[] customGenFunc()
+{
+	return "Hello";
+}
+
+----
+*/
+template getterLazy(varType, char[] name, char[] genFunc="")
+{
+	const char[] getterLazy =
+		"\n"~
+		"private "~varType.stringof~" _"~name~";\n"~
+		"private bool _"~name~"_cached = false;\n"~
+		"public "~varType.stringof~" "~name~"() {\n"~
+		"	if(!_"~name~"_cached) {\n"~
+		"		_"~name~" = "~(genFunc!=""?genFunc:"_"~name~"_gen")~"();\n"~
+		"		_"~name~"_cached = true;\n"~
+		"	}\n"~
+		"	return _"~name~(isAnyArrayType!(varType)?".dup":"")~";\n"~
+		"}\n";
+
+	//pragma(msg, "getterLazy: " ~ getterLazy);
 }
 
