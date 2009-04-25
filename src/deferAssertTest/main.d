@@ -12,7 +12,7 @@ unittest
 {
 	int foo = 2;
 	char[] bar = "hello";
-	
+
     // Improvement to mixin syntax would be nice.
 	// Also, my editor doesn't know that backticks indicate a string,
 	// so it's still properly highlighted as code :)
