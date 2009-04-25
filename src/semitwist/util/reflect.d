@@ -60,3 +60,11 @@ template PreventStaticArray(T)
 	else
 		private alias T PreventStaticArray;
 }
+
+template callableExists(T)
+{
+	static if(is(T) && isCallableType(typeof(T)))
+		const bool callableExists = true;
+	else
+		const bool callableExists = false;
+}

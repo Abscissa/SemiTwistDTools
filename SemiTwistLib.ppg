@@ -1,1 +1,1 @@
-<Workspace name="SemiTwist Library"><Project path="semitwist.pnproj"></Project><Project path="cmdparsertest.pnproj"></Project><Project path="nonFatalAssertTest.pnproj"></Project></Workspace>
+<Workspace name="SemiTwist Library"><Project path="semitwist.pnproj"></Project><Project path="cmdparsertest.pnproj"></Project><Project path="deferAssertTest.pnproj"></Project></Workspace>

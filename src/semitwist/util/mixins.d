@@ -138,10 +138,10 @@ Turns Into:
 
 ----
 int myVar=100;
-Stdout.formatln("myVar: {}", myVar);
-Stdout.formatln("   myVar-1 : {}",   myVar-1 );
-Stdout.formatln("min(4,7): {}", min(4,7));
-Stdout.formatln("max(4,7): {}", max(4,7));
+Stdout.formatln("{}: {}", "myVar", myVar);
+Stdout.formatln("{}: {}", "   myVar-1 ",   myVar-1 );
+Stdout.formatln("{}: {}", "min(4,7)", min(4,7));
+Stdout.formatln("{}: {}", "max(4,7)", max(4,7));
 ----
 
 Outputs:
@@ -166,39 +166,85 @@ template traceVal(values...)
 		const char[] traceVal = "";
 	else
 		const char[] traceVal =
-			"Stdout.formatln(\""~values[0].stringof[1..$-1]~": {}\", "~values[0].stringof[1..$-1]~");"
+			"Stdout.formatln(\"{}: {}\", \""~values[0].stringof[1..$-1]~"\", "~values[0].stringof[1..$-1]~");"
 			~ traceVal!(values[1..$]);
 }
-/+
-char[] traceVal(char[] varName/*, uint nameLength=0*/)
+
+/**
+Easy way to output file/line. Useful for debugging.
+
+Usage:
+
+----
+mixin(trace!());
+funcSuspectedOfCrashing()
+mixin(trace!("--EASY TO VISUALLY GREP--"));
+theRealCauseOfCrash()
+mixin(trace!());
+----
+
+Turns Into:
+
+----
+Stdout.formatln("{}({}): trace", __FILE__, __LINE__);
+funcSuspectedOfCrashing()
+Stdout.formatln("{}{}({}): trace", "--EASY TO VISUALLY GREP--", __FILE__, __LINE__);
+theRealCauseOfCrash()
+Stdout.formatln("{}({}): trace", __FILE__, __LINE__);
+----
+
+Example Output:
+
+----
+C:\path\file.d(1): trace
+--EASY TO VISUALLY GREP--: C:\path\file.d(3): trace
+{segfault!}
+----
+*/
+template trace(char[] prefix="")
 {
-	//TODO: Find way to convert nameLength to string at compile time
-//	return "Stdout.formatln(\"" ~ varName ~ ": {," ~ toString(-nameLength) ~ "}\", " ~ varName ~ ");";
-//	return "Stdout.formatln(\"" ~ varName ~ ": {,-" ~ nameLength ~ "}\", " ~ varName ~ ");";
-	return "Stdout.formatln(\"" ~ varName ~ ": {}\", " ~ varName ~ ");";
-
-	// Using pad() at compile-time causes an out-of-memory error
-	//return "Stdout.formatln(\"" ~ pad(varName ~ ":", 20u+1u, false) ~ " {}\", " ~ varName ~ ");";
-
-/*	auto format = new Layout!(char)();
-	// Stdout.formatln("[varName]: {}", [varName]);
-	// "Stdout.formatln(\"{,} {{}\", {});", varName ~ ":", varName
-//	return format("Stdout.formatln(\"{,-" ~ nameLength ~ "} {{}\", {});", varName ~ ":", varName);
-	return format("Stdout.formatln(\"{}: {{}\", {});", varName, varName);
-*/}
-
-char[] traceVal(char[][] varNames/*, uint nameLength=0*/)
-{
-	char[] ret = "";
-	//int maxLen = maxLength(varNames);
-	//auto maxLen = nameLength;
-	
-	foreach(char[] name; varNames)
-		ret ~= traceVal(name/*, maxLen*/);
-
-	return ret;
+	static if(prefix=="")
+		const char[] trace =
+			`Stdout.formatln("{}({}): trace", __FILE__, __LINE__);`;
+	else
+		const char[] trace =
+			`Stdout.formatln("{}: {}({}): trace", `~prefix.stringof~`, __FILE__, __LINE__);`;
+	//pragma(msg, "trace: " ~ trace);
 }
-+/
+
+//TODO: Make something like this:
+/*
+// Simon Kjaeraas
+import std.stdio;
+import std.traits;
+
+template _debug(alias f, int line = __LINE__, string file = __FILE__)
+{
+	ReturnType!(f) _debug(ParameterTypeTuple!(f) u)
+	{
+		writefln("%s(%d) executed.", file, line);
+		return f(u);
+	}
+}
+
+
+Usage:
+
+_debug(function)(parameters);
+*/
+/*
+// Doesn't work, __FILE__ and __LINE__ evaluated here, not at instantiation
+import tango.io.Stdout;
+import tango.core.Traits;
+template _trace(alias f, int line = __LINE__, char[] file = __FILE__)
+{
+	ReturnTypeOf!(f) _trace(ParameterTupleOf!(f) u)
+	{
+		Stdout.formatln("{}({}): Executing", file, line);
+		return f(u);
+	}
+}
+*/
 
 /**
 Useful in class/struct declarations for DRY.
@@ -273,6 +319,13 @@ the value (by calling "_myVarName_gen()") and caches it. On subsequent
 calls, the cached value is returned. The cache can be cleared (privately)
 by setting "_myVarName_cached" to false.
 
+Example use-case: If you have a property created by getter() and want
+to change the "get" from a trivial "return _blah" to a manual function, 
+you will most likely just simply switch from getter to getterLazy.
+
+If you don't want the value to ever be cached, just set "_myVarName_cached"
+to false within your "_myVarName_gen()" function.
+
 As with "getter", if the type is an array, the getter automatically
 returns a shallow ".dup" (for safety).
 
@@ -304,8 +357,8 @@ private int _myVar;
 private bool _myVar_cached = false;
 public int myVar() {
 	if(!_myVar_cached) {
-		_myVar = _myVar_gen();
 		_myVar_cached = true;
+		_myVar = _myVar_gen();
 	}
 	return _myVar;
 }
@@ -319,8 +372,8 @@ private char[] _str;
 private bool _str_cached = false;
 public char[] str() {
 	if(!_str_cached) {
-		_str = customGenFunc();
 		_str_cached = true;
+		_str = customGenFunc();
 	}
 	return _str.dup;
 }
@@ -331,16 +384,29 @@ private char[] customGenFunc()
 
 ----
 */
+//TODO? Make another version that doesn't need/use _myVar_cached
+//TODO? Better name for this?
 template getterLazy(varType, char[] name, char[] genFunc="")
 {
 	const char[] getterLazy =
 		"\n"~
+		"static if(!is(typeof(_"~name~"_gen)==function))\n"~
+		`	static assert(false, "'getterLazy!(`~varType.stringof~`, \"`~name~`\")' requires function '`~varType.stringof~` _`~name~`_gen()' to be defined");`~"\n"~
+
+		// Blocked by DMD Bug #2885
+		//"static if(!is(ReturnTypeOf!(_"~name~"_gen):"~varType.stringof~"))\n"~
+		//`	static assert(false, "'getterLazy!(`~varType.stringof~`, \"`~name~`\")' requires function '_`~name~`_gen' to return type '`~varType.stringof~`' (or a compatible type), not type '"~ReturnTypeOf!(_`~name~`_gen).stringof~"'");`~"\n"~
+
+		// Forward reference issues prevent this too
+		//"static if(!ParameterTupleOf!(_line_gen).length==0)\n"~
+		//`	static assert(false, "'getterLazy!(`~varType.stringof~`, \"`~name~`\")' requires an overload of function '_`~name~`_gen' that takes no arguments");`~"\n"~
+
 		"private "~varType.stringof~" _"~name~";\n"~
 		"private bool _"~name~"_cached = false;\n"~
 		"public "~varType.stringof~" "~name~"() {\n"~
 		"	if(!_"~name~"_cached) {\n"~
-		"		_"~name~" = "~(genFunc!=""?genFunc:"_"~name~"_gen")~"();\n"~
 		"		_"~name~"_cached = true;\n"~
+		"		_"~name~" = "~(genFunc!=""?genFunc:"_"~name~"_gen")~"();\n"~
 		"	}\n"~
 		"	return _"~name~(isAnyArrayType!(varType)?".dup":"")~";\n"~
 		"}\n";

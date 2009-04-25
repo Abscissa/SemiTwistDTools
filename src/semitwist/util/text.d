@@ -8,7 +8,9 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 
 module semitwist.util.text;
 
+import tango.core.Array;
 import tango.io.Stdout;
+import tango.text.Unicode;
 import tango.text.Util;
 import tango.text.convert.Layout;
 
@@ -266,7 +268,7 @@ T[] unescapeChar(T:wchar)(T[] str, T[] escapeSequence) {return _unescapeChar(str
 T[] unescapeChar(T:dchar)(T[] str, T[] escapeSequence) {return _unescapeChar(str, escapeSequence);}
 private T[] _unescapeChar(T)(T[] str, T[] escapeSequence)
 {
-	T[] ret = str;
+	T[] ret = str.dup;
 	ret = substitute(ret, escapeSequence, escapeSequence[$-1..$]);
 	return ret;
 }
@@ -287,7 +289,7 @@ T[] unescapeSemiTwist(T:wchar)(T[] str) {return _unescapeSemiTwist(str);}
 T[] unescapeSemiTwist(T:dchar)(T[] str) {return _unescapeSemiTwist(str);}
 private T[] _unescapeSemiTwist(T)(T[] str)
 {
-	T[] ret = str;
+	T[] ret = str.dup;
 	
 	ret = substitute(ret, escSequence_SemiTwist_Digit!(T)(),          digitChars!(T)());
 	ret = substitute(ret, escSequence_SemiTwist_UppercaseAlpha!(T)(), uppercaseLetters!(T)());
@@ -341,4 +343,11 @@ T[] stformat(T)(T[] formatStr, ...)
 T[] stformatln(T)(T[] formatStr, ...)
 {
 	return _stformat!(T)(_arguments, _argptr, formatStr)~"\n";
+}
+
+T[] stripNonPrintable(T)(T[] str)
+{
+	T[] ret = str.dup;
+	auto numRemaining = ret.removeIf( (T c){return !isPrintable(c);} );
+	return ret[0..numRemaining];
 }
