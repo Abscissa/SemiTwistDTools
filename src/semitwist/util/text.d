@@ -306,43 +306,43 @@ private T[] _unescapeSemiTwist(T)(T[] str)
 	return ret;
 }
 
-private Layout!(char)  _stformatc;
-private Layout!(wchar) _stformatw;
-private Layout!(dchar) _stformatd;
+private Layout!(char)  _sformatc;
+private Layout!(wchar) _sformatw;
+private Layout!(dchar) _sformatd;
 static this()
 {
-	_stformatc = new Layout!( char)();
-	_stformatw = new Layout!(wchar)();
-	_stformatd = new Layout!(dchar)();
+	_sformatc = new Layout!( char)();
+	_sformatw = new Layout!(wchar)();
+	_sformatd = new Layout!(dchar)();
 }
 
-private template _stformat(T)
+private template _sformat(T)
 {
 	static assert(
 		is(T==char)||is(T==wchar)||is(T==dchar),
-		"T in stformat(T) is '"~T.stringof~"', but must be char, wchar or dchar"
+		"T in sformat(T) is '"~T.stringof~"', but must be char, wchar or dchar"
 	);
-	T[] _stformat(TypeInfo[] arguments, ArgList args, T[] formatStr)
+	T[] _sformat(TypeInfo[] arguments, ArgList args, T[] formatStr)
 	{
 		static if(is(T==char))
-			return _stformatc(arguments, args, formatStr);
+			return _sformatc(arguments, args, formatStr);
 		else static if(is(T==wchar))
-			return _stformatw(arguments, args, formatStr);
+			return _sformatw(arguments, args, formatStr);
 		else
-			return _stformatd(arguments, args, formatStr);
+			return _sformatd(arguments, args, formatStr);
 	}
 }
 
 /// Suggested usage:
-///   "Hello {}!".stformat("World");
-T[] stformat(T)(T[] formatStr, ...)
+///   "Hello {}!".sformat("World");
+T[] sformat(T)(T[] formatStr, ...)
 {
-	return _stformat!(T)(_arguments, _argptr, formatStr);
+	return _sformat!(T)(_arguments, _argptr, formatStr);
 }
 
-T[] stformatln(T)(T[] formatStr, ...)
+T[] sformatln(T)(T[] formatStr, ...)
 {
-	return _stformat!(T)(_arguments, _argptr, formatStr)~"\n";
+	return _sformat!(T)(_arguments, _argptr, formatStr)~"\n";
 }
 
 T[] stripNonPrintable(T)(T[] str)

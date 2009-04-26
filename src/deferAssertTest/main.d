@@ -1,4 +1,4 @@
-module nonFatalAssertTest.main;
+module deferAssertTest.main;
 
 import semitwist.util.deferAssert;
 

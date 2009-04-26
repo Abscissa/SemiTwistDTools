@@ -78,7 +78,7 @@ class XMLFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
 	
 	char[] processAttribute(char[] name, char[] value, int nodeDepth)
 	{
-		return ` {}="{}"`.stformat(name.toValidName(), value);
+		return ` {}="{}"`.sformat(name.toValidName(), value);
 	}
 	
 	char[] processNode(char[] name, char[] attributes, char[] content, int nodeDepth)
@@ -91,7 +91,7 @@ class XMLFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
 			"{4}"
 			"{0}</{2}>{1}";
 			
-		return formatStr.stformat(fullIndent(nodeDepth), newline(), name.toValidName(), attributes, content);
+		return formatStr.sformat(fullIndent(nodeDepth), newline(), name.toValidName(), attributes, content);
 	}
 	
 	char[] reduceAttributes(char[][] attributes, int nodeDepth)
@@ -145,7 +145,7 @@ class JSONFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
 	
 	char[] processPair(char[] name, char[] content)
 	{
-		return "{}: {}".stformat(name.processString(), content);
+		return "{}: {}".sformat(name.processString(), content);
 	}
 	
 	char[] processComment(char[] content, int nodeDepth)
@@ -182,7 +182,7 @@ class JSONFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
 			"{2}{{{1}"
 			"{3}"
 			"{0}}"
-			.stformat
+			.sformat
 			(
 				fullIndent(nodeDepth), newline,
 				name, attrAndContent
@@ -237,7 +237,7 @@ class TreeNodeData : TreeNodeBase
 		static if(is(T:char[]))
 			dataStr = data;
 		else
-			dataStr = stformat("{}", data);
+			dataStr = sformat("{}", data);
 		
 		this.data = dataStr;
 	}
@@ -301,12 +301,12 @@ class TreeNode : TreeNodeBase
 		static if(is(T:char[]))
 			nameStr = name;
 		else
-			nameStr = stformat("{}", name);
+			nameStr = "{}".sformat(name);
 			
 		static if(is(U:char[]))
 			valueStr = value;
 		else
-			valueStr = stformat("{}", value);
+			valueStr = "{}".sformat(value);
 			
 		attributes[nameStr] = valueStr;
 		return this;
@@ -349,8 +349,8 @@ class TreeNode : TreeNodeBase
 		
 		auto attrStr =
 			attributes
-			.mapAAtoA((AttributeType a, AttributeType b) {
-				return formatter.processAttribute(a, b, nodeDepth);
+			.mapAAtoA((AttributeType val, AttributeType key) {
+				return formatter.processAttribute(key, val, nodeDepth);
 			})
 			.reduceAttributes(nodeDepth);
 		

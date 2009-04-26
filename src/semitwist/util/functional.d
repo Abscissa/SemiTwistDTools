@@ -177,7 +177,6 @@ unittest
 
 	// Map assoc array using dg literal
 	result = map(aa, (int a, char b){return a*10;});
-//	result['a'] = 5;
 	// Workaround for DMD Bug #1671
 	//mixin(deferEnsure!(`result`, `_ == ['a':10,'b':20,'c':30]`));
 	mixin(deferEnsure!(`result.length`, `_ == 3`));
@@ -191,8 +190,6 @@ unittest
 	mixin(deferEnsure!(`result.values`, `_ == [10,20,30]`));
 
 	// mapAAtoA
-//	mixin(deferAssert!(`mapAAtoA(aa, (int a, char b){return a*10;}) == [10,20,30]`));
-//	mixin(deferAssert!(`mapAAtoA!("a*10")(aa) == [10,20,30]`));
 	mixin(deferEnsure!(`mapAAtoA(aa, (int a, char b){return a*10;})`, `_ == [10,20,30]`));
 	mixin(deferEnsure!(`mapAAtoA!("a*10")(aa)`, `_ == [10,20,30]`));
 

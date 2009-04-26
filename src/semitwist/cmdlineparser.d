@@ -196,7 +196,7 @@ class Arg
 		void ensureValidName(char[] name)
 		{
 			if(!CmdLineParser.isValidArgName(name))
-				throw new Exception(`Tried to define an invalid arg name: "{}". Arg names must be "[a-zA-Z0-9_?]+"`.stformat(name));
+				throw new Exception(`Tried to define an invalid arg name: "{}". Arg names must be "[a-zA-Z0-9_?]+"`.sformat(name));
 		}
 		ensureValidName(name);
 		ensureValidName(altName);
@@ -289,7 +289,7 @@ class CmdLineParser
 	private void addToArgLookup(char[] name, Arg argDef)
 	{
 		if(name in argLookup)
-			throw new Exception(`Argument name "{}" defined more than once.`.stformat(name));
+			throw new Exception(`Argument name "{}" defined more than once.`.sformat(name));
 
 		argLookup[name] = argDef;
 	}
@@ -335,7 +335,7 @@ class CmdLineParser
 
 		void HandleMalformedArgument()
 		{
-			_errorMsg ~= `Invalid value: "{}"`.stformatln(cmdArg);
+			_errorMsg ~= `Invalid value: "{}"`.sformatln(cmdArg);
 			ret = ParseArgResult.Error;
 		}
 		
@@ -459,7 +459,7 @@ class CmdLineParser
 		}
 		else
 		{
-			_errorMsg ~= `Unknown switch: "{}"`.stformatln(cmdArg);
+			_errorMsg ~= `Unknown switch: "{}"`.sformatln(cmdArg);
 			ret = ParseArgResult.NotFound;
 		}
 		
@@ -492,7 +492,7 @@ class CmdLineParser
 				}
 				else
 				{
-					_errorMsg ~= `Unexpected value: "{}"`.stformatln(argStr);
+					_errorMsg ~= `Unexpected value: "{}"`.sformatln(argStr);
 					error = true;
 					continue;
 				}
@@ -511,7 +511,7 @@ class CmdLineParser
 				break;
 				
 			default:
-				throw new Exception("Unexpected ParseArgResult: ({})".stformat(result));
+				throw new Exception("Unexpected ParseArgResult: ({})".sformat(result));
 			}
 		}
 		
@@ -530,7 +530,7 @@ class CmdLineParser
 		{
 			if(arg.isRequired && !arg.isSet)
 			{
-				_errorMsg ~= `Missing switch: {} ({})`.stformatln(arg.name, arg.desc);
+				_errorMsg ~= `Missing switch: {} ({})`.sformatln(arg.name, arg.desc);
 				error = true;
 			}
 		}
@@ -591,7 +591,7 @@ class CmdLineParser
 		
 		ret ~= "Switches: (prefixes can be '/', '-' or '--')\n";
 		if(switchlessArgExists)
-			ret ~= "Switchless arg: {} ({})\n".stformat(args[switchlessArg].name, args[switchlessArg].desc);
+			ret ~= "Switchless arg: {} ({})\n".sformat(args[switchlessArg].name, args[switchlessArg].desc);
 
 		foreach(Arg arg; args)
 		{
@@ -603,14 +603,14 @@ class CmdLineParser
 
 			char[] defaultVal;
 			if(valAsInt)
-				defaultVal = "{}".stformat(valAsInt());
+				defaultVal = "{}".sformat(valAsInt());
 			else if(valAsBool)
 				defaultVal = valAsBool() ? "true" : "";
 			else if(valAsStr)
-				defaultVal = valAsStr() == "" ? "" : `"{}"`.stformat(valAsStr());
+				defaultVal = valAsStr() == "" ? "" : `"{}"`.sformat(valAsStr());
 			
 			char[] defaultValStr = defaultVal == "" ?
-				"" : " (default: {})".stformat(defaultVal);
+				"" : " (default: {})".sformat(defaultVal);
 				
 			char[] requiredStr = arg.isRequired ?
 				"(Required) " : "";
@@ -623,8 +623,8 @@ class CmdLineParser
 			
 			char[] switchless = arg.isSwitchless? " (Switch name can be omitted)" : "";
 	
-			char[] nameColumnWidthStr = "{}".stformat(nameColumnWidth);
-			*argStr ~= stformat("{}{,-"~nameColumnWidthStr~"}{}{}\n",
+			char[] nameColumnWidthStr = "{}".sformat(nameColumnWidth);
+			*argStr ~= sformat("{}{,-"~nameColumnWidthStr~"}{}{}\n",
 			                    indent, argName~" ", requiredStr~arg.desc~switchless, defaultValStr);
 		}
 		if(basicArgStr != "") basicArgStr = "\nBasic: \n"~basicArgStr;
@@ -659,17 +659,17 @@ class CmdLineParser
 			char[] advancedStr;
 
 			if(valAsInt)
-				defaultVal = "{}".stformat(valAsInt());
+				defaultVal = "{}".sformat(valAsInt());
 			else if(valAsInts)
-				defaultVal = "{}".stformat(valAsInts());
+				defaultVal = "{}".sformat(valAsInts());
 			else if(valAsBool)
-				defaultVal = "{}".stformat(valAsBool());
+				defaultVal = "{}".sformat(valAsBool());
 			else if(valAsBools)
-				defaultVal = "{}".stformat(valAsBools());
+				defaultVal = "{}".sformat(valAsBools());
 			else if(valAsStr)
-				defaultVal = `"{}"`.stformat(valAsStr());
+				defaultVal = `"{}"`.sformat(valAsStr());
 			else if(valAsStrs)  //TODO: Change this one from [ blah ] to [ "blah" ]
-				defaultVal = "{}".stformat(valAsStrs());
+				defaultVal = "{}".sformat(valAsStrs());
 
 			defaultVal    = arg.isRequired   ? "" : ", Default: "~defaultVal;
 			requiredStr   = arg.isRequired   ? "Required" : "Optional";
@@ -678,10 +678,10 @@ class CmdLineParser
 			advancedStr   = arg.isAdvanced   ? ", Advanced" : ", Basic";
 			
 			*argStr ~= "\n";
-			*argStr ~= stformat("{} ({}), {}{}{}{}\n",
-			                    argName, getArgTypeName(arg),
-							    requiredStr, switchlessStr, toLowerStr, advancedStr, defaultVal);
-			*argStr ~= stformat("{}\n", arg.desc);
+			*argStr ~= sformat("{} ({}), {}{}{}{}\n",
+			                   argName, getArgTypeName(arg),
+							   requiredStr, switchlessStr, toLowerStr, advancedStr, defaultVal);
+			*argStr ~= sformat("{}\n", arg.desc);
 		}
 		ret ~= basicArgStr;
 		ret ~= advancedArgStr;
