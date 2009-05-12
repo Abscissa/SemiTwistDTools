@@ -212,6 +212,54 @@ template trace(char[] prefix="")
 	//pragma(msg, "trace: " ~ trace);
 }
 
+/**
+Wraps a string mixin and displays the string at compile-time. Useful for debugging.
+
+Usage:
+
+----
+template defineFloat(char[] name)
+{ const char[] defineFloat = "float "~name~";"; }
+char[] defineInt(char[] name, char[] value)
+{ return "int "~name~"="~value";"; }
+
+mixin(traceMixin!("defineFloat!", `"myFloat"`));
+mixin(traceMixin!("defineInt!", `"myInt", 5`));
+----
+
+Turns Into:
+
+----
+template defineFloat(char[] name)
+{ const char[] defineFloat = "float "~name~";"; }
+char[] defineInt(char[] name, char[] value)
+{ return "int "~name~"="~value";"; }
+
+float myFloat;
+pragma(msg, "defineFloat:\n float myFloat;");
+int myInt=5;
+pragma(msg, "defineInt:\n int myInt=5;");
+----
+
+Compiler Output:
+
+----
+defineFloat:
+float myFloat;
+defineInt:
+int myInt=5;
+----
+*/
+
+template traceMixin(char[] name, char[] args)
+{
+	const char[] traceMixin = 
+		`pragma(msg, "` ~ name ~ `: \n"~`~name~`(`~args~`));`~"\n"~
+		"mixin("~name~"("~args~"));\n";
+	pragma(msg, "traceMixin: "~traceMixin);
+}
+
+
 //TODO: Make something like this:
 /*
 // Simon Kjaeraas
