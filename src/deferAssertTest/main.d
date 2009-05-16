@@ -1,3 +1,15 @@
+// SemiTwist Library: Defer Assert Test
+// Written in the D programming language.
+
+/** 
+Author:
+$(WEB www.semitwist.com, Nick Sabalausky)
+
+Uses:
+- DMD 1.043
+- Tango 0.99.8
+*/
+
 module deferAssertTest.main;
 
 import semitwist.util.deferAssert;

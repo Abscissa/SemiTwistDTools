@@ -14,6 +14,8 @@ module semitwist.util.deferAssert;
 import tango.io.Stdout;
 import tango.util.Convert;
 
+import semitwist.util.text;
+
 /**
 Sounds like a contradiction of terms, but this is just
 intended to allow unittests to output ALL failures instead

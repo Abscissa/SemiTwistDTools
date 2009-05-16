@@ -9,8 +9,10 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 module semitwist.util.mixins;
 
 import tango.core.Traits;
+import tango.io.Stdout;
 
 import semitwist.util.reflect;
+import semitwist.util.text;
 
 /**
 Useful in constructors for DRY.
@@ -158,16 +160,18 @@ max(4,7): 7
 //TODO: Make nameLength work by using Layout.format (at runtime)
 //      on data passed to Stdout.formatln
 //      (ie, align name/value)
-//TODO?: Find way to convert nameLength to string at compile time
 /// 'values' should be strings
 template traceVal(values...)
 {
 	static if(values.length == 0)
 		const char[] traceVal = "";
 	else
+	{
 		const char[] traceVal =
-			"Stdout.formatln(\"{}: {}\", \""~values[0].stringof[1..$-1]~"\", "~values[0].stringof[1..$-1]~");"
+			"Stdout.formatln(\"{}: {}\", "~values[0].stringof~", "~unescape(values[0].stringof, EscapeSequence.DoubleQuoteString)~");"
 			~ traceVal!(values[1..$]);
+		//pragma(msg, "traceVal: "~traceVal);
+	}
 }
 
 /**
@@ -256,9 +260,8 @@ template traceMixin(char[] name, char[] args)
 	const char[] traceMixin = 
 		`pragma(msg, "` ~ name ~ `: \n"~`~name~`(`~args~`));`~"\n"~
 		"mixin("~name~"("~args~"));\n";
-	pragma(msg, "traceMixin: "~traceMixin);
+	//pragma(msg, "traceMixin: "~traceMixin);
 }
-
 
 //TODO: Make something like this:
 /*
@@ -462,3 +465,54 @@ template getterLazy(varType, char[] name, char[] genFunc="")
 	//pragma(msg, "getterLazy: " ~ getterLazy);
 }
 
+/**
+Inserts a compile-time check that ensures a given type is a character type.
+(ie, char, wchar, or dchar)
+
+Usage:
+
+----
+void funcForStringsOnly(T)(T[] str)
+{
+	//Note, the second param is optional
+	mixin(ensureCharType!("T", "funcForStringsOnly"));
+	//Do stuff
+	return str;
+}
+funcForStringsOnly("hello"); // Ok
+funcForStringsOnly([cast(int)1,2,3]); // Compile error
+----
+
+Turns Into:
+
+----
+void funcForStringsOnly(T)(T[] str)
+{
+	static assert(
+		is(T==char) || is(T==wchar) || is(T==dchar),
+		"From 'funcForStringsOnly': 'T' must be char, wchar or dchar, not '"~T.stringof~"'"
+	);`;
+	//Do stuff
+	return str;
+}
+funcForStringsOnly("hello"); // Ok
+funcForStringsOnly([cast(int)1,2,3]); // Compile error
+----
+
+Compiler Output:
+
+----
+Error: static assert  "From 'funcForStringsOnly': 'T' must be char, wchar or dchar, not 'int'"
+----
+*/
+
+template ensureCharType(char[] nameOfT, char[] nameOfCaller="")
+{
+	const char[] ensureCharType = 
+		`static assert(`~"\n"~
+		`	is(`~nameOfT~`==char) || is(`~nameOfT~`==wchar) || is(`~nameOfT~`==dchar),`~"\n"~
+		`	"`~(nameOfCaller==""?"":"From '"~nameOfCaller~"': ")~`'`~nameOfT~`' must be char, wchar or dchar, not '"~`~nameOfT~`.stringof~"'"`~"\n"~
+		`);`;
+
+	//pragma(msg, "ensureCharType: " ~ ensureCharType);
+}

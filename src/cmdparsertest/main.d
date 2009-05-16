@@ -4,6 +4,10 @@
 /** 
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
+
+Uses:
+- DMD 1.043
+- Tango 0.99.8
 */
 
 module cmdparsertest.main;

@@ -14,6 +14,9 @@ import tango.text.Unicode;
 import tango.text.Util;
 import tango.text.convert.Layout;
 
+import semitwist.util.ctfe;
+import semitwist.util.mixins;
+
 /**
 Anything in "data" must be doubly escaped.
 
@@ -55,11 +58,11 @@ template multiTypeString(char[] name, char[] data, char[] access="public")
 // Note: Almost useless. The compiler doesn't report the file/line where the
 //       template function that called this was instantiated.
 //       (TODO: Maybe I could fix that with templates...? No, I can't.)
-private char[] ensureCharType(char[] typeName, char[] msg="")
+/*private char[] ensureCharType(char[] typeName, char[] msg="")
 {
 	return "static assert(is("~typeName~" == char) || is("~typeName~" == wchar) || is("~typeName~" == dchar), \""~msg~"\");";
 }
-
+*/
 mixin(multiTypeString!("whitespaceChars", r" \n\r\t\v\f"));
 mixin(multiTypeString!("emptyString", r""));
 mixin(multiTypeString!("lowerLetterA", r"a"));
@@ -176,9 +179,9 @@ mixin(multiTypeString!("macEOL",  r"\r"));
 mixin(multiTypeString!("unixEOL", r"\n"));
 mixin(multiTypeString!("tabChar", r"\t"));
 
-version(Windows)   char[] nativeEOL = "\r\n";
-version(Macintosh) char[] nativeEOL = "\r";   // This version string probably isn't right
-version(Linux)     char[] nativeEOL = "\n";   // Not sure if this version string is right
+version(Windows) char[] nativeEOL = "\r\n";
+version(OSX)     char[] nativeEOL = "\r";
+version(linux)   char[] nativeEOL = "\n";
 
 static this()
 {
@@ -211,43 +214,62 @@ void toWinEOL(T)(ref T[] str)
 
 T[] toNativeEOL(T)(T[] str)
 {
-	version(Windows)   toWinEOL(str);
-	version(Macintosh) toMacEOL(str);  // This version string probably isn't right
-	version(Linux)     toUnixEOL(str); // Not sure if this version string is right
+	version(Windows) toWinEOL(str);
+	version(OSX)     toMacEOL(str);
+	version(linux)   toUnixEOL(str);
 	return str;
 }
 
 T[] toNativeEOLFromUnix(T)(T[] str)
 {
-	     version(Windows)   return str.toNativeEOL();
-	else version(Macintosh) return str.toNativeEOL();  // This version string probably isn't right
+	     version(Windows) return str.toNativeEOL();
+	else version(OSX)     return str.toNativeEOL();
 	else return str;
 }
 
 T[] toNativeEOLFromWin(T)(T[] str)
 {
-	     version(Macintosh) return str.toNativeEOL();  // This version string probably isn't right
-	else version(Linux)     return str.toNativeEOL();  // Not sure if this version string is right
+	     version(OSX)   return str.toNativeEOL();
+	else version(linux) return str.toNativeEOL();
 	else return str;
 }
 
 T[] toNativeEOLFromMac(T)(T[] str)
 {
 	     version(Windows) return str.toNativeEOL();
-	else version(Linux)   return str.toNativeEOL();  // Not sure if this is right
+	else version(linux)   return str.toNativeEOL();
 	else return str;
 }
 
 enum EscapeSequence
 {
-	SemiTwist
+	SemiTwist,
+	DoubleQuoteString
 }
 
-T[] unescape(T:char) (EscapeSequence type, T[] str) {return _unescape(type, str);}
-T[] unescape(T:wchar)(EscapeSequence type, T[] str) {return _unescape(type, str);}
-T[] unescape(T:dchar)(EscapeSequence type, T[] str) {return _unescape(type, str);}
-private T[] _unescape(T)(EscapeSequence type, T[] str)
+T[] escape(T)(T[] str, EscapeSequence type)
 {
+	mixin(ensureCharType!("T", "escape"));
+
+	T[] ret;
+	
+	switch(type)
+	{
+	case EscapeSequence.DoubleQuoteString:
+		ret = escapeDoubleQuoteString(str);
+		break;
+		
+	default:
+		throw new Exception("Unsupported EscapeSequence");
+	}
+	
+	return ret;
+}
+
+T[] unescape(T)(T[] str, EscapeSequence type)
+{
+	mixin(ensureCharType!("T", "unescape"));
+
 	T[] ret;
 	
 	switch(type)
@@ -256,18 +278,21 @@ private T[] _unescape(T)(EscapeSequence type, T[] str)
 		ret = unescapeSemiTwist(str);
 		break;
 		
+	case EscapeSequence.DoubleQuoteString:
+		ret = unescapeDoubleQuoteString(str);
+		break;
+		
 	default:
-		throw new Exception("Unknown EscapeSequence");
+		throw new Exception("Unsupported EscapeSequence");
 	}
 	
 	return ret;
 }
 
-T[] unescapeChar(T:char) (T[] str, T[] escapeSequence) {return _unescapeChar(str, escapeSequence);}
-T[] unescapeChar(T:wchar)(T[] str, T[] escapeSequence) {return _unescapeChar(str, escapeSequence);}
-T[] unescapeChar(T:dchar)(T[] str, T[] escapeSequence) {return _unescapeChar(str, escapeSequence);}
-private T[] _unescapeChar(T)(T[] str, T[] escapeSequence)
+T[] unescapeChar(T)(T[] str, T[] escapeSequence)
 {
+	mixin(ensureCharType!("T", "unescapeChar"));
+
 	T[] ret = str.dup;
 	ret = substitute(ret, escapeSequence, escapeSequence[$-1..$]);
 	return ret;
@@ -284,11 +309,10 @@ mixin(multiTypeString!("escSequence_SemiTwist_Caret",                r"\\^"));
 mixin(multiTypeString!("escSequence_SemiTwist_Asterisk",             r"\\*"));
 mixin(multiTypeString!("escSequence_SemiTwist_Plus",                 r"\\+"));
 
-T[] unescapeSemiTwist(T:char) (T[] str) {return _unescapeSemiTwist(str);}
-T[] unescapeSemiTwist(T:wchar)(T[] str) {return _unescapeSemiTwist(str);}
-T[] unescapeSemiTwist(T:dchar)(T[] str) {return _unescapeSemiTwist(str);}
-private T[] _unescapeSemiTwist(T)(T[] str)
+T[] unescapeSemiTwist(T)(T[] str)
 {
+	mixin(ensureCharType!("T", "unescapeSemiTwist"));
+
 	T[] ret = str.dup;
 	
 	ret = substitute(ret, escSequence_SemiTwist_Digit!(T)(),          digitChars!(T)());
@@ -306,6 +330,83 @@ private T[] _unescapeSemiTwist(T)(T[] str)
 	return ret;
 }
 
+/+
+// This stuff (substitute/unescapeChar) won't work at compile-time
+mixin(multiTypeString!("escSequence_DoubleQuoteString_Quote", r"\\\""));
+mixin(multiTypeString!("escSequence_DoubleQuoteString_Backslash", r"\\\\"));
+
+T[] unescapeDoubleQuoteString(T)(T[] str)
+{
+	mixin(ensureCharType!("T", "unescapeDoubleQuoteString"));
+
+	T[] ret = str.dup;
+	
+/*	ret = substitute(ret, escSequence_SemiTwist_Digit!(T)(),          digitChars!(T)());
+	ret = substitute(ret, escSequence_SemiTwist_UppercaseAlpha!(T)(), uppercaseLetters!(T)());
+	ret = substitute(ret, escSequence_SemiTwist_LowercaseAlpha!(T)(), lowercaseLetters!(T)());
+	ret = substitute(ret, escSequence_SemiTwist_Whitespace!(T)(),     whitespaceChars!(T)());
+*/	
+	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_Backslash!(T)());
+	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_OpeningSquareBracket!(T)());
+	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_ClosingSquareBracket!(T)());
+	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_Caret!(T)());
+	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_Asterisk!(T)());
+	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_Plus!(T)());
+	
+	return ret;
+}
++/
+
+T[] unescapeDoubleQuoteString(T)(T[] str)
+{
+	mixin(ensureCharType!("T", "unescapeDoubleQuoteString"));
+
+	T[] ret = str.dup;
+	
+	ret = ctfe_substitute(ret, cast(T[])`\\`, cast(T[])`\`);
+	ret = ctfe_substitute(ret, cast(T[])`\"`, cast(T[])`"`);
+
+	return ret[1..$-1];
+}
+
+T[] escapeDoubleQuoteString(T)(T[] str)
+{
+	mixin(ensureCharType!("T", "escapeDoubleQuoteString"));
+		
+	T[] ret = str.dup;
+	
+	ret = ctfe_substitute!(T)(ret, cast(T[])`\`, cast(T[])`\\`);
+	ret = ctfe_substitute!(T)(ret, cast(T[])`"`, cast(T[])`\"`);
+
+	return `"`~ret~`"`;
+}
+
+/+
+const char[] doubleQuoteTestStr = `"They said \"10 \\ 5 = 2\""`;
+
+pragma(msg, "orig:        "~doubleQuoteTestStr);
+pragma(msg, "unesc:       "~unescapeDoubleQuoteString(doubleQuoteTestStr));
+pragma(msg, "esc:         "~escapeDoubleQuoteString(doubleQuoteTestStr));
+pragma(msg, "esc(unesc):  "~escapeDoubleQuoteString(unescapeDoubleQuoteString(doubleQuoteTestStr)));
+pragma(msg, "unesc(esc):  "~unescapeDoubleQuoteString(escapeDoubleQuoteString(doubleQuoteTestStr)));
+
+pragma(msg, "unesc:       "~unescape(doubleQuoteTestStr, EscapeSequence.DoubleQuoteString));
+pragma(msg, "unesc:       "~doubleQuoteTestStr.unescape(EscapeSequence.DoubleQuoteString));
+
+unittest
+{
+	Stdout.formatln("{}{}", "wchar:       ", unescapeDoubleQuoteString(`"They said \"10 \\ 5 = 2\""`w));
+	Stdout.formatln("{}{}", "dchar:       ", unescapeDoubleQuoteString(`"They said \"10 \\ 5 = 2\""`d));
+//	Stdout.formatln("{}{}", "int:         ", unescapeDoubleQuoteString([cast(int)1,2,3]));
+
+	Stdout.formatln("{}{}", "orig:        ", doubleQuoteTestStr);
+	Stdout.formatln("{}{}", "unesc:       ", unescapeDoubleQuoteString(doubleQuoteTestStr));
+	Stdout.formatln("{}{}", "esc:         ", escapeDoubleQuoteString(doubleQuoteTestStr));
+	Stdout.formatln("{}{}", "esc(unesc):  ", escapeDoubleQuoteString(unescapeDoubleQuoteString(doubleQuoteTestStr)));
+	Stdout.formatln("{}{}", "unesc(esc):  ", unescapeDoubleQuoteString(escapeDoubleQuoteString(doubleQuoteTestStr)));
+}
++/
+
 private Layout!(char)  _sformatc;
 private Layout!(wchar) _sformatw;
 private Layout!(dchar) _sformatd;
@@ -316,21 +417,16 @@ static this()
 	_sformatd = new Layout!(dchar)();
 }
 
-private template _sformat(T)
+private T[] _sformat(T)(TypeInfo[] arguments, ArgList args, T[] formatStr)
 {
-	static assert(
-		is(T==char)||is(T==wchar)||is(T==dchar),
-		"T in sformat(T) is '"~T.stringof~"', but must be char, wchar or dchar"
-	);
-	T[] _sformat(TypeInfo[] arguments, ArgList args, T[] formatStr)
-	{
-		static if(is(T==char))
-			return _sformatc(arguments, args, formatStr);
-		else static if(is(T==wchar))
-			return _sformatw(arguments, args, formatStr);
-		else
-			return _sformatd(arguments, args, formatStr);
-	}
+	mixin(ensureCharType!("T", "_sformat"));
+
+	static if(is(T==char))
+		return _sformatc(arguments, args, formatStr);
+	else static if(is(T==wchar))
+		return _sformatw(arguments, args, formatStr);
+	else
+		return _sformatd(arguments, args, formatStr);
 }
 
 /// Suggested usage:

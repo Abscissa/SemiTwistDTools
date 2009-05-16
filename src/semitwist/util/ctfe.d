@@ -8,6 +8,8 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 
 module semitwist.util.ctfe;
 
+import tango.io.Stdout;
+
 // Intended for CTFE, but tends to cause Out Of Memory error
 private char[] pad(char[] str, uint length, char padChar=' ')
 {
@@ -55,7 +57,7 @@ size_t ctfe_find(T)(T[] collection, T elem, size_t start=0)
 	return collection.length;
 }
 
-
+//TODO: Test on wchar/dchar
 T[] ctfe_join(T)(T[][] strs, T[] delim)
 {
 	T[] value = "";
@@ -63,6 +65,44 @@ T[] ctfe_join(T)(T[][] strs, T[] delim)
 	foreach(T[] str; strs)
 		value ~= (value.length==0?"":delim) ~ str;
 	
+	return value;
+}
+
+template my_traceVal(values...)
+{
+	static if(values.length == 0)
+		const char[] my_traceVal = "";
+	else
+	{
+		const char[] my_traceVal =
+			"Stdout.formatln(\"{}: {}\", \""~values[0].stringof[1..$-1]~"\", "~values[0].stringof[1..$-1]~");"
+			~ my_traceVal!(values[1..$]);
+
+/*
+		pragma(msg, "values[0].stringof: "~values[0].stringof);
+		pragma(msg, "traceVal: "~traceVal);
+*/	}
+}
+
+T[] ctfe_substitute(T)(T[] str, T[] match, T[] replace)
+{
+	T[] value = "";
+	
+	if(str.length < match.length)
+		return str.dup;
+	
+	int i;
+	for(i=0; i<=str.length-match.length; i++)
+	{
+		if(str[i..i+match.length] == match)
+		{
+			value ~= replace;
+			i += match.length-1;
+		}
+		else
+			value ~= str[i];
+	}
+	value ~= str[i..$];
 	return value;
 }
 
