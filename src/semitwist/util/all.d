@@ -16,7 +16,7 @@ In SVN comments:
 */
 
 // DMD/STC output capturing for Programmer's Notepad:
-// ((.)*: )?(warning - )?((.)*@)?%f\(%l(:%c)?\):
+// ((.)*: )?(warning - )?([ \t]*instantiatied in )?((.)*@)?%f\(%l(:%c)?\):
 
 module semitwist.util.all;
 

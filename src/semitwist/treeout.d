@@ -6,9 +6,6 @@ Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 */
 
-// DMD output capturing for Programmer's Notepad:
-// %f\(%l\):
-
 module semitwist.treeout;
 
 import tango.core.Traits;

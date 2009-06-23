@@ -55,14 +55,6 @@ template multiTypeString(char[] name, char[] data, char[] access="public")
 	"}";
 }
 
-// Note: Almost useless. The compiler doesn't report the file/line where the
-//       template function that called this was instantiated.
-//       (TODO: Maybe I could fix that with templates...? No, I can't.)
-/*private char[] ensureCharType(char[] typeName, char[] msg="")
-{
-	return "static assert(is("~typeName~" == char) || is("~typeName~" == wchar) || is("~typeName~" == dchar), \""~msg~"\");";
-}
-*/
 mixin(multiTypeString!("whitespaceChars", r" \n\r\t\v\f"));
 mixin(multiTypeString!("emptyString", r""));
 mixin(multiTypeString!("lowerLetterA", r"a"));
@@ -249,7 +241,7 @@ enum EscapeSequence
 
 T[] escape(T)(T[] str, EscapeSequence type)
 {
-	mixin(ensureCharType!("T", "escape"));
+	mixin(ensureCharType!("T"));
 
 	T[] ret;
 	
@@ -268,7 +260,7 @@ T[] escape(T)(T[] str, EscapeSequence type)
 
 T[] unescape(T)(T[] str, EscapeSequence type)
 {
-	mixin(ensureCharType!("T", "unescape"));
+	mixin(ensureCharType!("T"));
 
 	T[] ret;
 	
@@ -291,7 +283,7 @@ T[] unescape(T)(T[] str, EscapeSequence type)
 
 T[] unescapeChar(T)(T[] str, T[] escapeSequence)
 {
-	mixin(ensureCharType!("T", "unescapeChar"));
+	mixin(ensureCharType!("T"));
 
 	T[] ret = str.dup;
 	ret = substitute(ret, escapeSequence, escapeSequence[$-1..$]);
@@ -311,7 +303,7 @@ mixin(multiTypeString!("escSequence_SemiTwist_Plus",                 r"\\+"));
 
 T[] unescapeSemiTwist(T)(T[] str)
 {
-	mixin(ensureCharType!("T", "unescapeSemiTwist"));
+	mixin(ensureCharType!("T"));
 
 	T[] ret = str.dup;
 	
@@ -337,7 +329,7 @@ mixin(multiTypeString!("escSequence_DoubleQuoteString_Backslash", r"\\\\"));
 
 T[] unescapeDoubleQuoteString(T)(T[] str)
 {
-	mixin(ensureCharType!("T", "unescapeDoubleQuoteString"));
+	mixin(ensureCharType!("T"));
 
 	T[] ret = str.dup;
 	
@@ -359,7 +351,7 @@ T[] unescapeDoubleQuoteString(T)(T[] str)
 
 T[] unescapeDoubleQuoteString(T)(T[] str)
 {
-	mixin(ensureCharType!("T", "unescapeDoubleQuoteString"));
+	mixin(ensureCharType!("T"));
 
 	T[] ret = str.dup;
 	
@@ -371,7 +363,7 @@ T[] unescapeDoubleQuoteString(T)(T[] str)
 
 T[] escapeDoubleQuoteString(T)(T[] str)
 {
-	mixin(ensureCharType!("T", "escapeDoubleQuoteString"));
+	mixin(ensureCharType!("T"));
 		
 	T[] ret = str.dup;
 	
@@ -419,7 +411,7 @@ static this()
 
 private T[] _sformat(T)(TypeInfo[] arguments, ArgList args, T[] formatStr)
 {
-	mixin(ensureCharType!("T", "_sformat"));
+	mixin(ensureCharType!("T"));
 
 	static if(is(T==char))
 		return _sformatc(arguments, args, formatStr);
