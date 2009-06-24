@@ -8,7 +8,11 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 
 module semitwist.cmd;
 
+public import tango.core.Array;
+public import tango.io.Stdout;
+public import tango.io.Console;
 public import tango.io.vfs.FileFolder;
+public import tango.text.Util;
 
 import tango.io.Stdout;
 
@@ -50,12 +54,18 @@ class CommandLine
 		_dir.standard();
 	}
 
+	bool echoing = true;
+
 	// Property
-	char[] dir()
+	FileFolder dir()
 	{
-		return _dir.toString();
+		return new FileFolder(_dir.toString());
 	}
-	char[] dir(char[] value)
+	FileFolder dir(FileFolder value)
+	{
+		return dir(value.toString());
+	}
+	FileFolder dir(char[] value)
 	{
 		value = FileSystem.toAbsolute(value, _dir.toString());
 		scope newDir = new FilePath(value);
@@ -63,44 +73,44 @@ class CommandLine
 			_dir.set( normalize(newDir.toString()), true );
 		return dir();
 	}
-
+	
 	// Plain Versions
-	char[] exec(char[] cmd)
+	void exec(char[] cmd)
 	{
 		int errLevel;
-		return exec(cmd, errLevel);
+		exec(cmd, errLevel);
 	}
-	char[] exec(char[] app, char[][] params)
+	void exec(char[] app, char[][] params)
 	{
 		int errLevel;
-		return exec(app, params, errLevel);
+		exec(app, params, errLevel);
 	}
 	
 	// With errLevel
-	char[] exec(char[] cmd, out int errLevel)
+	void exec(char[] cmd, out int errLevel)
 	{
 		auto p = new Process(cmd);
-		return execProcess(p, errLevel);
+		execProcess(p, errLevel);
 	}
-	char[] exec(char[] app, char[][] params, out int errLevel)
+	void exec(char[] app, char[][] params, out int errLevel)
 	{
 		auto p = new Process(app ~ params);
-		return execProcess(p, errLevel);
+		execProcess(p, errLevel);
 	}
 	
 	// Implementation
-	private char[] execProcess(Process p, out int errLevel)
+	private void execProcess(Process p, out int errLevel)
 	{
 		//TODO: Find out what happens if wait() is called after the process finishes
 		p.workDir = _dir.toString();
+		p.redirect = echoing? Redirect.None : Redirect.All;
 		p.execute();
 		auto r = p.wait();
 		errLevel = (r.reason==Process.Result.Exit)? r.status : -1;
-		return "".dup;
 	}
 	
 	void echo(char[] msg)
 	{
-		Stdout.formatln("{}", msg);
+		Stdout(msg).newline;
 	}
 }

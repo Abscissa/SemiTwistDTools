@@ -46,6 +46,7 @@ size_t indexOfMax(T)(T[] array)
 	return bestIndex;
 }
 
+//TODO: eliminate name collision with tango.text.Util
 //TODO: Is this the same as tango.core.Array.findIf()?
 size_t find(T)(T[] collection, bool delegate(T[], size_t) isFound, size_t start=0)
 {
