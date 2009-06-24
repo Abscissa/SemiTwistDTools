@@ -16,7 +16,7 @@ import tango.io.FilePath;
 import tango.io.FileSystem;
 import tango.util.PathUtil;
 
-import semitwist.cmd;
+import semitwist.cmd.all;
 import semitwist.util.all;
 
 // Damn, can't make templated nested func

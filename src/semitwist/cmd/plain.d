@@ -6,19 +6,13 @@ Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 */
 
-module semitwist.cmd;
-
-public import tango.core.Array;
-public import tango.io.Stdout;
-public import tango.io.Console;
-public import tango.io.vfs.FileFolder;
-public import tango.text.Util;
-
-import tango.io.Stdout;
+module semitwist.cmd.plain;
 
 import tango.sys.Process;
 import tango.io.FilePath;
 import tango.io.FileSystem;
+import tango.io.Stdout;
+import tango.io.vfs.FileFolder;
 import tango.util.PathUtil;
 
 import semitwist.util.all;
