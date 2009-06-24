@@ -9,10 +9,12 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 module semitwist.cmd.plain;
 
 import tango.sys.Process;
+import tango.io.Console;
 import tango.io.FilePath;
 import tango.io.FileSystem;
 import tango.io.Stdout;
 import tango.io.vfs.FileFolder;
+import tango.text.Util;
 import tango.util.PathUtil;
 
 import semitwist.util.all;
@@ -106,5 +108,31 @@ class CommandLine
 	void echo(char[] msg)
 	{
 		Stdout(msg).newline;
+	}
+	
+	char[] prompt(char[] msg, bool delegate(char[]) accept=null, char[] msgRejected="")
+	{
+		char[] input;
+		while(true)
+		{
+			Stdout(msg).flush;
+			Cin.readln(input);
+			input = trim(input);
+			
+			if(accept is null)
+				break;
+			else
+			{
+				if(accept(input))
+					break;
+				else
+				{
+					Stdout.newline;
+					Stdout.formatln(msgRejected, input);
+				}
+			}
+		}
+		
+		return input;
 	}
 }

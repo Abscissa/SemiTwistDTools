@@ -70,10 +70,23 @@ void main(char[][] args)
 	cmd.exec("myecho_release Can't see this because echoing is off");
 	cmd.echoing = true;
 
+/+
+	Stdout(cmd.prompt("Enter anything:")).newline;
+	Stdout(
+		cmd.prompt(
+			`Enter "yes" or "no":`,
+			(char[] input) {
+				return cast(bool)tango.core.Array.contains(["yes","no"], input);
+			},
+			`'{}' is not valid, must enter "yes" or "no"!`
+		)
+	).newline;
++/
+
 	Stdout.newline;
 	bool done = false;
 
-	const char[] helpMsg = "
+	const char[] helpMsg = `
 --Supported Commands--
 help                 Displays this message
 echo <text>          Echos <text>
@@ -83,8 +96,10 @@ ls                   Displays current directory contents
 exec <prog> <params> Runs program <prog> with paramaters <params>
 echoing <on|off>     Chooses whether output from exec'ed programs is displayed
 isechoing            Displays current echoing setting
+prompt               Prompt for text entry
+promptyn             Prompt for "yes" or "no"
 exit                 Exits
-";
+`;
 
 	void delegate(char[] params)[char[]] cmdLookup = [
 		""[]        : (char[] params) { },
@@ -95,11 +110,37 @@ exit                 Exits
 		"cd"        : (char[] params) { cmd.dir = params;        },
 		"exec"      : (char[] params) { cmd.exec(params);        },
 		"isechoing" : (char[] params) { Stdout(cmd.echoing? "on" : "off").newline; },
-		"ls"        : (char[] params) {
+		
+		"ls":
+		(char[] params) {
 			displayNodes!(VfsFolder)(cmd.dir, "Directories");
 			displayNodes!(VfsFile  )(cmd.dir.self.catalog, "Files");
 		},
-		"echoing"   : (char[] params) {
+		
+		"prompt":
+		(char[] params) {
+			Stdout.formatln(
+				"You entered: {}",
+				cmd.prompt("Enter anything:")
+			);
+		},
+		
+		"promptyn":
+		(char[] params) {
+			Stdout.formatln(
+				"You entered: {}",
+				cmd.prompt(
+					`Enter "yes" or "no":`,
+					(char[] input) {
+						return cast(bool)tango.core.Array.contains(["yes","no"], input);
+					},
+					`'{}' is not valid. Please enter "yes" or "no".`
+				)
+			);
+		},
+		
+		"echoing":
+		(char[] params) {
 			switch(params)
 			{
 			case "on":
