@@ -20,11 +20,11 @@ import semitwist.cmd.all;
 import semitwist.util.all;
 
 // Damn, can't make templated nested func
-void displayNodes(U, T)(T collection, char[] label)
+void displayNodes(TElem, TColl)(TColl collection, char[] label)
 {
 	Stdout.formatln("");
 	Stdout.formatln("{}:", label);
-	foreach(U elem; collection)
+	foreach(TElem elem; collection)
 		Stdout.formatln(" -{}", elem.toString());
 }
 
