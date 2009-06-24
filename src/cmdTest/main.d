@@ -1,4 +1,4 @@
-// SemiTwist Library: CommandLine Test
+// SemiTwist Library: semitwist.cmd test
 // Written in the D programming language.
 
 /** 
@@ -12,9 +12,7 @@ Uses:
 
 module cmdTest.main;
 
-import tango.io.FilePath;
 import tango.io.FileSystem;
-import tango.util.PathUtil;
 
 import semitwist.cmd.all;
 import semitwist.util.all;
@@ -43,7 +41,7 @@ void testVfs(char[] dir)
 
 void main(char[][] args)
 {
-	Stdout("SemiTwist Library: CommandLine Test");
+	Stdout("SemiTwist Library: semitwist.cmd test");
 
 	Stdout.newline;
 	mixin(traceVal!("args[0]", "FileSystem.getDirectory()"));
