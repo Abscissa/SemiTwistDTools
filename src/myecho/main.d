@@ -15,6 +15,7 @@ Uses:
 - Tango 0.99.8
 */
 
+//TODO: Move this and seterrlevel into their own miniapps project group/repo
 module myecho.main;
 
 import tango.io.Stdout;

@@ -72,6 +72,49 @@ void main(char[][] args)
 
 	Stdout.newline;
 	bool done = false;
+
+	const char[] helpMsg = "
+--Supported Commands--
+help                 Displays this message
+echo <text>          Echos <text>
+pwd                  Print working directory
+cd <dir>             Change directory
+ls                   Displays current directory contents
+exec <prog> <params> Runs program <prog> with paramaters <params>
+echoing <on|off>     Chooses whether output from exec'ed programs is displayed
+isechoing            Displays current echoing setting
+exit                 Exits
+";
+
+	void delegate(char[] params)[char[]] cmdLookup = [
+		""[]        : (char[] params) { },
+		"help"      : (char[] params) { Stdout(helpMsg);         },
+		"exit"      : (char[] params) { done = true;             },
+		"echo"      : (char[] params) { cmd.echo(params);        },
+		"pwd"       : (char[] params) { Stdout(cmd.dir).newline; },
+		"cd"        : (char[] params) { cmd.dir = params;        },
+		"exec"      : (char[] params) { cmd.exec(params);        },
+		"isechoing" : (char[] params) { Stdout(cmd.echoing? "on" : "off").newline; },
+		"ls"        : (char[] params) {
+			displayNodes!(VfsFolder)(cmd.dir, "Directories");
+			displayNodes!(VfsFile  )(cmd.dir.self.catalog, "Files");
+		},
+		"echoing"   : (char[] params) {
+			switch(params)
+			{
+			case "on":
+				cmd.echoing = true;
+				break;
+			case "off":
+				cmd.echoing = false;
+				break;
+			default:
+				Stdout(`param must be either "on" or "off"`).newline;
+				break;
+			}
+		},
+	];
+	
 	while(!done)
 	{
 		Stdout("cmdTest>").flush;
@@ -85,85 +128,17 @@ void main(char[][] args)
 		char[] params = splitIndex==input.length? "" : input[splitIndex+1..$];
 		params = trim(params);
 		
-		switch(command)
+		if(command in cmdLookup)
 		{
-		case "":
-			break;
-			
-		case "exit":
-			done = true;
-			break;
-			
-		case "echo":
-			cmd.echo(params);
-			Stdout.newline;
-			break;
-			
-		case "pwd":
-			Stdout(cmd.dir).newline;
-			Stdout.newline;
-			break;
-			
-		case "cd":
-			cmd.dir = params;
-			Stdout.newline;
-			break;
-			
-		case "exec":
-			cmd.exec(params);
-			Stdout.newline;
-			break;
-			
-		case "echoing":
-			switch(params)
-			{
-			case "on":
-				cmd.echoing = true;
-				break;
-			case "off":
-				cmd.echoing = false;
-				break;
-			default:
-				Stdout(`param must be either "on" or "off"`).newline;
-				break;
-			}
-			Stdout.newline;
-			break;
-			
-		case "isechoing":
-			Stdout(cmd.echoing? "on" : "off").newline;
-			Stdout.newline;
-			break;
-			
-		case "ls":
-			displayNodes!(VfsFolder)(cmd.dir, "Directories");
-			displayNodes!(VfsFile  )(cmd.dir.self.catalog, "Files");
-			Stdout.newline;
-			break;
-			
-		case "help":
-			Stdout(
-"
---Supported Commands--
-help                 Displays this message
-echo <text>          Echos <text>
-pwd                  Print working directory
-cd <dir>             Change directory
-ls                   Displays current directory contents
-exec <prog> <params> Runs program <prog> with paramaters <params>
-echoing <on|off>     Chooses whether output from exec'ed programs is displayed
-isechoing            Displays current echoing setting
-exit                 Exits
-");
-			Stdout.newline;
-			break;
-			
-		default:
-			//mixin(traceVal!("command", "params"));
-			//Stdout(input).newline;
-			Stdout(`Unknown command (type "help" for list of supported commands)`).newline;
-			Stdout.newline;
-			break;
+			try
+				cmdLookup[command](params);
+			catch(Exception e)
+				Stdout.formatln("Exception: {}", e.msg);
 		}
+		else
+			Stdout(`Unknown command (type "help" for list of supported commands)`).newline;
+		
+		if( !tango.core.Array.contains(["","exit"], command) )
+			Stdout.newline;
 	}
 }
