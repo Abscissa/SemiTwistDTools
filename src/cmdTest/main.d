@@ -21,6 +21,28 @@ import tango.util.PathUtil;
 import semitwist.util.all;
 import semitwist.cmd;
 
+// Damn, can't make templated nested func
+void displayNodes(U, T)(T collection, char[] label)
+{
+	Stdout.formatln("");
+	Stdout.formatln("{}:", label);
+	foreach(U elem; collection)
+		Stdout.formatln(" -{}", elem.toString());
+}
+
+void testVfs(char[] dir)
+{
+	auto folder = new FileFolder(dir);
+
+	displayNodes!(VfsFolder)(folder,      `folder`);
+	displayNodes!(VfsFolder)(folder.self, `folder.self`);
+	displayNodes!(VfsFolder)(folder.tree, `folder.tree`);
+	displayNodes!(VfsFile  )(folder.self.catalog, `folder.self.catalog`);
+	displayNodes!(VfsFile  )(folder.tree.catalog, `folder.tree.catalog`);
+	displayNodes!(VfsFolder)(folder.tree.subset("*est"), `folder.tree.subset("*est")`);
+	displayNodes!(VfsFile  )(folder.tree.catalog("*_r*"), `folder.tree.catalog("*_r*")`);
+}
+
 void main(char[][] args)
 {
 	Stdout.formatln("SemiTwist Library: CommandLine Test");
@@ -44,33 +66,5 @@ void main(char[][] args)
 //	cmd.exec("echo Echoing hello!");
 
 	cmd.echo("Hello");
-
-	auto cd = new CmdDir(cmd.dir);
-//	mixin(traceVal!(`cd.files()`, `cd.dirs()`, `cd.nodes("*_release*")`, `cd.nodes()`, `cd.dirs("*", true)`));
-
-	void displayNodes(CmdNode[] nodes, char[] label)
-	{
-		Stdout.formatln("");
-		Stdout.formatln("{}:", label);
-		foreach(CmdNode elem; nodes)
-			Stdout.formatln(" -{}", elem.toString());
-	}
-	displayNodes(cast(CmdNode[])cd.files,      `cd.files`);
-	displayNodes(cast(CmdNode[])cd.dirs,       `cd.dirs`);
-	displayNodes(cd.nodes,                     `cd.nodes`);
-	displayNodes(cd.nodes("*_release*", true), `cd.nodes("*_release*", true)`);
-	displayNodes(cast(CmdNode[])cd.dirs(true), `cd.dirs(true)`);
-
-/*	Stdout.formatln("");
-	mixin(traceVal!(`(new FilePath("hi")==new FilePath("hi"))?"same":"different"`));
-*/
-/*	Stdout.formatln("");
-	mixin(traceVal!(`new FilePath("./bin/..")`));
-	mixin(traceVal!(`normalize("./bin/..")`));
-	mixin(traceVal!(`FileSystem.toAbsolute(new FilePath("./bin/.."), FileSystem.getDirectory())`));
-	mixin(traceVal!(`normalize(FileSystem.toAbsolute(new FilePath("./bin/.."), FileSystem.getDirectory()).toString())`));
-	mixin(traceVal!(`FileSystem.toAbsolute(normalize("./bin/.."), FileSystem.getDirectory())`));
-*/
-
-	
+	testVfs(cmd.dir);
 }

@@ -8,11 +8,12 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 
 module semitwist.cmd;
 
+public import tango.io.vfs.FileFolder;
+
 import tango.io.Stdout;
 
 import tango.sys.Process;
 import tango.io.FilePath;
-import tango.io.FileScan;
 import tango.io.FileSystem;
 import tango.util.PathUtil;
 
@@ -101,131 +102,5 @@ class CommandLine
 	void echo(char[] msg)
 	{
 		Stdout.formatln("{}", msg);
-	}
-}
-
-//TODO: Scratch this stuff, use tango.io.vfs.FileFolder instead
-class CmdNode : FilePath
-{
-	this(char[] path)
-	{
-		super(path);
-	}
-}
-
-class CmdDir : CmdNode
-{
-	invariant
-	{
-		// Can't check this because it would trigger infinite recursion
-//		mixin(deferAssert!("isFolder()"));
-//		flushAsserts();
-	}
-	
-	this(char[] path)
-	{
-		super(path);
-		if(!isFolder())
-			throw new Exception("Not a directory");
-	}
-
-	CmdNode[] nodes(bool recurse)
-	{
-		return nodes("*", recurse);
-	}
-	
-	CmdNode[] dirs(bool recurse)
-	{
-		return dirs("*", recurse);
-	}
-	
-	CmdNode[] files(bool recurse)
-	{
-		return files("*", recurse);
-	}
-	
-	CmdNode[] nodes(char[] glob="*", bool recurse=false)
-	{
-		return cast(CmdNode[])dirs(glob, recurse) ~ cast(CmdNode[])files(glob, recurse);
-	}
-
-	CmdDir[] dirs(char[] glob="*", bool recurse=false)
-	{
-		auto scan = new FileScan();
-		scan(
-			this.toString(),
-			(FilePath fp, bool isDir)
-			{
-				bool dirMatchesGlob = isDir && ( glob=="*"||patternMatch(fp.toString(), glob) );
-				if(recurse)
-					return dirMatchesGlob;
-				else
-				{
-					bool ret = dirMatchesGlob && (this.toString[0..$-1] == fp.toString || this.toString[0..$-1] == fp.parent);
-					if(isDir)
-					{
-						mixin(trace!("-----------------"));
-						mixin(traceVal!(
-							"dirMatchesGlob",
-							"ret          ",
-							"this         ",
-							"this.toString",
-							"fp           ",
-							"fp.toString  ",
-							"fp.parent    "
-						));
-					}
-					return ret;
-				}
-			},
-			true
-		);
-
-		CmdDir[] dirs;
-		dirs.length  = scan.folders.length;
-		for(int i=0; i<dirs.length; i++)
-			dirs[i] = new CmdDir(scan.folders[i].toString);
-		
-		return dirs;
-	}
-
-	CmdFile[] files(char[] glob="*", bool recurse=false)
-	{
-		auto scan = new FileScan();
-		if(glob=="*")
-			scan(this.toString(), recurse);
-		else
-			scan(
-				this.toString(),
-				(FilePath fp, bool isDir)
-				{
-					return isDir || patternMatch(fp.toString(), glob);
-				},
-				recurse
-			);
-
-		CmdFile[] files;
-		files.length = scan.files.length;
-		for(int i=0; i<files.length; i++)
-			files[i] = new CmdFile(scan.files[i].toString);
-		
-		return files;
-	}
-}
-
-class CmdFile : CmdNode
-{
-	invariant
-	{
-		// Can't check this because it would trigger infinite recursion
-//		mixin(deferAssert!("isFile()"));
-//		flushAsserts();
-	}
-	
-	this(char[] path)
-	{
-		super(path);
-		if(!isFile())
-			throw new Exception("Not a file");
 	}
 }
