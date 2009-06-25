@@ -19,6 +19,7 @@ import tango.util.PathUtil;
 
 import semitwist.util.all;
 
+//TODO: Make a standard yes/no prompt
 class CommandLine
 {
 	private FilePath _dir; // Working directory
@@ -55,6 +56,7 @@ class CommandLine
 	// Property
 	FileFolder dir()
 	{
+		//TODO: Don't create a new instance if dir hasn't changed
 		return new FileFolder(_dir.toString());
 	}
 	FileFolder dir(FileFolder value)
