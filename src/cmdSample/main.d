@@ -16,6 +16,21 @@ module cmdSample.main;
 
 import semitwist.cmd.all;
 
+const char[] main_d_src = 
+`// {0}
+// Written in the D programming language
+
+module {0}.main;
+
+import tango.io.Stdout;
+
+int main(char[][] args)
+{{
+	Stdout("{0}: Hello World!").newline;
+	return 0;
+}
+`;
+
 void main(char[][] args)
 {
 	auto cmd = new CommandLine();
@@ -77,7 +92,10 @@ void main(char[][] args)
 	cmd.dir.folder(projectName).create;
 
 	cmd.dir = projectName;
-	cmd.dir.file("main.d").create;
+	auto main_d = cmd.dir.file("main.d").create.output;
+	main_d.write(main_d_src.sformat(projectName));
+	main_d.close;
+//	cmd.dir.file("main.d").open.output.write("hello").close;
 //	cmd.dir.file("main.d").output.copy("hello").close;
 	
 //	cmd.dir = originalDir.toString~"/"~projectName;
@@ -85,7 +103,7 @@ void main(char[][] args)
 //	auto allCreated = cmd.dir.tree;
 	cmd.dir = originalDir;
 	auto allCreated = cmd.dir.folder(projectName).open.tree;
-	Stdout.formatln("Created {} bytes in {} folders and {} files",
+	Stdout.formatln("Created {} bytes in {} folder(s) and {} file(s)",
 		allCreated.bytes, allCreated.folders, allCreated.files);
 	
 //	cmd.dir = originalDir;
