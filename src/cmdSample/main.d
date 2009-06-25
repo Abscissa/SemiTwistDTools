@@ -18,5 +18,6 @@ void main(char[][] args)
 {
 	Stdout("SemiTwist Library: semitwist.cmd sample");
 	
+	auto cmd = new CommandLine();
 	//TODO: Do demonstrative stuff
 }

@@ -39,6 +39,7 @@ void testVfs(char[] dir)
 	displayNodes!(VfsFile  )(folder.tree.catalog("*_r*"), `folder.tree.catalog("*_r*")`);
 }
 
+//TODO: Add errLevel stuff
 void main(char[][] args)
 {
 	Stdout("SemiTwist Library: semitwist.cmd test");
@@ -61,11 +62,11 @@ void main(char[][] args)
 	cmd.echo("Whee!");
 	//testVfs(cmd.dir);
 
-	cmd.exec("myecho_release", ["I'm echoing,", "hello!"]);
-	cmd.exec("myecho_release I'm echoing, hello!");
+	cmd.exec("myecho", ["I'm echoing,", "hello!"]);
+	cmd.exec("myecho I'm echoing, hello!");
 	
 	cmd.echoing = false;
-	cmd.exec("myecho_release Can't see this because echoing is off");
+	cmd.exec("myecho Can't see this because echoing is off");
 	cmd.echoing = true;
 
 /+
@@ -172,7 +173,12 @@ exit                 Exits
 			try
 				cmdLookup[command](params);
 			catch(Exception e)
-				Stdout.formatln("Exception: {}", e.msg);
+			{
+				Stdout("ERR: ");
+				//Stdout("ERR: "~e.classinfo.name~": ");
+				e.writeOut( (char[] msg) {Stdout(msg);} );
+				//Stdout.formatln("Exception: {}", e.msg);
+			}
 		}
 		else
 			Stdout(`Unknown command (type "help" for list of supported commands)`).newline;
