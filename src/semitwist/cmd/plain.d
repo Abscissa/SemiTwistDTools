@@ -19,8 +19,14 @@ import tango.util.PathUtil;
 
 import semitwist.util.all;
 
+Cmd cmd;
+static this()
+{
+	cmd = new Cmd();
+}
+
 //TODO: Make a standard yes/no prompt
-class CommandLine
+class Cmd
 {
 	private FilePath _dir; // Working directory
 
@@ -59,7 +65,7 @@ class CommandLine
 		//TODO: Don't create a new instance if dir hasn't changed
 		return new FileFolder(_dir.toString());
 	}
-	FileFolder dir(FileFolder value)
+	FileFolder dir(VfsFolder value)
 	{
 		return dir(value.toString());
 	}
@@ -107,7 +113,7 @@ class CommandLine
 		errLevel = (r.reason==Process.Result.Exit)? r.status : -1;
 	}
 	
-	void echo(char[] msg)
+	void echo(char[] msg="")
 	{
 		Stdout(msg).newline;
 	}
