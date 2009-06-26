@@ -68,6 +68,7 @@ T[] ctfe_join(T)(T[][] strs, T[] delim)
 	return value;
 }
 
+//TODO: Is this just a failed experiment piece of scrap code to be removed?
 template my_traceVal(values...)
 {
 	static if(values.length == 0)
@@ -106,7 +107,8 @@ T[] ctfe_substitute(T)(T[] str, T[] match, T[] replace)
 	return value;
 }
 
-/// --- The ctfe_i2a functions have been copied directly from Tango trunk ---
+/// --- These ctfe_i2a functions have been copied directly from Tango trunk ---
+/// --- because they are useful, but not in the 0.99.8 release ---
 
 /// compile time integer to string
 char [] ctfe_i2a(int i){

@@ -8,6 +8,7 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 
 module semitwist.cmd.plain;
 
+//import tango.stdc.stdio;
 import tango.sys.Process;
 import tango.io.Console;
 import tango.io.FilePath;
@@ -29,6 +30,7 @@ static this()
 //TODO: Make promptChar
 //TODO: Make a standard "Press a key to continue..."
 //TODO: Make a standard yes/no prompt
+//TODO? Rename echoing to exececho or echoexec
 class Cmd
 {
 	private FilePath _dir; // Working directory
@@ -137,6 +139,76 @@ class Cmd
 		Stdout.newline;
 	}
 	
+	private T _prompt(T, TChar)(TChar[] promptMsg, bool delegate(T) accept,
+	                            TChar[] rejectedMsg, T delegate() reader)
+	{
+		T input;
+		while(true)
+		{
+			Stdout(promptMsg).flush;
+			input = reader();
+			
+			if(accept is null)
+				break;
+			else
+			{
+				if(accept(input))
+					break;
+				else
+				{
+					Stdout.newline;
+					Stdout.formatln(rejectedMsg, input);
+				}
+			}
+		}
+		
+		return input;
+	}
+
+	// Input is Utf8-only for now because Cin is used which is Utf8-only
+	char[] prompt(T)(T[] promptMsg, bool delegate(char[]) accept=null, T[] rejectedMsg="")
+	{
+		char[] reader()
+		{
+			char[] input;
+			Cin.readln(input);
+			return trim(input);
+		}
+		
+		return _prompt!(char[],T)(promptMsg, accept, rejectedMsg, &reader);
+	}
+
+/+
+// Doesn't work right now because I need to find a way to wait for and capture
+// exactly one keypress. Cin.readln and getchar both wait for a newline.
+
+	// dchar not currently supported, because getchar/getwchar are used which
+	// don't have a Utf32 equivilent.
+	T promptChar(T)(T[] promptMsg, bool delegate(T) accept=null, T[] rejectedMsg="")
+	{
+		T reader()
+		{
+			static if(is(T==char))
+				return cast(T)getchar();
+			else static if(is(T==wchar))
+				return cast(T)getwchar();
+			else
+				static assert(false, "T must be char or wchar for promptChar");
+		}
+		
+		return _prompt!(T,T)(promptMsg, accept, rejectedMsg, &reader);
+	}
++/
+	void pause()
+	{
+/+
+// Can't do it this way until I get promptChar working
+		promptChar("Press a key to continue...");
+		cmd.echo(); // The prompt doesn't output a newline
++/
+		prompt("Press Enter to continue...");
+	}
+/+
 	char[] prompt(char[] msg, bool delegate(char[]) accept=null, char[] msgRejected="")
 	{
 		char[] input;
@@ -162,4 +234,5 @@ class Cmd
 		
 		return input;
 	}
++/
 }

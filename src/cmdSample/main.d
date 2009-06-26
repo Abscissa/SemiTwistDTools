@@ -43,17 +43,16 @@ void main(char[][] args)
 	Stdout("Of course, ");
 	Stdout.formatln("ordinary Stdout {} available too.", "is");
 
-	// ----- semitwist.util.text: sformat -----
+	// ----- semitwist.util.text: sformat/sformatln -----
 	// - Wraps tango's Layout seamlessly for char, wchar and dchar.
 	// - Note that you don't need to manually instantiate it.
 	// - Using D's array-method calling syntax is, of course, optional.
 	//   (But I like it.)
-	showSectionHeader("semitwist.util.text: sformat");
+	showSectionHeader("semitwist.util.text: sformat/sformatln");
 	auto myStr8 = "Hello {}".sformat("Joe");
 	cmd.echo(myStr8);
 	auto myStr16 = "This {} wstr ends in a newline, {}"w.sformatln("happy", "whee");
 	cmd.echo(myStr16);
-	//Stdout(myStr16).newline;
 	cmd.echo("See? There was an extra newline up there.");
 	
 	// ----- semitwist.util.mixins: trace -----
@@ -66,7 +65,7 @@ void main(char[][] args)
 	
 	// ----- semitwist.util.mixins: traceVal -----
 	// - Useful for debugging.
-	// - DRY way to outputs both an expression and the expression's value
+	// - DRY way to output both an expression and the expression's value
 	showSectionHeader("semitwist.util.mixins: traceVal");
 	double myDouble = 5.55;
 	int myInt = 7;
@@ -74,11 +73,11 @@ void main(char[][] args)
 	mixin(traceVal!(`"Any expression {}".sformat("is ok")`));
 	
 	// ----- semitwist.cmd: cmd.exec -----
-	// - Easy wrapper for tango.sys.Process to run apps
+	// - Easy tango.sys.Process wrapper for running apps
 	//
 	// We'll test this with two small sample apps:
-	//   - seterrorlevel: Sets the error level to a desired value
 	//   - showargs: Lists the args passed into it
+	//   - seterrorlevel: Sets the error level to a desired value
 	showSectionHeader("semitwist.cmd: cmd.exec");
 	cmd.exec("showargs Hello from D!"); // Three args
 	cmd.exec(`showargs "Hello from D!"`); // One arg with spaces
@@ -112,8 +111,8 @@ void main(char[][] args)
 	cmd.echo("You entered:", input);
 
 	// Easy prompt-with-validation
-	const char[] promptMsg = "Do you want 'coffee' or 'tea'? ";
-	const char[] failureMsg = "Please enter 'coffee' or 'tea', not '{0}'";
+	char[] promptMsg = "Do you want 'coffee' or 'tea'? ";
+	char[] failureMsg = "Please enter 'coffee' or 'tea', not '{0}'";
 	bool accept(char[] input)
 	{
 		return ["coffee"[], "tea"].contains(toLower(input));
@@ -122,6 +121,22 @@ void main(char[][] args)
 	// so we don't need to do any more validation.
 	input = cmd.prompt(promptMsg, &accept, failureMsg);
 	cmd.echo("Tough luck! No", input, "for you!");
+/+
+	// Single-char prompts
+	auto letter = cmd.promptChar("Enter any letter: ");
+	cmd.echo("You entered:", letter);
+	// Validation supported on single-char prompts, too.
+	promptMsg = "Do you like D (y/n)? ";
+	failureMsg = "Please enter 'y' or 'n', not '{0}'";
+	bool acceptChar(char input)
+	{
+		return "YNyn".contains(input);
+	}
+	letter = cmd.promptChar(promptMsg, &acceptChar, failureMsg);
+	cmd.echo("Yy".contains(letter)? "Yay!" : "Dang...");
++/
+	// Prompt and wait for any keypress
+	cmd.pause();
 
 	// ----- semitwist.cmd: cmd.dir -----
 	// - Get/Set cmd's working directory

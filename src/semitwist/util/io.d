@@ -9,7 +9,6 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 module semitwist.util.io;
 
 import tango.io.FilePath;
-//import tango.io.protocol.Reader;
 import tango.io.stream.Data;
 
 version(Win32)
@@ -31,6 +30,8 @@ wchar[] readNullTerminatedWString(DataInput reader)
 	return str[0..$-1];
 }
 
+// Gets the full path to the currently running executable,
+// regardless of working directory or PATH env var or anything else.
 // Modified from: http://www.dsource.org/projects/tango/forums/topic/595
 char[] getExec()
 {
