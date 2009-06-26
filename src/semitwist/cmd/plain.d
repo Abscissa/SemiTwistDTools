@@ -15,6 +15,7 @@ import tango.io.FileSystem;
 import tango.io.Stdout;
 import tango.io.vfs.FileFolder;
 import tango.text.Util;
+import tango.text.convert.Layout;
 import tango.util.PathUtil;
 
 import semitwist.util.all;
@@ -25,10 +26,13 @@ static this()
 	cmd = new Cmd();
 }
 
+//TODO: Make promptChar
+//TODO: Make a standard "Press a key to continue..."
 //TODO: Make a standard yes/no prompt
 class Cmd
 {
 	private FilePath _dir; // Working directory
+	private static Layout!(char) layout; // Used by echo
 
 	invariant
 	{
@@ -55,6 +59,11 @@ class Cmd
 	{
 		_dir = new FilePath(FileSystem.getDirectory());
 		_dir.standard();
+	}
+	
+	static this()
+	{
+		layout = new Layout!(char)();
 	}
 
 	bool echoing = true;
@@ -113,9 +122,19 @@ class Cmd
 		errLevel = (r.reason==Process.Result.Exit)? r.status : -1;
 	}
 	
-	void echo(char[] msg="")
+	void echo(...)
 	{
-		Stdout(msg).newline;
+		foreach(int i, TypeInfo type; _arguments)
+		{
+			if(i > 0) Stdout(" ");
+
+			// Tango's Layout already handles all this
+			// converting-varargs-to-strings crap, so
+			// just let it do all the work:
+			Stdout(layout.convert([type], _argptr, "{}"));
+			_argptr += type.tsize;
+		}
+		Stdout.newline;
 	}
 	
 	char[] prompt(char[] msg, bool delegate(char[]) accept=null, char[] msgRejected="")
