@@ -31,6 +31,11 @@ static this()
 //TODO: Make a standard "Press a key to continue..."
 //TODO: Make a standard yes/no prompt
 //TODO? Rename echoing to exececho or echoexec
+//TODO: Handle env var stuff
+//TODO: Handle exec stream redirecting
+//TODO: Do piping
+//TODO: Wrap Vfs
+//TODO: Dup Cmd
 class Cmd
 {
 	private FilePath _dir; // Working directory

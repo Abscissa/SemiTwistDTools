@@ -12,7 +12,6 @@ Requires:
 In SVN comments:
 (B): Breaking changes
 (NB): Non-Breaking changes
-
 */
 
 // DMD/STC output capturing for Programmer's Notepad:

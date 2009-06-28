@@ -20,6 +20,7 @@ void showSectionHeader(char[] str)
 	cmd.echo("--------", str, "--------");
 }
 
+//TODO: Find those functions in tango to read and maybe write a file in one line.
 void main(char[][] args)
 {
 	// ----- semitwist.cmd: cmd.echo -----
