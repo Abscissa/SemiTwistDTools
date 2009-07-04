@@ -21,6 +21,9 @@ void showSectionHeader(char[] str)
 }
 
 //TODO: Find those functions in tango to read and maybe write a file in one line.
+//      And add the import to semitwist.cmd.all, and add samples for it here.
+//   -> tango.io.device.File: char[] blah = File.get("blah.txt");
+
 void main(char[][] args)
 {
 	// ----- semitwist.cmd: cmd.echo -----
@@ -37,7 +40,7 @@ void main(char[][] args)
 	cmd.echo(32, 64, 128, 256);
 	class Foo {
 		char[] toString() {
-			return "Any type Stdout can handle is ok.";
+			return "Any type that Stdout can handle is ok.";
 		}
 	}
 	cmd.echo(new Foo(), "See?");

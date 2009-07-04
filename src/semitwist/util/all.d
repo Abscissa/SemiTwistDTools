@@ -17,6 +17,8 @@ In SVN comments:
 // DMD/STC output capturing for Programmer's Notepad:
 // ((.)*: )?(warning - )?([ \t]*instantiatied in )?((.)*@)?%f\(%l(:%c)?\):
 
+//TODO: Make/find a containsAny
+
 module semitwist.util.all;
 
 public import semitwist.util.array;

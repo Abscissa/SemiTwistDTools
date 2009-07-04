@@ -35,6 +35,7 @@ static this()
 //TODO: Handle exec stream redirecting
 //TODO: Do piping
 //TODO: Wrap Vfs
+//TODO? Make dir something folder-specific instead of FileFolder?
 //TODO: Dup Cmd
 class Cmd
 {
@@ -123,6 +124,7 @@ class Cmd
 	{
 		//TODO: Find out what happens if wait() is called after the process finishes
 		p.workDir = _dir.toString();
+		p.copyEnv = true;
 		p.redirect = echoing? Redirect.None : Redirect.All;
 		p.execute();
 		auto r = p.wait();
@@ -238,6 +240,22 @@ class Cmd
 		}
 		
 		return input;
+	}
++/
+/+
+	bool isHelpSwitch(char[] str)
+	{
+		if(str.length < 3)
+			return false;
+			
+		if(str[0..2] == "--")
+			str = str[2..$];
+		else if("-/".contains(str[0]))
+			str = str[1..$];
+		else
+			return false;
+		
+		return ["h"[], "help", "?"].contains(str.toLower());
 	}
 +/
 }
