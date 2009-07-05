@@ -12,6 +12,7 @@ public import tango.io.Console;
 public import tango.io.FilePath;
 public import tango.io.FileSystem;
 public import tango.io.Stdout;
+public import tango.io.device.File;
 public import tango.io.vfs.FileFolder;
 public import tango.text.Unicode;
 public import tango.text.Util;

@@ -12,8 +12,6 @@ Uses:
 
 module cmdTest.main;
 
-import tango.io.FileSystem;
-
 import semitwist.cmd.all;
 import semitwist.util.all;
 
@@ -47,7 +45,6 @@ void main(char[][] args)
 	Stdout.newline;
 	mixin(traceVal!("args[0]", "FileSystem.getDirectory()"));
 
-	auto cmd = new CommandLine();
 //	auto path = new FilePath(cmd.dir);
 //	mixin(traceVal!("path.toString()", "path.isAbsolute()", "path.isFolder()"));
 
