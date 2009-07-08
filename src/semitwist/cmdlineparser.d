@@ -56,7 +56,7 @@ void main(char[][] args)
 	Stdout.formatln("str:  {}", myStr);
 }
 
-Sample Command Lines:
+Sample Command Lines (All these are equivalent):
 > myApp.exe /num:5 /flag /str:blah
 > myApp.exe -flag:true -str:blah -num=5
 > myApp.exe --num=5 /flag+ "-str:blah"

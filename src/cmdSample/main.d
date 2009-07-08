@@ -1,4 +1,5 @@
-// SemiTwist Library: semitwist.cmd sample
+// SemiTwist D Tools
+// Samples: semitwist.cmd sample
 // Written in the D programming language.
 
 /** 

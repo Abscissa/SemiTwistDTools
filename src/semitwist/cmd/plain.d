@@ -1,4 +1,4 @@
-// SemiTwist Library
+// SemiTwist D Tools: Library
 // Written in the D programming language.
 
 /** 
@@ -37,6 +37,7 @@ static this()
 //TODO: Wrap Vfs
 //TODO? Make dir something folder-specific instead of FileFolder?
 //TODO: Dup Cmd
+//TODO: Add echoerr (or just "err")
 class Cmd
 {
 	private FilePath _dir; // Working directory

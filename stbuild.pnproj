@@ -1,0 +1,4 @@
+<Project name="stbuild">
+<File path="src\stmanage\stbuild\main.d"></File>
+<File path="src\stmanage\stbuild\conf.d"></File>
+</Project>

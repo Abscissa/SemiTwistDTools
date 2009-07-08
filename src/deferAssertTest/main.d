@@ -1,4 +1,5 @@
-// SemiTwist Library: Defer Assert Test
+// SemiTwist D Tools
+// Tests: Defer Assert Test
 // Written in the D programming language.
 
 /** 

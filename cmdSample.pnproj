@@ -1,1 +1,1 @@
-<Project name="cmdSample"><Folder name="Sources"><File path="src\cmdSample\main.d"></File></Folder></Project>
+<Project name="cmdSample"><File path="src\cmdSample\main.d"></File></Project>

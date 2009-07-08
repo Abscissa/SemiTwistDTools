@@ -1,0 +1,14 @@
+<Workspace name="SemiTwist D Tools">
+<Project path="semitwist.pnproj"></Project>
+<Project path="common.pnproj"></Project>
+<Project path="stbuild.pnproj"></Project>
+<Project path="ststart.pnproj"></Project>
+<Project path="stswitch.pnproj"></Project>
+<Project path="myecho.pnproj"></Project>
+<Project path="seterrorlevel.pnproj"></Project>
+<Project path="showargs.pnproj"></Project>
+<Project path="cmdSample.pnproj"></Project>
+<Project path="cmdparsertest.pnproj"></Project>
+<Project path="deferAssertTest.pnproj"></Project>
+<Project path="cmdTest.pnproj"></Project>
+</Workspace>

@@ -1,4 +1,4 @@
-// SemiTwist Library
+// SemiTwist D Tools: Library
 // Written in the D programming language.
 
 /** 
