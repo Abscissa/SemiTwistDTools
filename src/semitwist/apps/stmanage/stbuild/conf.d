@@ -7,7 +7,7 @@ Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 */
 
-module stmanage.stbuild.conf;
+module semitwist.apps.stmanage.stbuild.conf;
 
 import semitwist.cmd.all;
 

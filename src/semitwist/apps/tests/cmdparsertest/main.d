@@ -11,7 +11,7 @@ Uses:
 - Tango 0.99.8
 */
 
-module cmdparsertest.main;
+module semitwist.apps.tests.cmdparsertest.main;
 
 import tango.io.Stdout;
 

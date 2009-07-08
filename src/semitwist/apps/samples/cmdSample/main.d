@@ -11,7 +11,7 @@ Uses:
 - Tango 0.99.8
 */
 
-module cmdSample.main;
+module semitwist.apps.samples.cmdSample.main;
 
 import semitwist.cmd.all;
 

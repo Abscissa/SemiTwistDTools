@@ -14,7 +14,7 @@ DMD 1.044+ with Tango Trunk might work, but is untested.
 Rebuild 0.78 might work, but is quirky and not recommended.
 */
 
-module stmanage.ststart.main;
+module semitwist.apps.stmanage.ststart.main;
 
 import semitwist.cmd.all;
 

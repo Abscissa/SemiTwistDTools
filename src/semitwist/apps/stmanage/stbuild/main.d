@@ -27,12 +27,12 @@ Rebuild 0.78 might work, but is quirky and not recommended.
 //TODO: Add built-in fix for rebuild #227
 //      (Doesn't recompile untouched sources when passed different build paramaters)
 
-module stmanage.stbuild.main;
+module semitwist.apps.stmanage.stbuild.main;
 
 import semitwist.cmd.all;
 import semitwist.os; // TODO: Include this in cmd.all
 
-import stmanage.stbuild.conf;
+import semitwist.apps.stmanage.stbuild.conf;
 
 const char[] appName = "STBuild";
 const char[] appVer = "v1.00(pre)";

@@ -11,7 +11,7 @@ Uses:
 - Tango 0.99.8
 */
 
-module miniapps.seterrorlevel.main;
+module semitwist.apps.miniapps.seterrorlevel.main;
 
 import tango.util.Convert;
 

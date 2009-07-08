@@ -11,7 +11,7 @@ Uses:
 - Tango 0.99.8
 */
 
-module cmdTest.main;
+module semitwist.apps.tests.cmdTest.main;
 
 import semitwist.cmd.all;
 import semitwist.util.all;

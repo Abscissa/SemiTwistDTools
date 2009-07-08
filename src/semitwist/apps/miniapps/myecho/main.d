@@ -16,7 +16,7 @@ Uses:
 - Tango 0.99.8
 */
 
-module miniapps.myecho.main;
+module semitwist.apps.miniapps.myecho.main;
 
 import tango.io.Stdout;
 import tango.text.Util;

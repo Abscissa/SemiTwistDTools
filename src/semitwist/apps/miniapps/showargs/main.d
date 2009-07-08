@@ -11,7 +11,7 @@ Uses:
 - Tango 0.99.8
 */
 
-module miniapps.showargs.main;
+module semitwist.apps.miniapps.showargs.main;
 
 import tango.io.Stdout;
 

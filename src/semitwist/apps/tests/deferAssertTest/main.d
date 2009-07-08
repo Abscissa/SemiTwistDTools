@@ -11,7 +11,7 @@ Uses:
 - Tango 0.99.8
 */
 
-module deferAssertTest.main;
+module semitwist.apps.tests.deferAssertTest.main;
 
 import semitwist.util.deferAssert;
 

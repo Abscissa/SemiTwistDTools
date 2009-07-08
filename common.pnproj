@@ -1,1 +1,1 @@
-<Project name="common"><File path="clean.bat"></File><File path="stbuild.conf"></File><File path="redist_buildstbuild.bat"></File><File path="buildAll.bat"></File><File path="buildSTManageDebug.bat"></File></Project>
+<Project name="common"><File path="clean.bat"></File><File path="stbuild.conf"></File><File path="redist_buildstbuild.bat"></File><File path="buildAll.bat"></File><File path="buildSTManageDebug.bat"></File><File path="LICENSE.txt"></File></Project>

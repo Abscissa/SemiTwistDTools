@@ -1,1 +1,3 @@
-<Project name="deferAssertTest"><File path="src\tests\deferAssertTest\main.d"></File></Project>
+<Project name="deferAssertTest">
+<File path="src\semitwist\apps\tests\deferAssertTest\main.d"></File>
+</Project>

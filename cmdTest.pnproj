@@ -1,1 +1,3 @@
-<Project name="cmdTest"><File path="src\tests\cmdTest\main.d"></File></Project>
+<Project name="cmdTest">
+<File path="src\semitwist\apps\tests\cmdTest\main.d"></File>
+</Project>
