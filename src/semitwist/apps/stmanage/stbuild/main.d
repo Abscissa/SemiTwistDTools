@@ -14,9 +14,10 @@ DMD 1.044+ with Tango Trunk might work, but is untested.
 Rebuild 0.78 might work, but is quirky and not recommended.
 */
 
-//TODO: make obj subdirs "obj/target/mode"
+//TODO? Change "all all" to "alltargets allmodes"
+//TODO* make obj subdirs "obj/target/mode"
 //TODO: Automatically create/del obj subdirs
-//TODO? Make clean a target instead of a mode
+//TODO: Make clean an extra optional param
 //TODO: Don't need to group modes together anymore, maybe clean up remnants of that
 //TODO: Clean should only run once even though it's "all"
 //TODO: Incorporate command line parser
@@ -119,7 +120,7 @@ int buildModeRelease(char[] target)
 	
 	if(echoCmd) cmd.echo(cmdLine);
 	cmd.exec(cmdLine, ret);
-	moveMapFiles("release");
+	moveMapFiles(target~"/release");
 	
 	return ret;
 }
@@ -131,7 +132,7 @@ int buildModeDebug(char[] target)
 	
 	if(echoCmd) cmd.echo(cmdLine);
 	cmd.exec(cmdLine, ret);
-	moveMapFiles("debug");
+	moveMapFiles(target~"/debug");
 	
 	return ret;
 }
