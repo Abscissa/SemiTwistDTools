@@ -1,1 +1,1 @@
-<Project name="cmdparsertest"><File path="src\cmdparsertest\main.d"></File></Project>
+<Project name="cmdparsertest"><File path="src\tests\cmdparsertest\main.d"></File></Project>
