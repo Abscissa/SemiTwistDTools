@@ -10,6 +10,7 @@ module semitwist.util.io;
 
 import tango.io.FilePath;
 import tango.io.stream.Data;
+import tango.text.Util;
 
 version(Win32)
 	import tango.sys.win32.UserGdi;
@@ -30,10 +31,10 @@ wchar[] readNullTerminatedWString(DataInput reader)
 	return str[0..$-1];
 }
 
-// Gets the full path to the currently running executable,
-// regardless of working directory or PATH env var or anything else.
-// Modified from: http://www.dsource.org/projects/tango/forums/topic/595
-char[] getExec()
+/// Gets the full path to the currently running executable,
+/// regardless of working directory or PATH env var or anything else.
+/// Modified from: http://www.dsource.org/projects/tango/forums/topic/595
+FilePath getExecFilePath()
 {
 	char[] thisFile = new char[1024];
 
@@ -44,10 +45,31 @@ char[] getExec()
 
 	auto fp = new FilePath(thisFile);
 	fp.native();
-	return fp.toString();
+	return fp;
+}
+/// ditto
+char[] getExec()
+{
+	return getExecFilePath().toString().trim();
 }
 
+/// Like getExec, but doesn't include the path.
+char[] getExecName()
+{
+	return getExecFilePath().file().trim();
+}
+
+/// Like getExec, but only returns the path.
+char[] getExecPath()
+{
+	return getExecFilePath().path().trim();
+}
+
+
+// Use semitwist.os.pathSep instead
+/*
 version(Win32)
 	const char[] pathSeparator = "\\";
 else
 	const char[] pathSeparator = "/";
+*/

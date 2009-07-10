@@ -22,7 +22,6 @@ class STBuildConfException : Exception
 class Conf
 {
 	char[][] targets;
-	char[][] modes;
 	private char[][char[]][char[]] flags;
 	
 	char[][] errors;
@@ -31,10 +30,12 @@ class Conf
 	const char[] modeRelease = "release";
 	const char[] modeDebug   = "debug";
 	const char[] modeAll     = "all";
-	const char[] modeClean   = "clean";
 	const char[][] predefTargets = [targetAll];
-	const char[][] predefModes   = [modeRelease, modeDebug, modeAll, modeClean];
+	const char[][] modes = [modeRelease, modeDebug, modeAll];
 
+	char[][] targetAllElems;
+	char[][] modeAllElems;
+	
 	this(char[] filename)
 	{
 		auto parser = new ConfParser();
@@ -50,6 +51,9 @@ class Conf
 					.sformat(parser.errors.length, filename)
 			);
 		}
+
+		targetAllElems = targets.allExcept(targetAll);
+		modeAllElems   = modes.allExcept(modeAll);
 	}
 	
 	private char[] getFlagsSafe(char[] target, char[] mode)
@@ -109,8 +113,8 @@ class Conf
 			if(targets is null)
 				error(`No targets defined (Forgot "target targetname1, targetname2"?)`);
 
-			conf.targets = targets;
-			conf.modes   = modes;
+			conf.targets = targets ~ predefTargets;
+			//conf.modes   = modes;
 			conf.errors  = errors;
 		}
 		
@@ -176,8 +180,6 @@ class Conf
 					case "flags":
 						if(currTargets is null)
 							error("'{}' must be in a target definition".sformat(stmtCmd));
-						else if(currModes.contains(modeClean))
-							error("'{}' not supported for mode '{}'".sformat(stmtCmd, modeClean));
 						else
 						{
 							foreach(char[] target; currTargets)

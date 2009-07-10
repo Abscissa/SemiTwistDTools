@@ -16,6 +16,7 @@ import convInt = tango.text.convert.Integer;
 
 import semitwist.util.all;
 
+//TODO: Does tango's Variant make this obsolete?
 //TODO? convert to struct
 /// A boxable wrapper useful for variables of primitive types.
 class RefBox(T)

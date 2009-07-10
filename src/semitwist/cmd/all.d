@@ -19,7 +19,12 @@ public import tango.text.Util;
 public import tango.util.PathUtil;
 
 public import semitwist.cmd.plain;
+public import semitwist.cmdlineparser;
+public import semitwist.os;
+public import semitwist.refbox;
+public import semitwist.treeout;
 public import semitwist.util.all;
+public import semitwist.ver;
 
 // Work around issue #1588 in Tango 0.99.8 (fixed in trunk)
 // where contains returns size_t instead of bool.

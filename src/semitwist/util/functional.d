@@ -164,6 +164,22 @@ T[] filter(char[] dgstr, T)(T[] list)
 	return filter(list, mixin(makeDg1To1!(dgstr, T)));
 }
 
+//TODO: Make foreachWhile
+//TODO: Make variant that also provides an index to the delegate
+//TODO: Make variant for AA
+/// Like foreach, except the body has a return value,
+/// and the loop bails whenever that value != whileVal
+TRet foreachWhileVal(TRet, TElem)(TElem[] coll, TRet whileVal, TRet delegate(TElem) dg)
+{
+	foreach(TElem elem; coll)
+	{
+		auto ret = dg(elem);
+		if(ret != whileVal)
+			return ret;
+	}
+	return whileVal;
+}
+
 unittest
 {
 	int[char] aa = ['a':1, 'b':2, 'c':3];
