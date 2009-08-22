@@ -145,6 +145,7 @@ class Cmd
 			_argptr += type.tsize;
 		}
 		Stdout.newline;
+		Stdout.flush();
 	}
 	
 	private T _prompt(T, TChar)(TChar[] promptMsg, bool delegate(T) accept,

@@ -50,8 +50,8 @@ class CmdArgs
 	private CmdLineParser cmdLine;
 	private void init()
 	{
-		//TODO: Allow multiple switchless in CmdLineParser
-		//TODO: Create a "don't show in usage" ArgFlag setting.
+		//TODO? Allow multiple switchless in CmdLineParser
+		//TODO? Create a "don't show in usage" ArgFlag setting.
 		cmdLine = new CmdLineParser();
 		mixin(defineArg!(cmdLine, "help",     help,       ArgFlag.Optional, "Displays a help summary and exits" ));
 		mixin(defineArg!(cmdLine, "morehelp", moreHelp,   ArgFlag.Optional, "Displays a detailed help message and exits" ));
@@ -104,7 +104,7 @@ class CmdArgs
 
 	void showHelpHowTo()
 	{
-		//TODO: Figure out why I'm getting an extra space on getExecName even with trim
+		//TODO: Figure out why I'm getting an extra space on getExecName even with trim (Is it a null?)
 		cmd.echo("For help and usage information, use '{} --help'".sformat(getExecName()));
 	}
 	

@@ -19,10 +19,11 @@ import semitwist.util.all;
 
 //TODO: Add "switch A implies switches B and C"
 //TODO: Don't show "Basic:" or "Advanced:" label if only one type exists
+//TODO: Add in some good ideas from the cmd parser in tango scrapple
 
 //TODO: Convert the following sample code into an actual sample app
 /**
-OUTDATED COMMENT
+----- THIS IS PROBABLY OUTDATED -----
 Usage:
 
 void main(char[][] args)
@@ -132,7 +133,7 @@ private template _setArgAllowableValues(char[] name, allowableValues...)
 	//	pragma(msg, "_setArgAllowableValues:" ~ _setArgAllowableValues);
 }
 
-//TODO: Add float, double, byte, short, long, and unsigned of each.
+//TODO? Add float, double, byte, short, long, and unsigned of each.
 //TODO: For numeric types, make sure provided values can fit in the type. (Using "to!()"?)
 //TODO: Think about way to (or the need to) prevent adding
 //      the same Arg instance to multiple Parsers.
@@ -466,7 +467,7 @@ class CmdLineParser
 		return ret;
 	}
 
-	//TODO: check for response file
+	//TODO: response file
 
 	public bool parse(char[][] args)
 	{

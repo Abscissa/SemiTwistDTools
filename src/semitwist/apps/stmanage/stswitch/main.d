@@ -19,8 +19,6 @@ module semitwist.apps.stmanage.stswitch.main;
 import tango.io.Stdout;
 import semitwist.util.all;
 import semitwist.cmd.all;
-import semitwist.os; // TODO: Include this in cmd.all
-import semitwist.ver; // TODO: Include this in cmd.all
 
 int main(char[][] args)
 {

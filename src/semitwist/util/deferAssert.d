@@ -8,7 +8,6 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 Consider this to be under the zlib license.
 */
 
-//TODO? Rename this module to assert or deferAssert
 module semitwist.util.deferAssert;
 
 import tango.io.Stdout;

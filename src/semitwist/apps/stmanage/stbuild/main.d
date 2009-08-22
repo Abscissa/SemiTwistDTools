@@ -14,16 +14,13 @@ DMD 1.044+ with Tango Trunk might work, but is untested.
 Rebuild 0.78 might work, but is quirky and not recommended.
 */
 
-//TODO* Make clean an extra optional param and work on a per-target/mode basis
-//TODO* Don't need to group modes together anymore, maybe clean up remnants of that
-//TODO* Incorporate command line parser
+//TODO: Handle screwup when user does "stbuild myproj clean"
+//TODO: Handle screwup when user does "stbuild --help" without an stbuild.conf
 //TODO: Handle non-existant combinations
 //TODO: Handle DMD patched for -ww
 //      Use STBUILD_OPTS env var: STBUILD_OPTS=dmdpatch_ww;whatever...
 //TODO: Disallow crazy characters in target names
 //TODO: $(proj), $(mode), $(#), $proj, $#, $$, etc.
-//TODO* Add built-in fix for rebuild #227
-//      (Doesn't recompile untouched sources when passed different build paramaters)
 
 module semitwist.apps.stmanage.stbuild.main;
 

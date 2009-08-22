@@ -52,7 +52,7 @@ void main(char[][] args)
 	// - Wraps tango's Layout seamlessly for char, wchar and dchar.
 	// - Note that you don't need to manually instantiate it.
 	// - Using D's array-method calling syntax is, of course, optional.
-	//   (But I like it.)
+	//   (But I like using it.)
 	showSectionHeader("semitwist.util.text: sformat/sformatln");
 	auto myStr8 = "Hello {}".sformat("Joe");
 	cmd.echo(myStr8);
