@@ -6,6 +6,8 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
+IGNORE THIS APP FOR NOW, IT IS NOT USABLE YET
+
 Prerequisites for Building:
 - [Required]    DMD 1.043 (LDC untested)
 - [Required]    Tango 0.99.8

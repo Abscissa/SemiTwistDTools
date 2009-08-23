@@ -37,9 +37,8 @@ wchar[] readNullTerminatedWString(DataInput reader)
 FilePath getExecFilePath()
 {
 	char[] thisFile = new char[1024];
-
 	version (Win32)
-		GetModuleFileNameA(null,thisFile.ptr,1023);
+		thisFile = thisFile[0..GetModuleFileNameA(null,thisFile.ptr,1023)];
 	else
         thisFile = thisFile[0..(readlink(toStringz("/proc/self/exe"),thisFile.ptr,1023))];
 

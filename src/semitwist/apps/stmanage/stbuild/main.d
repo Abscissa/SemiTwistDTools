@@ -16,6 +16,7 @@ Rebuild 0.78 might work, but is quirky and not recommended.
 
 //TODO: Handle screwup when user does "stbuild myproj clean"
 //TODO: Handle screwup when user does "stbuild --help" without an stbuild.conf
+//TODO: Handle screwup when user does "stbuild undefined_target"
 //TODO: Handle non-existant combinations
 //TODO: Handle DMD patched for -ww
 //      Use STBUILD_OPTS env var: STBUILD_OPTS=dmdpatch_ww;whatever...
@@ -30,7 +31,7 @@ import semitwist.apps.stmanage.stbuild.cmdArgs;
 import semitwist.apps.stmanage.stbuild.conf;
 
 const char[] appName = "STBuild";
-const char[] appVer = "v1.00(pre)";
+const char[] appVer = "v0.01(pre)";
 
 CmdArgs cmdArgs;
 Conf conf;
