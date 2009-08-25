@@ -33,16 +33,16 @@ wchar[] readNullTerminatedWString(DataInput reader)
 
 /// Gets the full path to the currently running executable,
 /// regardless of working directory or PATH env var or anything else.
-/// Modified from: http://www.dsource.org/projects/tango/forums/topic/595
 FilePath getExecFilePath()
 {
-	char[] thisFile = new char[1024];
+	char[] file = new char[1024];
+	int filenameLength;
 	version (Win32)
-		thisFile = thisFile[0..GetModuleFileNameA(null,thisFile.ptr,1023)];
+		filenameLength = GetModuleFileNameA(null, file.ptr, file.length-1);
 	else
-        thisFile = thisFile[0..(readlink(toStringz("/proc/self/exe"),thisFile.ptr,1023))];
+        filenameLength = readlink(toStringz(selfExeLink), file.ptr, file.length-1);
 
-	auto fp = new FilePath(thisFile);
+	auto fp = new FilePath(file[0..filenameLength]);
 	fp.native();
 	return fp;
 }
@@ -58,7 +58,7 @@ char[] getExecName()
 	return getExecFilePath().file().trim();
 }
 
-/// Like getExec, but only returns the path.
+/// Like getExec, but only returns the path (including trailing path separator).
 char[] getExecPath()
 {
 	return getExecFilePath().path().trim();

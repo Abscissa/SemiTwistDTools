@@ -88,7 +88,11 @@ int clean(char[] target, char[] mode, bool verbose)
 	if(verbose)
 		cmd.echo("Cleaning {} {}...".sformat(target, mode));
 
-	auto objDir = cmd.dir.folder("obj/"~target~"/"~mode).open.tree;
+	VfsFolders objDir;
+	try
+		objDir = cmd.dir.folder("obj/"~target~"/"~mode).open.tree;
+	catch(Exception e) // No directory to clean
+		return 0;
 	
 	foreach(VfsFile file; objDir.catalog("*.map"))
 		file.remove();

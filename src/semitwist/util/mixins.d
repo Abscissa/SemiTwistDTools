@@ -263,40 +263,6 @@ template traceMixin(char[] name, char[] args)
 	//pragma(msg, "traceMixin: "~traceMixin);
 }
 
-//TODO: Make something like this:
-/*
-// Simon Kjaeraas
-import std.stdio;
-import std.traits;
-
-template _debug(alias f, int line = __LINE__, string file = __FILE__)
-{
-	ReturnType!(f) _debug(ParameterTypeTuple!(f) u)
-	{
-		writefln("%s(%d) executed.", file, line);
-		return f(u);
-	}
-}
-
-
-Usage:
-
-_debug(function)(parameters);
-*/
-/*
-// Doesn't work, __FILE__ and __LINE__ evaluated here, not at instantiation
-import tango.io.Stdout;
-import tango.core.Traits;
-template _trace(alias f, int line = __LINE__, char[] file = __FILE__)
-{
-	ReturnTypeOf!(f) _trace(ParameterTupleOf!(f) u)
-	{
-		Stdout.formatln("{}({}): Executing", file, line);
-		return f(u);
-	}
-}
-*/
-
 /**
 Useful in class/struct declarations for DRY.
 
