@@ -10,7 +10,10 @@ module semitwist.util.io;
 
 import tango.io.FilePath;
 import tango.io.stream.Data;
+import tango.stdc.stringz;
 import tango.text.Util;
+
+import semitwist.os;
 
 version(Win32)
 	import tango.sys.win32.UserGdi;
