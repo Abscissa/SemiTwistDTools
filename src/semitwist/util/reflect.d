@@ -2,13 +2,14 @@
 // Written in the D programming language.
 
 /** 
-Author:
+Author (except where otherwise noted):
 $(WEB www.semitwist.com, Nick Sabalausky)
 */
 
 module semitwist.util.reflect;
 
 import tango.core.Traits;
+import tango.core.Version;
 
 import semitwist.util.ctfe;
 
@@ -33,25 +34,6 @@ template isAnyArrayType(T)
 		isAssocArrayType!(T);
 }
 
-// From Tango trunk
-template isArrayType(T)
-{
-	static if (is( T U : U[] ))
-		const bool isArrayType=true;
-	else
-		const bool isArrayType=false;
-}
-
-// From Tango trunk
-template KeyTypeOfAA(T){
-	alias typeof(T.init.keys[0]) KeyTypeOfAA;
-}
-
-// From Tango trunk
-template ValTypeOfAA(T){
-	alias typeof(T.init.values[0]) ValTypeOfAA;
-}
-
 // If T is a static array, it's changed to a dynamic array, otherwise just returns T.
 template PreventStaticArray(T)
 {
@@ -67,4 +49,42 @@ template callableExists(T)
 		const bool callableExists = true;
 	else
 		const bool callableExists = false;
+}
+
+/// Returns the type that a T would evaluate to in an expression.
+/// It's like ReturnTypeOf, except you can use it when
+/// you neither know nor care whether T actually is callable.
+/// Ie: If T is callable (such as a function or property),
+///     then this returns T's return type,
+///     otherwise, this just returns T's type.
+template ExprTypeOf(T)
+{
+    static if(isCallableType!(T))
+        alias ReturnTypeOf!(T) ExprTypeOf;
+    else
+        alias T ExprTypeOf;
+}
+
+static if(Tango.Major == 0 && Tango.Minor <= 998)
+{
+	/// This is included here directly from a trunk version of tango.core.Traits
+	/// because it is required by SemiTwist D Tools, but does not exist in the
+	/// latest official Tango release (0.99.8).
+	template isArrayType(T)
+	{
+		static if (is( T U : U[] ))
+			const bool isArrayType=true;
+		else
+			const bool isArrayType=false;
+	}
+
+	/// ditto
+	template KeyTypeOfAA(T){
+		alias typeof(T.init.keys[0]) KeyTypeOfAA;
+	}
+
+	/// ditto
+	template ValTypeOfAA(T){
+		alias typeof(T.init.values[0]) ValTypeOfAA;
+	}
 }

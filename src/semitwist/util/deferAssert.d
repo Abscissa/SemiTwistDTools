@@ -10,6 +10,9 @@ Consider this to be under the zlib license.
 
 module semitwist.util.deferAssert;
 
+// deferEnsure requires this to exist in the calling context
+public import semitwist.util.reflect;
+
 import tango.io.Stdout;
 import tango.util.Convert;
 
@@ -44,6 +47,8 @@ bool _deferAssert(long line, char[] file, char[] condStr, char[] msg="")(bool co
 	return condResult;
 }
 
+//TODO: Something like: mixin(blah!(`_1 == (_2 ~ _3)`, `"Hello"`, `"He"`, `"llo"`));
+
 template deferEnsure(char[] value, char[] condStr, char[] msg="")
 {
 	const char[] deferEnsure =
@@ -51,7 +56,7 @@ template deferEnsure(char[] value, char[] condStr, char[] msg="")
 	"    auto _ = ("~value~");\n"~
 	"    bool _deferEnsure_condResult = ("~condStr~");\n"~
 	// The "__LINE__-3" is a workaround for DMD Bug #2887
-	"    _deferEnsure!(__LINE__-3, __FILE__, "~value.stringof~", "~condStr.stringof~", typeof("~value~"), "~msg.stringof~")(_, _deferEnsure_condResult);\n"~
+	"    _deferEnsure!(__LINE__-3, __FILE__, "~value.stringof~", "~condStr.stringof~", ExprTypeOf!(typeof("~value~")), "~msg.stringof~")(_, _deferEnsure_condResult);\n"~
 	"}\n";
 	//pragma(msg, "deferEnsure: "~deferEnsure);
 }
