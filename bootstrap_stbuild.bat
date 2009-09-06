@@ -4,4 +4,3 @@ rebuild src\semitwist\apps\stmanage\stbuild\main -oqobj\stmanage\release -ofbin\
 move *.map obj\stmanage\release > _junk_.junk 2> _junk_.junk2
 del /Q _junk_.junk
 del /Q _junk_.junk2
-

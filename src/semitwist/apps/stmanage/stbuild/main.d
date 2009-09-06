@@ -14,6 +14,7 @@ DMD 1.044+ with Tango Trunk might work, but is untested.
 Rebuild 0.78 might work, but is quirky and not recommended.
 */
 
+//TODO: Clean all if stbuild.conf has changed
 //TODO: Handle screwup when user does "stbuild myproj clean"
 //TODO: Handle screwup when user does "stbuild --help" without an stbuild.conf
 //TODO: Handle screwup when user does "stbuild undefined_target"
