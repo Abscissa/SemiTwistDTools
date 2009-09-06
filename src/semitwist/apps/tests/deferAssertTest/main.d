@@ -26,7 +26,7 @@ unittest
 	int foo = 2;
 	char[] bar = "hello";
 
-	bool throwException()
+	bool throwsException()
 	{
 		throw new Exception("Some exception");
 	}
@@ -37,12 +37,16 @@ unittest
 	mixin(deferAssert!(`foo == 3 || foo > 5`, "foo is bad"));
 	mixin(deferAssert!(`2 + 2 == 4`, "Basic arithmetic"));
 	mixin(deferAssert!(`false`));
-	mixin(deferAssert!(`throwException()`, "Exceptions are handled"));
+	mixin(deferAssert!(`throwsException()`, "Exceptions are handled"));
 	
 	mixin(deferEnsure!(`foo`, `_ == 3 || _ > 5`, "ensure foo failed"));
 	mixin(deferEnsure!(`foo`, `_ > 0`));
 	mixin(deferEnsure!(`bar`, `_ == "hola"`));
 	mixin(deferEnsure!(`2+2`, `_ == 4`));
-	mixin(deferEnsure!(`throwException()`, `!_`, "Exceptions are handled"));
-	mixin(deferEnsure!(`false`, `_ == throwException()`, "Exceptions are handled"));
+	mixin(deferEnsure!(`throwsException()`, `!_`, "Exceptions are handled"));
+	mixin(deferEnsure!(`false`, `_ == throwsException()`, "Exceptions are handled"));
+	
+	mixin(deferEnsureThrows!(`throw new Exception("Hello");`, Exception));
+	mixin(deferEnsureThrows!(`throw new Object();`, Exception, "Wrong type thrown!"));
+	mixin(deferEnsureThrows!(`throw new Exception("Hello");`, Object, "Wrong type thrown!"));
 }

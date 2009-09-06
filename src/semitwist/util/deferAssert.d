@@ -45,8 +45,8 @@ bool _deferAssert(long line, char[] file, char[] condStr, char[] msg="")(bool co
 	{
 		assertCount++;
 		Stdout.formatln("{}({}): Assert Failed ({}){}",
-						file, line, condStr,
-						msg=="" ? "" : ": " ~ msg);
+		                file, line, condStr,
+		                msg=="" ? "" : ": " ~ msg);
 	}
 	
 	return condResult;
@@ -56,13 +56,13 @@ void _deferAssertException(long line, char[] file, char[] condStr, char[] msg=""
 {
 	assertCount++;
 	Stdout.format("{}({}): Assert Threw ({}){}:\nThrew: ",
-				  file, line, condStr,
-				  msg=="" ? "" : ": " ~ msg);
+	              file, line, condStr,
+	              msg=="" ? "" : ": " ~ msg);
 	Exception e = cast(Exception)thrown;
 	if(e)
 		e.writeOut( (char[] msg) {Stdout(msg);} );
 	else
-		Stdout.formatln("Object: type '{}':\n{}", thrown.classinfo.name, thrown);
+		Stdout.formatln("Object: type '{}': {}", thrown.classinfo.name, thrown);
 }
 
 //TODO: Something like: mixin(blah!(`_1 == (_2 ~ _3)`, `"Hello"`, `"He"`, `"llo"`));
@@ -70,16 +70,16 @@ void _deferAssertException(long line, char[] file, char[] condStr, char[] msg=""
 template deferEnsure(char[] value, char[] condStr, char[] msg="")
 {
 	const char[] deferEnsure =
-	// The "_deferEnsure_line" is a workaround for DMD Bug #2887
-	"{ const long _deferEnsure_line = __LINE__;\n"~
+	// The "_deferAssert_line" is a workaround for DMD Bug #2887
+	"{ const long _deferAssert_line = __LINE__;\n"~
 	"    try\n"~
 	"    {\n"~
 	"        auto _ = ("~value~");\n"~
-	"        bool _deferEnsure_condResult = ("~condStr~");\n"~
-	"        _deferEnsure!(_deferEnsure_line, __FILE__, "~value.stringof~", "~condStr.stringof~", ExprTypeOf!(typeof("~value~")), "~msg.stringof~")(_, _deferEnsure_condResult);\n"~
+	"        bool _deferAssert_condResult = ("~condStr~");\n"~
+	"        _deferEnsure!(_deferAssert_line, __FILE__, "~value.stringof~", "~condStr.stringof~", ExprTypeOf!(typeof("~value~")), "~msg.stringof~")(_, _deferAssert_condResult);\n"~
 	"    }\n"~
-	"    catch(Object _deferEnsure_e)\n"~
-	"        _deferEnsureException!(_deferEnsure_line, __FILE__, "~value.stringof~", "~condStr.stringof~", "~msg.stringof~")(_deferEnsure_e);\n"~
+	"    catch(Object _deferAssert_e)\n"~
+	"        _deferEnsureException!(_deferAssert_line, __FILE__, "~value.stringof~", "~condStr.stringof~", "~msg.stringof~")(_deferAssert_e);\n"~
 	"}\n";
 	//pragma(msg, "deferEnsure: "~deferEnsure);
 }
@@ -91,10 +91,10 @@ bool _deferEnsure(long line, char[] file, char[] valueStr, char[] condStr, T, ch
 		assertCount++;
 		Stdout.formatln("{}({}): Ensure Failed{}\n"~
 		                "Expression '{}':\n"~
-						"Expected: {}\n"~
-						"Actual: {}",
-						file, line, msg=="" ? "" : ": " ~ msg,
-						valueStr, condStr, valueResult);
+		                "Expected: {}\n"~
+		                "Actual: {}",
+		                file, line, msg=="" ? "" : ": " ~ msg,
+		                valueStr, condStr, valueResult);
 	}
 	
 	return condResult;
@@ -104,16 +104,52 @@ void _deferEnsureException(long line, char[] file, char[] valueStr, char[] condS
 {
 	assertCount++;
 	Stdout.format("{}({}): Ensure Threw{}:\n"~
-				  "Expression '{}':\n"~
-				  "Expected: {}\n"~
-				  "Threw: ",
-				  file, line, msg=="" ? "" : ": " ~ msg,
-				  valueStr, condStr);
+	                "Expression '{}':\n"~
+	                "Expected: {}\n"~
+	                "Threw: ",
+	                file, line, msg=="" ? "" : ": " ~ msg,
+	                valueStr, condStr);
 	Exception e = cast(Exception)thrown;
 	if(e)
 		e.writeOut( (char[] msg) {Stdout(msg);} );
 	else
-		Stdout.formatln("Object: type '{}':\n{}", thrown.classinfo.name, thrown);
+		Stdout.formatln("Object: type '{}': {}", thrown.classinfo.name, thrown);
+}
+
+template deferEnsureThrows(char[] stmtStr, TExpected, char[] msg="")
+{
+	const char[] deferEnsureThrows =
+	// The "_deferAssert_line" is a workaround for DMD Bug #2887
+	"{ const long _deferAssert_line = __LINE__;\n"~
+	"    Object _deferAssert_caught=null;\n"~
+	"    try\n"~
+	"    {"~stmtStr~"}\n"~
+	"    catch(Object _deferAssert_e)\n"~
+	"        _deferAssert_caught = _deferAssert_e;\n"~
+	"    _deferEnsureThrows!(_deferAssert_line, __FILE__, "~stmtStr.stringof~", "~TExpected.stringof~", "~msg.stringof~")(_deferAssert_caught);\n"~
+	"}\n";
+	//pragma(msg, "deferEnsureThrows: "~deferEnsureThrows);
+}
+
+void _deferEnsureThrows(long line, char[] file, char[] stmtStr, TExpected, char[] msg="")(Object thrown)
+{
+	char[] actualType = (thrown is null)? "{null}" : thrown.classinfo.name;
+		
+	if(actualType != TExpected.classinfo.name)
+	{
+		assertCount++;
+		Stdout.format("{}({}): Ensure Throw Failed{}\n"~
+		              "Statement '{}':\n"~
+		              "Expected: {}\n"~
+		              "Actual:   ",
+		              file, line, msg=="" ? "" : ": " ~ msg,
+		              stmtStr, TExpected.classinfo.name, actualType);
+		Exception e = cast(Exception)thrown;
+		if(e)
+			e.writeOut( (char[] msg) {Stdout(msg);} );
+		else
+			Stdout.formatln("{}: {}", actualType, thrown);
+	}
 }
 
 private uint assertCount=0;
