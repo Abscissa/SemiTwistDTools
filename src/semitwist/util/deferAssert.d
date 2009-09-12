@@ -4,8 +4,6 @@
 /** 
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
-
-Consider this to be under the zlib license.
 */
 
 module semitwist.util.deferAssert;
@@ -17,6 +15,12 @@ import tango.io.Stdout;
 import tango.util.Convert;
 
 import semitwist.util.text;
+
+//TODO: Properly handle stuff that (for whatever bizarre reason) throws null.
+//TODO: Modify deferEnsureThrows to (optionally?) accept subclasses of TExpected
+//TODO? Change deferEnsureThrows to take an expression instead of a statement
+//TODO? Better naming convention
+
 
 /**
 Sounds like a contradiction of terms, but this is just
@@ -134,7 +138,7 @@ template deferEnsureThrows(char[] stmtStr, TExpected, char[] msg="")
 void _deferEnsureThrows(long line, char[] file, char[] stmtStr, TExpected, char[] msg="")(Object thrown)
 {
 	char[] actualType = (thrown is null)? "{null}" : thrown.classinfo.name;
-		
+	
 	if(actualType != TExpected.classinfo.name)
 	{
 		assertCount++;
