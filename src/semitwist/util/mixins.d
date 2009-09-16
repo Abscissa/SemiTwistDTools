@@ -335,7 +335,7 @@ template getter(varType, char[] name, varType initialValue=varType.init)
 			"private "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
 			"public "~varType.stringof~" "~name~"() {return _"~name~(isAnyArrayType!(varType)?".dup":"")~";}\n";
 	}
-	pragma(msg, "getter: " ~ getter);
+	//pragma(msg, "getter: " ~ getter);
 }
 
 /**
