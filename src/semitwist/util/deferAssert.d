@@ -168,13 +168,15 @@ void resetAssertCount()
 
 void flushAsserts()
 {
-	if(getAssertCount() > 0)
+	if(assertCount > 0)
 	{
+		uint saveAssertCount = assertCount;
+		assertCount = 0;
 		Stdout.flush();
 		assert(false,
-			to!(char[])(getAssertCount()) ~
+			to!(char[])(saveAssertCount) ~
 			" Assert Failure" ~
-			(getAssertCount() == 1 ? "" : "s")
+			(saveAssertCount == 1 ? "" : "s")
 		);
 	}
 }
