@@ -322,20 +322,38 @@ public char[] str()
 template getter(varType, char[] name, varType initialValue=varType.init)
 {
 	static if(is(varType.init))
+		const char[] getter = getterX!("private", varType, name, initialValue);
+	else
+		const char[] getter = getterX!("private", varType, name);
+	//pragma(msg, "getter: " ~ getter);
+}
+
+template getterProtected(varType, char[] name, varType initialValue=varType.init)
+{
+	static if(is(varType.init))
+		const char[] getter = getterX!("protected", varType, name, initialValue);
+	else
+		const char[] getter = getterX!("protected", varType, name);
+	//pragma(msg, "getterProtected: " ~ getterProtected);
+}
+
+template getterX(char[] writeAccess, varType, char[] name, varType initialValue=varType.init)
+{
+	static if(is(varType.init))
 	{
-		const char[] getter =
-			"private "~varType.stringof~" _"~name~(initialValue == varType.init ? "" : "=" ~ initialValue.stringof)~";\n"~
-			"private "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
+		const char[] getterX =
+			writeAccess~" "~varType.stringof~" _"~name~(initialValue.stringof == varType.init.stringof ? "" : "=" ~ initialValue.stringof)~";\n"~
+			writeAccess~" "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
 			"public "~varType.stringof~" "~name~"() {return _"~name~(isAnyArrayType!(varType)?".dup":"")~";}\n";
 	}
 	else
 	{
-		const char[] getter =
-			"private "~varType.stringof~" _"~name~";\n"~
-			"private "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
+		const char[] getterX =
+			writeAccess~" "~varType.stringof~" _"~name~";\n"~
+			writeAccess~" "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
 			"public "~varType.stringof~" "~name~"() {return _"~name~(isAnyArrayType!(varType)?".dup":"")~";}\n";
 	}
-	//pragma(msg, "getter: " ~ getter);
+//	pragma(msg, "getterX: " ~ getterX);
 }
 
 /**
