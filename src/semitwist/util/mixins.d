@@ -331,9 +331,9 @@ template getter(varType, char[] name, varType initialValue=varType.init)
 template getterProtected(varType, char[] name, varType initialValue=varType.init)
 {
 	static if(is(varType.init))
-		const char[] getter = getterX!("protected", varType, name, initialValue);
+		const char[] getterProtected = getterX!("protected", varType, name, initialValue);
 	else
-		const char[] getter = getterX!("protected", varType, name);
+		const char[] getterProtected = getterX!("protected", varType, name);
 	//pragma(msg, "getterProtected: " ~ getterProtected);
 }
 
