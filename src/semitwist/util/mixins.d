@@ -433,7 +433,19 @@ private char[] customGenFunc()
 //TODO? Better name for this?
 template getterLazy(varType, char[] name, char[] genFunc="")
 {
-	const char[] getterLazy =
+	const char[] getterLazy = getterLazyX!("private", varType, name, genFunc);
+	//pragma(msg, "getterLazy: " ~ getterLazy);
+}
+
+template getterLazyProtected(varType, char[] name, char[] genFunc="")
+{
+	const char[] getterLazyProtected = getterLazyX!("protected", varType, name, genFunc);
+	//pragma(msg, "getterLazyProtected: " ~ getterLazyProtected);
+}
+
+template getterLazyX(char[] writeAccess, varType, char[] name, char[] genFunc="")
+{
+	const char[] getterLazyX =
 		"\n"~
 		"static if(!is(typeof(_"~name~"_gen)==function))\n"~
 		`	static assert(false, "'getterLazy!(`~varType.stringof~`, \"`~name~`\")' requires function '`~varType.stringof~` _`~name~`_gen()' to be defined");`~"\n"~
@@ -446,8 +458,8 @@ template getterLazy(varType, char[] name, char[] genFunc="")
 		//"static if(!ParameterTupleOf!(_line_gen).length==0)\n"~
 		//`	static assert(false, "'getterLazy!(`~varType.stringof~`, \"`~name~`\")' requires an overload of function '_`~name~`_gen' that takes no arguments");`~"\n"~
 
-		"private "~varType.stringof~" _"~name~";\n"~
-		"private bool _"~name~"_cached = false;\n"~
+		writeAccess~" "~varType.stringof~" _"~name~";\n"~
+		writeAccess~" bool _"~name~"_cached = false;\n"~
 		"public "~varType.stringof~" "~name~"() {\n"~
 		"	if(!_"~name~"_cached) {\n"~
 		"		_"~name~"_cached = true;\n"~
@@ -456,7 +468,7 @@ template getterLazy(varType, char[] name, char[] genFunc="")
 		"	return _"~name~(isAnyArrayType!(varType)?".dup":"")~";\n"~
 		"}\n";
 
-	//pragma(msg, "getterLazy: " ~ getterLazy);
+	//pragma(msg, "getterLazyX: " ~ getterLazyX);
 }
 
 /**
