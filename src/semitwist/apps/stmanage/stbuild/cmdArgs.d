@@ -2,11 +2,6 @@
 // STManage: STBuild
 // Written in the D programming language.
 
-/** 
-Author:
-$(WEB www.semitwist.com, Nick Sabalausky)
-*/
-
 module semitwist.apps.stmanage.stbuild.cmdArgs;
 
 import semitwist.cmd.all;

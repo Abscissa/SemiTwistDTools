@@ -1,11 +1,6 @@
 // SemiTwist D Tools: Library
 // Written in the D programming language.
 
-/** 
-Author:
-$(WEB www.semitwist.com, Nick Sabalausky)
-*/
-
 module semitwist.ver;
 
 import tango.io.Stdout;
@@ -15,6 +10,7 @@ import tango.util.Convert;
 
 import semitwist.util.all;
 
+//TODO: Support versions that have different semantics
 struct Ver
 {
 	uint[] ver;

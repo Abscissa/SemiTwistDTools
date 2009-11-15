@@ -1,11 +1,6 @@
 // SemiTwist D Tools: Library
 // Written in the D programming language.
 
-/** 
-Author:
-$(WEB www.semitwist.com, Nick Sabalausky)
-*/
-
 module semitwist.cmd.plain;
 
 //import tango.stdc.stdio;
@@ -28,7 +23,7 @@ static this()
 }
 
 //TODO: Make promptChar
-//TODO: Make a standard "Press a key to continue..."
+//TODO: Change prompt to "Press a key to continue..."
 //TODO: Make a standard yes/no prompt
 //TODO? Rename echoing to exececho or echoexec
 //TODO: Handle env var stuff
@@ -96,6 +91,7 @@ class Cmd
 		return dir();
 	}
 	
+	//TODO: Abstract the interface so that the same exec calls work on both win and lin.
 	// Plain Versions
 	void exec(char[] cmd)
 	{
@@ -139,8 +135,8 @@ class Cmd
 			if(i > 0) Stdout(" ");
 
 			// Tango's Layout already handles all this
-			// converting-varargs-to-strings crap, so
-			// just let it do all the work:
+			// converting-varargs-to-strings crap,
+			// so let it do all the dirty work:
 			Stdout(layout.convert([type], _argptr, "{}"));
 			_argptr += type.tsize;
 		}

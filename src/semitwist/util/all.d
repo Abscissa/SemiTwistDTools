@@ -6,7 +6,7 @@ Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
 Requires:
-- DMD 1.041
+- DMD 1.043
 - Tango 0.99.8
 
 In SVN comments:

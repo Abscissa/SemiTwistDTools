@@ -1,23 +1,21 @@
 // SemiTwist Library
 // Written in the D programming language.
 
-/** 
-Author (except where otherwise noted):
-$(WEB www.semitwist.com, Nick Sabalausky)
-*/
-
 module semitwist.util.reflect;
 
 import tango.core.Traits;
 import tango.core.Version;
 
 import semitwist.util.ctfe;
+import semitwist.util.deferAssert;
 
 /**
 If you have a class MyClass(T), then nameof!(MyClass) will return "MyClass".
 
 One benefit of this is that you can do things like:
 	mixin("auto obj = new "~nameof!(MyClass)~"!(int)()");
+or
+	throw new Exception("Something's wrong with a "~nameof!(MyClass)~" object!";
 and the "MyClass" will be checked by the compiler, alerting you immediately
 if the class name changes, helping you keep such strings up-to-date.
 */
@@ -63,6 +61,48 @@ template ExprTypeOf(T)
         alias ReturnTypeOf!(T) ExprTypeOf;
     else
         alias T ExprTypeOf;
+}
+
+/++
+Calls .stringof on each argument then returns
+the results in an array of strings.
+
+(NOTE: Not actually intended as a mixin itself.)
+
+Example:
+
+----
+int i;
+void func1(){}
+// void func2(int x){} // This one doesn't work ATM due to DMD Bug #2867
+
+const char[][] foo = templateArgsToStrings!(i, func1);
+assert(foo == ["i"[], "func1"]);
+----
+
++/
+template templateArgsToStrings(args...)
+{
+	static if(args.length == 0)
+		const char[][] templateArgsToStrings = [];
+	else
+		const char[][] templateArgsToStrings =
+			(	// Ugly hack for DMD Bug #2867
+				(args[0].stringof.length>2 && args[0].stringof[$-2..$]=="()")?
+					args[0].stringof[0..$-2] :
+					args[0].stringof[] 
+			)
+			~ templateArgsToStrings!(args[1..$]);
+}
+
+unittest
+{
+	int i;
+	void func1(){}
+	//void func2(int x){} // This one doesn't work ATM due to DMD Bug #2867
+
+	const char[][] templateArgsToStrings_test = templateArgsToStrings!(i, func1);
+	mixin(deferEnsure!(`templateArgsToStrings_test`, `_ == ["i"[], "func1"]`));
 }
 
 static if(Tango.Major == 0 && Tango.Minor <= 998)

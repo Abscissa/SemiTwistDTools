@@ -1,11 +1,6 @@
 // SemiTwist Library
 // Written in the D programming language.
 
-/** 
-Author:
-$(WEB www.semitwist.com, Nick Sabalausky)
-*/
-
 module semitwist.util.array;
 
 import tango.core.Array;

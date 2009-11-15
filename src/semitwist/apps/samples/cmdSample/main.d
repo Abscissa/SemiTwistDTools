@@ -23,10 +23,14 @@ void showSectionHeader(char[] str)
 
 //TODO: Find those functions in tango to read and maybe write a file in one line.
 //      And add the import to semitwist.cmd.all, and add samples for it here.
-//   -> tango.io.device.File: char[] blah = File.get("blah.txt");
+//   -> tango.io.device.File: char[] blah = cast(char[])File.get("blah.txt");
 
 void main(char[][] args)
 {
+	// ----- semitwist.cmd: cmd.pause -----
+	// - Prompt and wait for the user to press Enter
+	cmd.pause();
+
 	// ----- semitwist.cmd: cmd.echo -----
 	// - Script-style alternative to Stdout, largely here for completeness
 	// - May be extended later to support a limited form of
@@ -34,6 +38,7 @@ void main(char[][] args)
 	// - Note that a newline is automatically appended,
 	//   which is useful for shell-script-style apps.
 	showSectionHeader("semitwist.cmd: cmd.echo");
+	
 	cmd.echo("Hello");
 	cmd.echo("This is on a separate line");
 	cmd.echo("Multiple mixed-types:"c, 2, "+"w, 3.1, "="d, 5.1);
@@ -48,35 +53,46 @@ void main(char[][] args)
 	Stdout("Of course, ");
 	Stdout.formatln("ordinary Stdout {} available too.", "is");
 
+	cmd.pause();
+
 	// ----- semitwist.util.text: sformat/sformatln -----
 	// - Wraps tango's Layout seamlessly for char, wchar and dchar.
 	// - Note that you don't need to manually instantiate it.
 	// - Using D's array-method calling syntax is, of course, optional.
 	//   (But I like using it.)
 	showSectionHeader("semitwist.util.text: sformat/sformatln");
+
 	auto myStr8 = "Hello {}".sformat("Joe");
 	cmd.echo(myStr8);
 	auto myStr16 = "This {} wstr ends in a newline, {}"w.sformatln("happy", "whee");
 	cmd.echo(myStr16);
 	cmd.echo("See? There was an extra newline up there.");
 	
+	cmd.pause();
+
 	// ----- semitwist.util.mixins: trace -----
 	// - Useful for debugging.
 	// - Outputs file and line information
 	showSectionHeader("semitwist.util.mixins: trace");
+
 	mixin(trace!());
 	mixin(trace!());
 	mixin(trace!("======== this is easy to spot ========"));
 	
+	cmd.pause();
+
 	// ----- semitwist.util.mixins: traceVal -----
 	// - Useful for debugging.
 	// - DRY way to output both an expression and the expression's value
 	showSectionHeader("semitwist.util.mixins: traceVal");
+
 	double myDouble = 5.55;
 	int myInt = 7;
 	mixin(traceVal!("myDouble", "myInt   ", "   myInt", "4*7"));
 	mixin(traceVal!(`"Any expression {}".sformat("is ok")`));
 	
+	cmd.pause();
+
 	// ----- semitwist.cmd: cmd.exec -----
 	// - Easy tango.sys.Process wrapper for running apps
 	//
@@ -84,6 +100,7 @@ void main(char[][] args)
 	//   - showargs: Lists the args passed into it
 	//   - seterrorlevel: Sets the error level to a desired value
 	showSectionHeader("semitwist.cmd: cmd.exec");
+
 	cmd.exec("showargs Hello from D!"); // Three args
 	cmd.exec(`showargs "Hello from D!"`); // One arg with spaces
 	cmd.exec("showargs", ["arg 1"[], "arg 2"]); // Two args, each with spaces
@@ -92,6 +109,8 @@ void main(char[][] args)
 	cmd.exec("seterrorlevel 42", errLevel);
 	mixin(traceVal!("errLevel"));
 	
+	cmd.pause();
+
 	// ----- semitwist.cmd: cmd.echoing -----
 	// - Determines whether an exec'd program's stdout/stderr are actually
 	//   sent to this program's stdout/stderr or are hidden.
@@ -102,15 +121,19 @@ void main(char[][] args)
 	//             is not an actual executable and therefore can't be launched
 	//             by the tango.sys.Process used by exec.
 	showSectionHeader("semitwist.cmd: cmd.echoing");
+
 	cmd.exec("myecho You can see this");
 	cmd.echoing = false;
 	cmd.exec("myecho You cannot see this");
 	cmd.echoing = true;
 	cmd.exec("myecho You can see this again");
 	
+	cmd.pause();
+
 	// ----- semitwist.cmd: cmd.prompt -----
 	// - Easy way to prompt for information interactively
 	showSectionHeader("semitwist.cmd: cmd.prompt");
+
 	char[] input;
 	input = cmd.prompt("Type some stuff: ");
 	cmd.echo("You entered:", input);
@@ -140,13 +163,15 @@ void main(char[][] args)
 	letter = cmd.promptChar(promptMsg, &acceptChar, failureMsg);
 	cmd.echo("Yy".contains(letter)? "Yay!" : "Dang...");
 +/
-	// Prompt and wait for any keypress
+
 	cmd.pause();
 
 	// ----- semitwist.cmd: cmd.dir -----
 	// - Get/Set cmd's working directory
-	// - Note that setting dir does NOT affect the app's working directory
+	// - Note that setting dir does NOT affect the app's working directory,
+	//   just the directory the cmd object operates on.
 	showSectionHeader("semitwist.cmd: cmd.dir");
+
 	cmd.echo("cmd is in", cmd.dir);          // Starts in the app's working dir
 	cmd.dir.folder("myNewDir").create;       // dir exposes Tango's VfsFolder
 	cmd.dir = "myNewDir";                    // Enter newly created directory
@@ -197,11 +222,12 @@ void main(char[][] args)
 	// - More explanation and examples of this are available at:
 	//   http://www.dsource.org/projects/tango/wiki/ChapterVFS
 	showSectionHeader("tango.io.vfs.FileFolder");
+
 	cmd.echo("Current '.' dir is "~cmd.dir.toString);
 	cmd.echo("cmd.dir contains:");
 	foreach(VfsFolder folder; cmd.dir)
 	{
-		// Remember, mixins can generate nultiple statements
+		// Remember, in D, mixins can generate multiple statements
 		mixin(traceVal!("folder", "folder.name"));
 	}
 
@@ -231,9 +257,11 @@ void main(char[][] args)
 	foreach(VfsFile file; entireParentTree.catalog)
 		cmd.echo(" -"~file.toString);
 	
-	cmd.echo("Total num *.txt files in entire '..' tree: {}".sformat(entireParentTree.catalog("*.txt")));
+	cmd.echo("Total num *.txt files in entire '..' tree: {}".sformat(entireParentTree.catalog("*.txt").files));
 	foreach(VfsFile file; entireParentTree.catalog("*.txt"))
 		cmd.echo(" -"~file.toString);
 		
+	cmd.pause();
+
 	//TODO: Add deferAssert stuff
 }

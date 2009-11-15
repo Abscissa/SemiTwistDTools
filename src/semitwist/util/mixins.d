@@ -1,20 +1,16 @@
-// SemiTwist Library
+﻿// SemiTwist Library
 // Written in the D programming language.
-
-/** 
-Author:
-$(WEB www.semitwist.com, Nick Sabalausky)
-*/
 
 module semitwist.util.mixins;
 
 import tango.core.Traits;
 import tango.io.Stdout;
 
+import semitwist.util.ctfe;
 import semitwist.util.reflect;
 import semitwist.util.text;
 
-/**
+/++
 Useful in constructors for DRY.
 
 Usage:
@@ -30,14 +26,35 @@ this.a = a;
 this.b = b;
 this.c = c;
 ----
-*/
-template initMember(variables...)
++/
+template initMember(vars...)
 {
-	const char[] initMember = _initMemberFrom!("", variables);
-	//pragma(msg, "initMember: " ~ initMember);
+	const char[] initMember = initMemberX!("this.{} = {}", vars);
 }
 
-/**
+/++
+Generic version of initMember.
+
+Usage:
+----
+mixin(initMemberX!("foo1.{} = foo2.{}", someVar));
+mixin(initMemberX!("this._{} = foo.{}", a, b, c));
+----
+
+Turns Into:
+----
+foo1.someVar = foo2.someVar;
+this._a = foo.a;
+this._b = foo.b;
+this._c = foo.c;
+----
++/
+template initMemberX(char[] str, vars...)
+{
+	const char[] initMemberX = ctfe_subMapJoin(str~";\n", "{}", templateArgsToStrings!(vars));
+}
+
+/++
 Useful in copy constructors for DRY.
 
 Usage:
@@ -67,64 +84,23 @@ class myClass
 	}
 }
 ----
-*/
-template initMemberFrom(alias from, variables...)
++/
+template initMemberFrom(alias from, vars...)
 {
-	const char[] initMemberFrom = _initMemberFrom!(from.stringof ~ ".", variables);
-//	pragma(msg, "initMemberFrom: " ~ initMemberFrom);
+	const char[] initMemberFrom = initMemberX!("this.{} = "~from.stringof~".{}", vars);
 }
 
-private template _initMemberFrom(char[] from, variables...)
+template initMemberTo(alias to, vars...)
 {
-	static if(variables.length == 0)
-		const char[] _initMemberFrom = "";
-	else
-	{
-		const char[] _initMemberFrom =
-			"this."~variables[0].stringof~" = "~from~variables[0].stringof~";\n"
-			~ _initMemberFrom!(from, variables[1..$]);
-//		pragma(msg, "_initMemberFrom:\n" ~ _initMemberFrom);
-	}
+	const char[] initMemberTo = initMemberX!(to.stringof~".{} = {}", vars);
 }
 
-template initMemberTo(alias to, variables...)
+template initFrom(alias from, vars...)
 {
-	const char[] initMemberTo = _initMemberTo!(to.stringof ~ ".", variables);
-//	pragma(msg, "initMemberTo: " ~ initMemberTo);
+	const char[] initFrom = initMemberX!("{} = "~from.stringof~".{}", vars);
 }
 
-private template _initMemberTo(char[] to, variables...)
-{
-	static if(variables.length == 0)
-		const char[] _initMemberTo = "";
-	else
-	{
-		const char[] _initMemberTo =
-			to~variables[0].stringof~" = "~variables[0].stringof~";\n"
-			~ _initMemberTo!(to, variables[1..$]);
-//		pragma(msg, "_initMemberTo:\n" ~ _initMemberTo);
-	}
-}
-
-template initFrom(alias from, variables...)
-{
-	const char[] initFrom = _initFrom!(from.stringof ~ ".", variables);
-//	pragma(msg, "initFrom: " ~ initFrom);
-}
-
-private template _initFrom(char[] from, variables...)
-{
-	static if(variables.length == 0)
-		const char[] _initFrom = "";
-	else
-	{
-		const char[] _initFrom =
-			variables[0].stringof~" = "~from~variables[0].stringof~";\n"
-			~ _initFrom!(from, variables[1..$]);
-//		pragma(msg, "_initFrom:\n" ~ _initFrom);
-	}
-}
-/**
+/++
 A DRY way to display an expression and its value to Stdout.
 
 Usage:
@@ -154,36 +130,40 @@ myVar: 100
 min(4,7): 4
 max(4,7): 7
 ----
-*/
++/
 
 //TODO: Add ability to specify format (binary, hex, etc)
 //TODO: Make nameLength work by using Layout.format (at runtime)
 //      on data passed to Stdout.formatln
 //      (ie, align name/value)
-/// 'values' should be strings
+//TODO: Messes up on "ctfe_repeat_test_日本語3"
 template traceVal(values...)
+{
+	const char[] traceVal = traceVal!(false, values);
+}
+
+template traceVal(bool useNewline, values...)
 {
 	static if(values.length == 0)
 		const char[] traceVal = "";
 	else
 	{
 		const char[] traceVal =
-			"Stdout.formatln(\"{}: {}\", "~values[0].stringof~", "~unescape(values[0].stringof, EscapeSequence.DoubleQuoteString)~");"
-			~ traceVal!(values[1..$]);
-		//pragma(msg, "traceVal: "~traceVal);
+			"Stdout.formatln(\"{}:"~(useNewline?"\\n":" ")~"{}\", "~values[0].stringof~", "~unescape(values[0].stringof, EscapeSequence.DoubleQuoteString)~");"
+			~ traceVal!(useNewline, values[1..$]);
 	}
 }
 
-/**
+/++
 Easy way to output file/line. Useful for debugging.
 
 Usage:
 
 ----
 mixin(trace!());
-funcSuspectedOfCrashing()
+funcSuspectedOfCrashing1_notTheRealCause()
 mixin(trace!("--EASY TO VISUALLY GREP--"));
-theRealCauseOfCrash()
+funcSuspectedOfCrashing2_isTheRealCause()
 mixin(trace!());
 ----
 
@@ -191,9 +171,9 @@ Turns Into:
 
 ----
 Stdout.formatln("{}({}): trace", __FILE__, __LINE__);
-funcSuspectedOfCrashing()
+funcSuspectedOfCrashing1_notTheRealCause()
 Stdout.formatln("{}{}({}): trace", "--EASY TO VISUALLY GREP--", __FILE__, __LINE__);
-theRealCauseOfCrash()
+funcSuspectedOfCrashing2_isTheRealCause()
 Stdout.formatln("{}({}): trace", __FILE__, __LINE__);
 ----
 
@@ -204,7 +184,7 @@ C:\path\file.d(1): trace
 --EASY TO VISUALLY GREP--: C:\path\file.d(3): trace
 {segfault!}
 ----
-*/
++/
 template trace(char[] prefix="")
 {
 	static if(prefix=="")
@@ -213,10 +193,9 @@ template trace(char[] prefix="")
 	else
 		const char[] trace =
 			`Stdout.formatln("{}: {}({}): trace", `~prefix.stringof~`, __FILE__, __LINE__);`;
-	//pragma(msg, "trace: " ~ trace);
 }
 
-/**
+/++
 Wraps a string mixin and displays the string at compile-time. Useful for debugging.
 
 Usage:
@@ -253,17 +232,84 @@ float myFloat;
 defineInt:
 int myInt=5;
 ----
-*/
++/
 
 template traceMixin(char[] name, char[] args)
 {
 	const char[] traceMixin = 
 		`pragma(msg, "` ~ name ~ `: \n"~`~name~`(`~args~`));`~"\n"~
 		"mixin("~name~"("~args~"));\n";
-	//pragma(msg, "traceMixin: "~traceMixin);
 }
 
-/**
+/++
+Compile-time version of traceVal.
+
+Only works for string values right now.
+
+Usage:
+
+----
+const char[] fooStr = "Hi";
+const char[] fooStr2 = "Hi2";
+mixin(traceValCT!("fooStr", "fooStr2"));
+mixin(traceValCT!(`fooStr~" Joe"`));
+
+template fooTmpl
+{
+	const char[] fooTempl = "Hello World";
+	mixin(traceValCT!(true, "fooTempl"));
+}
+----
+
+Turns Into:
+
+----
+const char[] fooStr = "Hi";
+const char[] fooStr2 = "Hi2";
+pragma(msg, "fooStr: " ~ (fooStr));
+pragma(msg, "fooStr2: " ~ (fooStr2));
+pragma(msg, "fooStr~\" Joe\""~": " ~ (fooStr~" Joe"));
+
+template fooTmpl
+{
+	const char[] fooTempl = "Hello World";
+	pragma(msg, "fooTempl:\n" ~ (fooTempl));
+}
+----
+
+Compiler Output:
+
+----
+fooStr: Hi
+fooStr2: Hi2
+fooStr~" Joe": Hi Joe
+fooTempl:
+Hello World
+----
++/
+
+template traceValCT(values...)
+{
+	const char[] traceValCT = traceValCT!(false, values);
+}
+
+template traceValCT(bool useNewline, values...)
+{
+	static if(values.length == 0)
+	{
+		const char[] traceValCT = "";
+	}
+	else
+	{
+		const char[] traceValCT =
+			"pragma(msg, "~escapeDoubleQuoteString(values[0])~"~\":"~(useNewline? "\\n":" ")~"\" ~ ("~values[0]~"));\n"~
+			traceValCT!(useNewline, values[1..$]);
+
+		//pragma(msg, "traceValCT: " ~ traceValCT);
+	}
+}
+
+/++
 Useful in class/struct declarations for DRY.
 
 Generates a public getter, private setter, and a hidden private var.
@@ -272,13 +318,13 @@ shallow ".dup" (for safety).
 
 As with any getter in D1, care should be taken when using this for
 reference types, as there is no general way to prevent a caller from
-changing the data pointed to by the underlying reference.
+changing the data that is being pointed to.
 
 Usage:
 
 ----
 mixin(getter!(int, "myVar"));
-mixin(getter!(float, "someFloat", 2.5));
+mixin(getter!("protected", float, "someFloat", 2.5));
 mixin(getter!(char[], "str"));
 ----
 
@@ -296,8 +342,8 @@ public int myVar()
 	return _myVar;
 }
 
-private float _someFloat = 2.5;
-private float someFloat(float _NEW_VAL_)
+protected float _someFloat = 2.5;
+protected float someFloat(float _NEW_VAL_)
 {
 	_someFloat = _NEW_VAL_;
 	return _someFloat;
@@ -318,78 +364,72 @@ public char[] str()
 	return _str.dup;
 }
 ----
-*/
++/
 template getter(varType, char[] name, varType initialValue=varType.init)
 {
 	static if(is(varType.init))
-		const char[] getter = getterX!("private", varType, name, initialValue);
+		const char[] getter = getter!("private", varType, name, initialValue);
 	else
-		const char[] getter = getterX!("private", varType, name);
-	//pragma(msg, "getter: " ~ getter);
+		const char[] getter = getter!("private", varType, name);
 }
 
-template getterProtected(varType, char[] name, varType initialValue=varType.init)
-{
-	static if(is(varType.init))
-		const char[] getterProtected = getterX!("protected", varType, name, initialValue);
-	else
-		const char[] getterProtected = getterX!("protected", varType, name);
-	//pragma(msg, "getterProtected: " ~ getterProtected);
-}
-
-template getterX(char[] writeAccess, varType, char[] name, varType initialValue=varType.init)
+template getter(char[] writeAccess, varType, char[] name, varType initialValue=varType.init)
 {
 	static if(is(varType.init))
 	{
-		const char[] getterX =
+		const char[] getter =
 			writeAccess~" "~varType.stringof~" _"~name~(initialValue.stringof == varType.init.stringof ? "" : "=" ~ initialValue.stringof)~";\n"~
 			writeAccess~" "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
 			"public "~varType.stringof~" "~name~"() {return _"~name~(isAnyArrayType!(varType)?".dup":"")~";}\n";
 	}
 	else
 	{
-		const char[] getterX =
+		const char[] getter =
 			writeAccess~" "~varType.stringof~" _"~name~";\n"~
 			writeAccess~" "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
 			"public "~varType.stringof~" "~name~"() {return _"~name~(isAnyArrayType!(varType)?".dup":"")~";}\n";
 	}
-//	pragma(msg, "getterX: " ~ getterX);
 }
 
-/**
-Similar to "getter", but for values that are to be lazily generated
-(ie, values that are complex to generate, not always used, and rarely
-change). The first time the getter is called, it generates
-the value (by calling "_myVarName_gen()") and caches it. On subsequent
-calls, the cached value is returned. The cache can be cleared (privately)
-by setting "_myVarName_cached" to false.
+/++
+Similar to "getter", but for values that are to be lazily generated and cached.
+This is useful for values that are complex to generate, not always used, and
+either never or infrequently change.
+
+The first time the getter is called, the generator function you have provided
+is run, and it's return value is cached and returned. On subsequent calls to
+the getter, the cached value is returned without the generator function being
+called. The cache can be cleared, thus forcing the value to be re-generated
+upon the next getter call, by setting "_myVarName_cached" to false.
 
 Example use-case: If you have a property created by getter() and want
-to change the "get" from a trivial "return _blah" to a manual function, 
+to change the "get" from a trivial "return _blah" to a more involved function, 
 you will most likely just simply switch from getter to getterLazy.
 
+Additional Info:
+
 If you don't want the value to ever be cached, just set "_myVarName_cached"
-to false within your "_myVarName_gen()" function.
+to false within your provided generator function.
 
 As with "getter", if the type is an array, the getter automatically
 returns a shallow ".dup" (for safety).
 
 As with any getter in D1, care should be taken when using this for
 reference types, as there is no general way to prevent a caller from
-changing the data pointed to by the cached reference.
+changing the data that is being pointed to.
 
 Usage:
 
 ----
-mixin(getterLazy!(int, "myVar"));
-private int _myVar_gen()
-{
+mixin(getterLazy!(int, "myVar", `
 	// Ordinarily, this function would be more complex
 	return 7;
-}
+`));
 
-mixin(getterLazy!(char[], "str", "customGenFunc"));
-private char[] customGenFunc()
+mixin(getterLazy!("protected", int, "myVar2", `return 7;`));
+
+mixin(getterLazy!(char[], "str"));
+private char[] _str_gen()
 {
 	return "Hello";
 }
@@ -413,6 +453,20 @@ private int _myVar_gen()
 	return 7;
 }
 
+protected int _myVar2;
+protected bool _myVar2_cached = false;
+public int myVar2() {
+	if(!_myVar2_cached) {
+		_myVar2_cached = true;
+		_myVar2 = _myVar2_gen();
+	}
+	return _myVar2;
+}
+protected int _myVar2_gen()
+{
+	return 7;
+}
+
 private char[] _str;
 private bool _str_cached = false;
 public char[] str() {
@@ -428,50 +482,48 @@ private char[] customGenFunc()
 }
 
 ----
-*/
-//TODO? Make another version that doesn't need/use _myVar_cached
-//TODO? Better name for this?
++/
+//TODO? Merge with getter if reasonably possible
 template getterLazy(varType, char[] name, char[] genFunc="")
 {
-	const char[] getterLazy = getterLazyX!("private", varType, name, genFunc);
-	//pragma(msg, "getterLazy: " ~ getterLazy);
+	const char[] getterLazy = getterLazy!("private", varType, name, genFunc);
 }
 
-template getterLazyProtected(varType, char[] name, char[] genFunc="")
+template getterLazy(char[] writeAccess, varType, char[] name, char[] genFunc="")
 {
-	const char[] getterLazyProtected = getterLazyX!("protected", varType, name, genFunc);
-	//pragma(msg, "getterLazyProtected: " ~ getterLazyProtected);
-}
-
-template getterLazyX(char[] writeAccess, varType, char[] name, char[] genFunc="")
-{
-	const char[] getterLazyX =
+	const char[] getterLazy =
 		"\n"~
-		"static if(!is(typeof(_"~name~"_gen)==function))\n"~
-		`	static assert(false, "'getterLazy!(`~varType.stringof~`, \"`~name~`\")' requires function '`~varType.stringof~` _`~name~`_gen()' to be defined");`~"\n"~
+		((genFunc=="")?
+			"static if(!is(typeof(_"~name~"_gen)==function))\n"~
+			`	static assert(false, "'getterLazy!(`~varType.stringof~`, \"`~name~`\")' requires function '`~varType.stringof~` _`~name~`_gen()' to be defined");`~"\n"
 
-		// Blocked by DMD Bug #2885
-		//"static if(!is(ReturnTypeOf!(_"~name~"_gen):"~varType.stringof~"))\n"~
-		//`	static assert(false, "'getterLazy!(`~varType.stringof~`, \"`~name~`\")' requires function '_`~name~`_gen' to return type '`~varType.stringof~`' (or a compatible type), not type '"~ReturnTypeOf!(_`~name~`_gen).stringof~"'");`~"\n"~
+			// Blocked by DMD Bug #2885
+			//"static if(!is(ReturnTypeOf!(_"~name~"_gen):"~varType.stringof~"))\n"~
+			//`	static assert(false, "'getterLazy!(`~varType.stringof~`, \"`~name~`\")' requires function '_`~name~`_gen' to return type '`~varType.stringof~`' (or a compatible type), not type '"~ReturnTypeOf!(_`~name~`_gen).stringof~"'");`~"\n"~
 
-		// Forward reference issues prevent this too
-		//"static if(!ParameterTupleOf!(_line_gen).length==0)\n"~
-		//`	static assert(false, "'getterLazy!(`~varType.stringof~`, \"`~name~`\")' requires an overload of function '_`~name~`_gen' that takes no arguments");`~"\n"~
+			// Forward reference issues prevent this too
+			//"static if(!ParameterTupleOf!(_line_gen).length==0)\n"~
+			//`	static assert(false, "'getterLazy!(`~varType.stringof~`, \"`~name~`\")' requires an overload of function '_`~name~`_gen' that takes no arguments");`~"\n"~
+		:"")~
 
 		writeAccess~" "~varType.stringof~" _"~name~";\n"~
 		writeAccess~" bool _"~name~"_cached = false;\n"~
 		"public "~varType.stringof~" "~name~"() {\n"~
 		"	if(!_"~name~"_cached) {\n"~
 		"		_"~name~"_cached = true;\n"~
-		"		_"~name~" = "~(genFunc!=""?genFunc:"_"~name~"_gen")~"();\n"~
+		"		_"~name~" = _"~name~"_gen();\n"~
 		"	}\n"~
 		"	return _"~name~(isAnyArrayType!(varType)?".dup":"")~";\n"~
-		"}\n";
-
-	//pragma(msg, "getterLazyX: " ~ getterLazyX);
+		"}\n"~
+		((genFunc=="")?"":
+			"private "~varType.stringof~" _"~name~"_gen()\n"~
+			"{\n"~
+			genFunc~
+			"}\n"
+		);
 }
 
-/**
+/++
 Inserts a compile-time check that ensures a given type is a character type.
 (ie, char, wchar, or dchar)
 
@@ -510,7 +562,7 @@ Compiler Output:
 ----
 Error: static assert  "From 'funcForStringsOnly': 'T' must be char, wchar or dchar, not 'int'"
 ----
-*/
++/
 
 template ensureCharType(char[] nameOfT, char[] nameOfCaller="")
 {
@@ -519,6 +571,31 @@ template ensureCharType(char[] nameOfT, char[] nameOfCaller="")
 		`	is(`~nameOfT~`==char) || is(`~nameOfT~`==wchar) || is(`~nameOfT~`==dchar),`~"\n"~
 		`	"`~(nameOfCaller==""?"":"From '"~nameOfCaller~"': ")~`'`~nameOfT~`' must be char, wchar or dchar, not '"~`~nameOfT~`.stringof~"'"`~"\n"~
 		`);`;
+}
 
-	//pragma(msg, "ensureCharType: " ~ ensureCharType);
+//TODO: Document genEnum
+public char[] genEnum(char[] name, char[][] values)
+{
+	return
+		"enum "~name~" {"~values.ctfe_join(", ")~"}\n"~
+		"const uint "~name~"_length = "~ctfe_i2a(values.length)~";\n"~
+		_genEnumToString(name, values);
+}
+
+// The function this generates could probably be improved.
+public char[] _genEnumToString(char[] enumName, char[][] enumValues)
+{
+	char[] value = "";
+	
+	foreach(char[] enumValue; enumValues)
+		value ~= "    if(value=="~enumName~"."~enumValue~") return \""~enumValue~"\";\n";
+	
+	value =
+		"char[] enumToString("~enumName~" value)\n"~
+		"{\n"~
+		value~
+		`    throw new Exception("Internal Error: Unhandled value in `~enumName~`ToString");`~"\n"~
+		"}\n";
+	
+	return value;
 }

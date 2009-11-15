@@ -1,11 +1,6 @@
 // SemiTwist Library
 // Written in the D programming language.
 
-/** 
-Author:
-$(WEB www.semitwist.com, Nick Sabalausky)
-*/
-
 module semitwist.util.deferAssert;
 
 // deferEnsure requires this to exist in the calling context
@@ -40,7 +35,6 @@ template deferAssert(char[] condStr, char[] msg="")
 	"    catch(Object _deferAssert_e)\n"~
 	"        _deferAssertException!(_deferAssert_line, __FILE__, "~condStr.stringof~", "~msg.stringof~")(_deferAssert_e);\n"~
 	"}\n";
-	//pragma(msg, "deferAssert: "~deferAssert);
 }
 
 bool _deferAssert(long line, char[] file, char[] condStr, char[] msg="")(bool condResult)
@@ -85,7 +79,6 @@ template deferEnsure(char[] value, char[] condStr, char[] msg="")
 	"    catch(Object _deferAssert_e)\n"~
 	"        _deferEnsureException!(_deferAssert_line, __FILE__, "~value.stringof~", "~condStr.stringof~", "~msg.stringof~")(_deferAssert_e);\n"~
 	"}\n";
-	//pragma(msg, "deferEnsure: "~deferEnsure);
 }
 
 bool _deferEnsure(long line, char[] file, char[] valueStr, char[] condStr, T, char[] msg="")(T valueResult, bool condResult)
@@ -132,7 +125,6 @@ template deferEnsureThrows(char[] stmtStr, TExpected, char[] msg="")
 	"        _deferAssert_caught = _deferAssert_e;\n"~
 	"    _deferEnsureThrows!(_deferAssert_line, __FILE__, "~stmtStr.stringof~", "~TExpected.stringof~", "~msg.stringof~")(_deferAssert_caught);\n"~
 	"}\n";
-	//pragma(msg, "deferEnsureThrows: "~deferEnsureThrows);
 }
 
 void _deferEnsureThrows(long line, char[] file, char[] stmtStr, TExpected, char[] msg="")(Object thrown)

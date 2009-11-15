@@ -1,11 +1,6 @@
 // SemiTwist Library
 // Written in the D programming language.
 
-/** 
-Author:
-$(WEB www.semitwist.com, Nick Sabalausky)
-*/
-
 module semitwist.util.io;
 
 import tango.io.FilePath;
@@ -66,12 +61,3 @@ char[] getExecPath()
 {
 	return getExecFilePath().path().trim();
 }
-
-
-// Use semitwist.os.pathSep instead
-/*
-version(Win32)
-	const char[] pathSeparator = "\\";
-else
-	const char[] pathSeparator = "/";
-*/
