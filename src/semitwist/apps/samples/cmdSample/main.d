@@ -6,12 +6,29 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-Uses:
-- DMD 1.043
-- Tango 0.99.8
+This program, as-is, requires Tango trunk.
+However, it should be easy to backport to Tango 0.99.8 (with DMD 1.043):
+  1. Replace occurrences of 'Environment.cwd' with
+     'FileSystem.getDirectory' and 'FileSystem.setDirectory'.
+  2. Remove the 'Wrong Tango' static assert.
+
+This has been tested to work with:
+  - DMD 1.051 / Tango trunk r5149 / Rebuild 0.76
 */
 
 module semitwist.apps.samples.cmdSample.main;
+
+import tango.core.Version;
+static if(Tango.Major == 0 && Tango.Minor <= 998)
+{
+	pragma(msg,
+		"  This program, as-is, requires Tango trunk.\n"~
+		"  However, it should be easy to backport to Tango 0.99.8 (with DMD 1.043):\n"~
+		"    1. Replace occurrences of 'Environment.cwd' with\n"~
+		"       'FileSystem.getDirectory' and 'FileSystem.setDirectory'.\n"~
+		"    2. Remove the 'Wrong Tango' static assert.\n");
+	static assert(false, "Wrong Tango");
+}
 
 import semitwist.cmd.all;
 
@@ -194,9 +211,9 @@ void main(char[][] args)
 	// but we can still change it if we want to.
 	// Remember that cmd is still in the newly-created "new2",
 	// so let's go there:
-	mixin(traceVal!("FileSystem.getDirectory()")); // Original working dir
-	FileSystem.setDirectory(cmd.dir.toString);
-	mixin(traceVal!("FileSystem.getDirectory()")); // New working dir
+	mixin(traceVal!("Environment.cwd")); // Original working dir
+	Environment.cwd = cmd.dir.toString;
+	mixin(traceVal!("Environment.cwd")); // New working dir
 	
 	// Now a newly created Cmd is in "new2",
 	// because we changed the app's working directory.
@@ -208,7 +225,7 @@ void main(char[][] args)
 	cmd.dir = "..";
 	// (note we never changed cmd2's dir)
 	cmd3.dir = "..";
-	FileSystem.setDirectory(cmd.dir.toString);
+	Environment.cwd = cmd.dir.toString;
 	// Now all the working dirs are back to their original state.
 	// We also could have done it like this:
 	//
@@ -216,7 +233,7 @@ void main(char[][] args)
 	//   ...do all our messing around...
 	// cmd.dir = saveOriginalDir;
 	// cmd3.dir = saveOriginalDir;
-	// FileSystem.setDirectory(saveOriginalDir.toString);
+	// Environment.cwd = saveOriginalDir.toString;
 
 	// ----- tango.io.vfs.FileFolder -----
 	// - More explanation and examples of this are available at:

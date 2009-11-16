@@ -11,9 +11,8 @@ public import tango.io.Stdout;
 public import tango.io.device.File;
 public import tango.io.vfs.FileFolder;
 public import tango.math.Math;
+public import tango.sys.Environment;
 public import tango.text.Unicode;
-public import tango.text.Util;
-public import tango.util.PathUtil;
 
 public import semitwist.cmd.plain;
 public import semitwist.cmdlineparser;
@@ -25,26 +24,60 @@ public import semitwist.ver;
 
 static if(Tango.Major == 0 && Tango.Minor <= 998)
 {
-	// Work around issue #1588 in Tango 0.99.8 (fixed in trunk)
-	// where contains returns size_t instead of bool.
-	public import tango.core.Array:
-		find, rfind, kfind, krfind, findIf, rfindIf, findAdj,
-		mismatch,
-		count, countIf,
-		replace, replaceIf,
-		remove, removeIf,
-		distinct, shuffle, partition, select, sort,
-		lbound, ubound,
-		bsearch, includes,
-		unionOf, intersectionOf, missingFrom, differenceOf,
-		makeHeap, pushHeap, popHeap, sortHeap;
-	import tango.core.Array: _contains = contains;
-	bool contains(Buf,Pat)(Buf buf, Pat pat)
-	{
-		return cast(bool)_contains(buf, pat);
-	}
-	bool contains(Buf,Pat,Pred)(Buf buf, Pat pat, Pred pred)
-	{
-		return cast(bool)_contains(buf, pat, pred);
-	}
+	public import tango.util.PathUtil;
+	public import tango.text.Util;
+	
+	// Workaround for conflict between tango.text.Util and tango.io.Path
+	// on 'join',
+	// and for conflict between tango.core.Array and tango.io.Path
+	// on 'replace' and 'remove'.
+	public static import tango.io.Path;
+	public import tango.io.Path:
+		PathParser,
+		exists, modified, accessed, created,
+		fileSize, isWritable, isFolder, isFile,
+		timeStamps,
+		createFile, createFolder, createPath,
+		rename, copy, children,
+		standard, native,
+		pop, split, parse;
+}
+else
+{
+	public import tango.io.Path;
+
+	// Workaround for conflict between tango.text.Util and tango.core.Array
+	// on 'contains', 'mismatch', 'count', 'replace'.
+	public static import tango.text.Util;
+	public import tango.text.Util:
+		trim, triml, trimr, strip, stripl, stripr,
+		chopl, chopr, delimit, split, splitLines,
+		head, join, prefix, postfix, combine,
+		repeat, substitute,
+		containsPattern,
+		index, locate, locatePrior, locatePattern, locatePatternPrior, indexOf,
+		matching, isSpace, unescape,
+		layout, lines, quotes, delimiters, patterns;
+}
+
+// Workaround for Tango issue #1588  where contains returns size_t instead of bool.
+public import tango.core.Array:
+	find, rfind, kfind, krfind, findIf, rfindIf, findAdj,
+	mismatch,
+	count, countIf,
+	replace, replaceIf,
+	remove, removeIf,
+	distinct, shuffle, partition, select, sort,
+	lbound, ubound,
+	bsearch, includes,
+	unionOf, intersectionOf, missingFrom, differenceOf,
+	makeHeap, pushHeap, popHeap, sortHeap;
+import tango.core.Array: _contains = contains;
+bool contains(Buf,Pat)(Buf buf, Pat pat)
+{
+	return cast(bool)_contains(buf, pat);
+}
+bool contains(Buf,Pat,Pred)(Buf buf, Pat pat, Pred pred)
+{
+	return cast(bool)_contains(buf, pat, pred);
 }

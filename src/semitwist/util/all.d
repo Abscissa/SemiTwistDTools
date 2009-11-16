@@ -5,17 +5,18 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-Requires:
-- DMD 1.043
-- Tango 0.99.8
+This has been tested to work with:
+  - DMD 1.043 / Tango 0.99.8 / Rebuild 0.76
+  - DMD 1.051 / Tango trunk r5149 / Rebuild 0.76
 
 In SVN comments:
 (B): Breaking changes
 (NB): Non-Breaking changes
 */
 
-// DMD/STC output capturing for Programmer's Notepad:
-// ((.)*: )?(warning - )?([ \t]*instantiatied in )?((.)*@)?%f\(%l(:%c)?\):
+// Potentially handy note:
+//   DMD output capturing for Programmer's Notepad:
+//   ((.)*: )?(warning - )?([ \t]*instantiatied in )?((.)*@)?%f\(%l(:%c)?\):
 
 module semitwist.util.all;
 
