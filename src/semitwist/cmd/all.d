@@ -13,6 +13,7 @@ public import tango.io.vfs.FileFolder;
 public import tango.math.Math;
 public import tango.sys.Environment;
 public import tango.text.Unicode;
+public import tango.util.Convert;
 
 public import semitwist.cmd.plain;
 public import semitwist.cmdlineparser;

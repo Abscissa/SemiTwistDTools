@@ -227,7 +227,7 @@ class CmdLineParser
 	{
 		foreach(char c; name)
 		{
-			if(!isAlphaNumeric(c) && c != '_' && c != '?')
+			if(!isLetterOrDigit(c) && c != '_' && c != '?')
 				return false;
 		}
 		return true;

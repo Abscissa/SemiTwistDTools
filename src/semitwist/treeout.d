@@ -5,6 +5,7 @@ module semitwist.treeout;
 
 import tango.core.Traits;
 import tango.io.Stdout;
+import tango.text.Unicode;
 import tango.text.Util;
 
 import semitwist.util.all;
@@ -39,10 +40,10 @@ class XMLFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
 		str = str.map
 		(
 			(char a)
-		    { return isAlphaNumeric(a)? a : '_'; }
+		    { return isLetterOrDigit(a)? a : '_'; }
 		);
 
-		if(str.length > 0 && !isAlphaNumeric(str[0]) && str[0] != '_')
+		if(str.length > 0 && !isLetterOrDigit(str[0]) && str[0] != '_')
 			str = "_"~str;
 		
 		return str;

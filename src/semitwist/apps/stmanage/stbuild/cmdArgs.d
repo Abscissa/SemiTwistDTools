@@ -36,11 +36,13 @@ class CmdArgs
 	bool cleanOnly = false;
 	bool quiet = false;
 	bool showCmd = false;
+	char[] buildToolStr = "re";
 	
 	// Indirectly determined by cmd line params
 	char[] target;
 	char[] mode = defaultMode;
 	Conf conf;
+	BuildTool buildTool;
 
 	private CmdLineParser cmdLine;
 	private void init()
@@ -48,13 +50,16 @@ class CmdArgs
 		//TODO? Allow multiple switchless in CmdLineParser
 		//TODO? Create a "don't show in usage" ArgFlag setting.
 		cmdLine = new CmdLineParser();
-		mixin(defineArg!(cmdLine, "help",     help,       ArgFlag.Optional, "Displays a help summary and exits" ));
-		mixin(defineArg!(cmdLine, "morehelp", moreHelp,   ArgFlag.Optional, "Displays a detailed help message and exits" ));
-		mixin(defineArg!(cmdLine, "tm",       targetMode, ArgFlag.Optional|ArgFlag.Switchless, "First is target, second is optional mode" ));
-		mixin(defineArg!(cmdLine, "clean",    cleanOnly,  ArgFlag.Optional, "Clean, don't build" ));
-		mixin(defineArg!(cmdLine, "conf",     confFile,   ArgFlag.Optional, "Configuration file to use" ));
-		mixin(defineArg!(cmdLine, "q",        quiet,      ArgFlag.Optional, "Quiet, ie. don't show progress messages" ));
-		mixin(defineArg!(cmdLine, "cmd",      showCmd,    ArgFlag.Optional, "Show commands" ));
+		mixin(defineArg!(cmdLine, "help",     help,         ArgFlag.Optional, "Displays a help summary and exits" ));
+		mixin(defineArg!(cmdLine, "morehelp", moreHelp,     ArgFlag.Optional, "Displays a detailed help message and exits" ));
+		mixin(defineArg!(cmdLine, "tm",       targetMode,   ArgFlag.Optional|ArgFlag.Switchless, "First is target, second is optional mode" ));
+		mixin(defineArg!(cmdLine, "clean",    cleanOnly,    ArgFlag.Optional, "Clean, don't build" ));
+		mixin(defineArg!(cmdLine, "conf",     confFile,     ArgFlag.Optional, "Configuration file to use" ));
+		mixin(defineArg!(cmdLine, "tool",     buildToolStr, ArgFlag.Optional, "Build tool [\"re\" or \"xf\"]" ));
+		mixin(defineArg!(cmdLine, "q",        quiet,        ArgFlag.Optional, "Quiet, ie. don't show progress messages" ));
+		mixin(defineArg!(cmdLine, "cmd",      showCmd,      ArgFlag.Optional, "Show commands" ));
+
+		mixin(setArgAllowableValues!("tool", "re", "xf"));
 	}
 	
 	private void showTargets()
@@ -154,6 +159,18 @@ class CmdArgs
 			cmd.echo;
 			showHelpHowTo();
 			return false;
+		}
+		
+		switch(buildToolStr)
+		{
+		case "re":
+			buildTool = BuildTool.rebuild;
+			break;
+		case "xf":
+			buildTool = BuildTool.xfbuild;
+			break;
+		default:
+			throw new Exception("Internal Error: Unexpected Build Tool Str: "~buildToolStr);
 		}
 		
 		// Move to CmdLine

@@ -112,7 +112,7 @@ T[] digitChars(T)()
 
 	return cache;
 }
-
+/+
 /// Returns true iff [0-9]
 bool isDigit(T:char)(T chr)  {return _isDigit(chr);}
 bool isDigit(T:wchar)(T chr) {return _isDigit(chr);}
@@ -149,6 +149,7 @@ private bool _isWhitespace(T)(T chr)
 {
 	return contains(whitespaceChars!(T)(), chr);
 }
++/
 
 bool startsWith(T)(T[] source, T[] match)
 {

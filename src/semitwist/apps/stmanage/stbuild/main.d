@@ -21,6 +21,13 @@ This has been tested to work with:
 //TODO: Disallow crazy characters in target names
 //TODO: $(proj), $(mode), $(#), $proj, $#, $$, etc.
 
+//TODO: For xfbuild support:
+//      - Cmd-line param rebuild/xfbuild
+//      - In xf mode: Strip leading "-C"'s
+//      - In xf mode: Convert -oq... to -od... (or drop -oq... if -od... has problems)
+//      - In re mode: Convert +q -od... to -oq...
+//      - In re mode: Remove all other +... commands in rebuild mode
+
 module semitwist.apps.stmanage.stbuild.main;
 
 import semitwist.cmd.all;
@@ -69,7 +76,7 @@ int build(char[] target, char[] mode, bool verbose)
 		cmd.echo("Building {} {}...".sformat(target, mode));
 
 	int ret;
-	auto cmdLine = "rebuild "~conf.getFlags(target, mode);
+	auto cmdLine = buildToolExecName(cmdArgs.buildTool)~" "~conf.getFlags(target, mode, cmdArgs.buildTool);
 	
 	if(cmdArgs.showCmd) cmd.echo(cmdLine);
 	cmd.exec(cmdLine, ret);

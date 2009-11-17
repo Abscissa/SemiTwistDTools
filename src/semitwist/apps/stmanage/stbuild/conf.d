@@ -6,6 +6,25 @@ module semitwist.apps.stmanage.stbuild.conf;
 
 import semitwist.cmd.all;
 
+enum BuildTool
+{
+	rebuild,
+	xfbuild,
+}
+
+char[] buildToolExecName(BuildTool tool)
+{
+	switch(tool)
+	{
+	case BuildTool.rebuild:
+		return "rebuild";
+	case BuildTool.xfbuild:
+		return "xfbuild";
+	default:
+		throw new Exception("Internal Error: Unexpected Build Tool #{}".sformat(tool));
+	}
+}
+
 class STBuildConfException : Exception
 {
 	this(char[] msg)
@@ -17,7 +36,7 @@ class STBuildConfException : Exception
 class Conf
 {
 	char[][] targets;
-	private char[][char[]][char[]] flags;
+	private Switch[][char[]][char[]] flags;
 	
 	char[][] errors;
 
@@ -51,25 +70,94 @@ class Conf
 		modeAllElems   = modes.allExcept(modeAll);
 	}
 	
-	private char[] getFlagsSafe(char[] target, char[] mode)
+	private Switch[] getFlagsSafe(char[] target, char[] mode)
 	{
 		if(target in flags && mode in flags[target])
-			return flags[target][mode];
+		{
+			Switch[] ret = flags[target][mode].dup;
+			foreach(int i, Switch sw; ret)
+				ret[i].data = ret[i].data.dup;
+
+			return ret;
+		}
 			
-		return "";
+		return [];
 	}
 	
-	char[] getFlags(char[] target, char[] mode)
+	char[] getFlags(char[] target, char[] mode, BuildTool tool)
 	{
 		auto isTargetAll = (target == targetAll);
 		auto isModeAll   = (mode   == modeAll  );
 
-		char[][] flagSet = [ getFlagsSafe(target, mode) ];
+		Switch[] flagSet = getFlagsSafe(target, mode);
 		if(!isTargetAll)               flagSet ~= getFlagsSafe(targetAll, mode   );
 		if(!isModeAll  )               flagSet ~= getFlagsSafe(target,    modeAll);
 		if(!isTargetAll && !isModeAll) flagSet ~= getFlagsSafe(targetAll, modeAll);
-		
-		return flagSet.join(" ").sformat(target, mode, "");
+
+		switch(tool)
+		{
+		case BuildTool.rebuild:
+			// Convert +q -od... to -oq...
+			int[] plusIndicies = [];
+			foreach(int index, Switch sw; flagSet)
+			{
+				if(sw.data == "+q")
+					plusIndicies ~= index;
+			}
+			if(plusIndicies.length > 0)
+			{
+				foreach(int index; plusIndicies)
+					flagSet = flagSet[0..index] ~ flagSet[index+1..$];
+				foreach(ref Switch sw; flagSet)
+				{
+					if(sw.data.length >= 3 && sw.data[0..3] == "-od")
+						sw.data = "-oq"~sw.data[3..$];
+				}
+			}
+			
+			// Remove all remaining +...
+			plusIndicies = [];
+			foreach(int index, Switch sw; flagSet)
+			{
+				if(sw.data.length >= 1 && sw.data[0] == '+')
+					plusIndicies ~= index;
+			}
+			foreach(int index; plusIndicies)
+				flagSet = flagSet[0..index] ~ flagSet[index+1..$];
+			break;
+			
+		case BuildTool.xfbuild:
+			foreach(int i, Switch sw; flagSet)
+			{
+				// Convert -oq... to -od...
+				if(sw.data.length >= 3 && sw.data[0..3] == "-oq")
+					flagSet[i].data = "-od"~sw.data[3..$];
+				
+				// Strip leading -C
+				if(sw.data.length >= 2 && sw.data[0..2] == "-C")
+					flagSet[i].data = sw.data[2..$];
+			}
+			break;
+			
+		default:
+			throw new Exception("Internal Error: Unexpected Build Tool #{}".sformat(tool));
+		}
+
+		return
+			flagSet
+				.map( (Switch sw) { return sw.toString(); } )
+				.join(" ")
+				.sformat(target, mode, "");
+	}
+	
+	struct Switch
+	{
+		char[] data;
+		bool quoted;
+		char[] toString()
+		{
+			return quoted? `"`~data~`"` : data;
+		}
 	}
 	
 	private class ConfParser
@@ -88,6 +176,44 @@ class Conf
 		
 		char[][] errors;
 
+		private static Switch[] splitSwitches(char[] str)
+		{
+			Switch[] ret = [];
+			bool inPlainSwitch=false;
+			bool inQuotedSwitch=false;
+			foreach(dchar c; str)
+			{
+				if(inPlainSwitch)
+				{
+					if(isWhitespace(c))
+						inPlainSwitch = false;
+					else
+						ret[$-1].data ~= to!(char[])(c);
+				}
+				else if(inQuotedSwitch)
+				{
+					if(c == `"`d[0])
+						inQuotedSwitch = false;
+					else
+						ret[$-1].data ~= to!(char[])(c);
+				}
+				else
+				{
+					if(c == `"`d[0])
+					{
+						ret ~= Switch("", true);
+						inQuotedSwitch = true;
+					}
+					else if(!isWhitespace(c))
+					{
+						ret ~= Switch(to!(char[])(c), false);
+						inPlainSwitch = true;
+					}
+				}
+			}
+			return ret;
+		}
+		
 		private void doParse(Conf conf, char[] filename)
 		{
 			mixin(initMember!(conf, filename));
@@ -179,7 +305,7 @@ class Conf
 						{
 							foreach(char[] target; currTargets)
 							foreach(char[] mode;   currModes)
-								conf.flags[target][mode] = stmtPred;
+								conf.flags[target][mode] = stmtPred.splitSwitches();
 						}
 						break;
 					default:
