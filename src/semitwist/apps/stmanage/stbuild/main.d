@@ -9,9 +9,12 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 This has been tested to work with:
   - DMD 1.043 / Tango 0.99.8 / Rebuild 0.76
   - DMD 1.051 / Tango trunk r5149 / Rebuild 0.76
+  - DMD 1.051 / Tango trunk r5149 / xfBuild 0.4
 */
 
 //TODO: Clean all if stbuild.conf has changed
+//TODO: Clean all if using a different build tool from last time
+//TODO: User-defined options (ex: set preference for default: rebuild or xfbuild)
 //TODO: Handle screwup when user does "stbuild myproj clean"
 //TODO: Handle screwup when user does "stbuild --help" without an stbuild.conf
 //TODO: Handle screwup when user does "stbuild undefined_target"
@@ -20,13 +23,9 @@ This has been tested to work with:
 //      Use STBUILD_OPTS env var: STBUILD_OPTS=dmdpatch_ww;whatever...
 //TODO: Disallow crazy characters in target names
 //TODO: $(proj), $(mode), $(#), $proj, $#, $$, etc.
-
-//TODO: For xfbuild support:
-//      - Cmd-line param rebuild/xfbuild
-//      - In xf mode: Strip leading "-C"'s
-//      - In xf mode: Convert -oq... to -od... (or drop -oq... if -od... has problems)
-//      - In re mode: Convert +q -od... to -oq...
-//      - In re mode: Remove all other +... commands in rebuild mode
+//TODO? Use Goldie to parse .conf file
+//TODO: Get obj dir from conf switches instead of hardcoding to "obj/target/mode"
+//TODO: Allow extra compiler/buildtool params on the cmd line
 
 module semitwist.apps.stmanage.stbuild.main;
 
@@ -49,8 +48,7 @@ void moveMapFiles(char[] subDir=".")
 
 int process(char[] target, char[] mode, bool verbose)
 {
-	auto                  processor = &build;
-	if(cmdArgs.cleanOnly) processor = &clean;
+	auto processor = ( cmdArgs.cleanOnly? &clean : &build );
 	
 	char[][] targetsToProcess = (target == conf.targetAll)? conf.targetAllElems : [target];
 	char[][] modesToProcess   = (mode   == conf.modeAll)?   conf.modeAllElems   : [mode  ];
@@ -69,12 +67,14 @@ int process(char[] target, char[] mode, bool verbose)
 
 int build(char[] target, char[] mode, bool verbose)
 {
-	assert(target != conf.targetAll, "target 'all' passed to build()");
-	assert(mode != conf.modeAll, "mode 'all' passed to build()");
+	mixin(deferAssert!(`target != conf.targetAll`, "target 'all' passed to build()"));
+	mixin(deferAssert!(`mode != conf.modeAll`, "mode 'all' passed to build()"));
 
 	if(verbose)
 		cmd.echo("Building {} {}...".sformat(target, mode));
 
+	cmd.dir.folder("obj/"~target~"/"~mode).create();
+	
 	int ret;
 	auto cmdLine = buildToolExecName(cmdArgs.buildTool)~" "~conf.getFlags(target, mode, cmdArgs.buildTool);
 	
@@ -87,8 +87,8 @@ int build(char[] target, char[] mode, bool verbose)
 
 int clean(char[] target, char[] mode, bool verbose)
 {
-	assert(target != conf.targetAll, "target 'all' passed to clean()");
-	assert(mode != conf.modeAll, "mode 'all' passed to clean()");
+	mixin(deferAssert!(`target != conf.targetAll`, "target 'all' passed to clean()"));
+	mixin(deferAssert!(`mode != conf.modeAll`, "mode 'all' passed to clean()"));
 
 	if(verbose)
 		cmd.echo("Cleaning {} {}...".sformat(target, mode));
@@ -100,6 +100,9 @@ int clean(char[] target, char[] mode, bool verbose)
 		return 0;
 	
 	foreach(VfsFile file; objDir.catalog("*.map"))
+		file.remove();
+	
+	foreach(VfsFile file; objDir.catalog("deps"))
 		file.remove();
 	
 	foreach(VfsFile file; objDir.catalog("*"~objExt))

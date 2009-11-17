@@ -84,69 +84,158 @@ class Conf
 		return [];
 	}
 	
-	char[] getFlags(char[] target, char[] mode, BuildTool tool)
+	private static int convertPrefix(ref Switch[] switches, char[] fromPrefix, char[] toPrefix)
 	{
-		auto isTargetAll = (target == targetAll);
-		auto isModeAll   = (mode   == modeAll  );
+		int numConverted = 0;
+		foreach(ref Switch sw; switches)
+		{
+			if(sw.data.length >= fromPrefix.length)
+			if(sw.data[0..fromPrefix.length] == fromPrefix)
+			{
+				sw.data = toPrefix~sw.data[fromPrefix.length..$];
+				numConverted++;
+			}
+		}
+		return numConverted;
+	}
+	
+	private static int removePrefix(ref Switch[] switches, char[] prefix)
+	{
+		int[] switchIndicies = [];
+		foreach(int index, Switch sw; switches)
+		{
+			if(sw.data.length >= prefix.length)
+			if(sw.data[0..prefix.length] == prefix)
+				switchIndicies ~= index;
+		}
+		if(switchIndicies.length > 0)
+		{
+			foreach_reverse(int index; switchIndicies)
+				switches = switches[0..index] ~ switches[index+1..$];
+		}
+		return switchIndicies.length;
+	}
 
-		Switch[] flagSet = getFlagsSafe(target, mode);
-		if(!isTargetAll)               flagSet ~= getFlagsSafe(targetAll, mode   );
-		if(!isModeAll  )               flagSet ~= getFlagsSafe(target,    modeAll);
-		if(!isTargetAll && !isModeAll) flagSet ~= getFlagsSafe(targetAll, modeAll);
-
+	private static int combinePrefix(ref Switch[] switches, char[] fromPrefix, char[] fromSwitch, char[] toPrefix)
+	{
+		auto numRemoved = switches.removePrefix(fromSwitch);
+		if(numRemoved > 0)
+			return switches.convertPrefix(fromPrefix, toPrefix);
+		return 0;
+	}
+	
+	private static int splitPrefix(ref Switch[] switches, char[] fromPrefix, char[] toPrefix, char[] toSwitch)
+	{
+		auto numConverted = switches.convertPrefix(fromPrefix, toPrefix);
+		if(numConverted > 0)
+			switches ~= Switch(toSwitch, false);
+		return numConverted;
+	}
+	
+	private static void convert(ref Switch[] switches, BuildTool tool)
+	{
 		switch(tool)
 		{
 		case BuildTool.rebuild:
-			// Convert +q -od... to -oq...
-			int[] plusIndicies = [];
-			foreach(int index, Switch sw; flagSet)
-			{
-				if(sw.data == "+q")
-					plusIndicies ~= index;
-			}
-			if(plusIndicies.length > 0)
-			{
-				foreach(int index; plusIndicies)
-					flagSet = flagSet[0..index] ~ flagSet[index+1..$];
-				foreach(ref Switch sw; flagSet)
-				{
-					if(sw.data.length >= 3 && sw.data[0..3] == "-od")
-						sw.data = "-oq"~sw.data[3..$];
-				}
-			}
-			
-			// Remove all remaining +...
-			plusIndicies = [];
-			foreach(int index, Switch sw; flagSet)
-			{
-				if(sw.data.length >= 1 && sw.data[0] == '+')
-					plusIndicies ~= index;
-			}
-			foreach(int index; plusIndicies)
-				flagSet = flagSet[0..index] ~ flagSet[index+1..$];
+			switches.combinePrefix("+O", "+q", "-oq");
+			switches.convertPrefix("+o", "-of");
+			switches.convertPrefix("+O", "-od");
+			switches.removePrefix("+");
 			break;
 			
 		case BuildTool.xfbuild:
-			foreach(int i, Switch sw; flagSet)
-			{
-				// Convert -oq... to -od...
-				if(sw.data.length >= 3 && sw.data[0..3] == "-oq")
-					flagSet[i].data = "-od"~sw.data[3..$];
-				
-				// Strip leading -C
-				if(sw.data.length >= 2 && sw.data[0..2] == "-C")
-					flagSet[i].data = sw.data[2..$];
-			}
+			//switches.splitPrefix("-oq", "+O", "+q"); //Doesn't work for DMD
+			switches.convertPrefix("-oq", "+O");
+			
+			switches.convertPrefix("-C",  ""  );
+			switches.convertPrefix("-of", "+o");
+			switches.convertPrefix("-od", "+O");
 			break;
 			
 		default:
 			throw new Exception("Internal Error: Unexpected Build Tool #{}".sformat(tool));
 		}
+	}
+	
+	private static char[] switchesToString(Switch[] switches)
+	{
+		return
+			switches
+				.map( (Switch sw) { return sw.toString(); } )
+				.join(" ");
+	}
+	
+	unittest
+	{
+		Switch[] switches;
+		auto start  = `+foo "-od od" -foo +q +q +o_o -of_of -C_C -oq_oq +O_O +foo`;
+		auto re     = `"-od od" -foo -of_o -of_of -C_C -oq_oq -oq_O`;
+		//auto xf     = `+foo "+O od" -foo +q +q +o_o +o_of _C +O_oq +O_O +foo +q`; // See "Doesn't work for DMD" above
+		auto xf     = `+foo "+O od" -foo +q +q +o_o +o_of _C +O_oq +O_O +foo`;
+		auto start2 = `+foo -od_od -foo +o_o -of_of -C_C -oq_oq +O_O +foo`;
+		auto re2    = `-od_od -foo -of_o -of_of -C_C -oq_oq -od_O`;
+		
+		switches = ConfParser.splitSwitches(start);
+		switches.convert(BuildTool.rebuild);
+		mixin(deferEnsure!(`switches.switchesToString()`, `_ == re`));
+		
+		switches = ConfParser.splitSwitches(start);
+		switches.convert(BuildTool.xfbuild);
+		mixin(deferEnsure!(`switches.switchesToString()`, `_ == xf`));
+		
+		switches = ConfParser.splitSwitches(start2);
+		switches.convert(BuildTool.rebuild);
+		mixin(deferEnsure!(`switches.switchesToString()`, `_ == re2`));
+	}
+	
+	private static bool addDefault(ref Switch[] switches, char[] prefix, char[] defaultVal)
+	{
+		bool prefixFound=false;
+		foreach(Switch sw; switches)
+		if(sw.data.startsWith(prefix))
+		{
+			prefixFound = true;
+			break;
+		}
+		if(!prefixFound)
+			switches ~= Switch(prefix~defaultVal, false);
+		return !prefixFound;
+	}
+	
+	private static void addDefaults(ref Switch[] switches)
+	{
+		// Keep object and deps files from each target/mode
+		// separate so things don't get screwed up.
+		switches.addDefault("-oq", "obj/{0}/{1}");
+		switches.addDefault("+D", "obj/{0}/{1}/deps");
+	}
+	
+	private static char[] fixSlashes(char[] str)
+	{
+		version(Windows)
+			str.replace('/', '\\');
+		else
+			str.replace('\\', '/');
+		return str;
+	}
+	
+	char[] getFlags(char[] target, char[] mode, BuildTool tool)
+	{
+		auto isTargetAll = (target == targetAll);
+		auto isModeAll   = (mode   == modeAll  );
+
+		Switch[] switches = getFlagsSafe(target, mode);
+		if(!isTargetAll)               switches ~= getFlagsSafe(targetAll, mode   );
+		if(!isModeAll  )               switches ~= getFlagsSafe(target,    modeAll);
+		if(!isTargetAll && !isModeAll) switches ~= getFlagsSafe(targetAll, modeAll);
+
+		switches.addDefaults();
+		switches.convert(tool);
 
 		return
-			flagSet
-				.map( (Switch sw) { return sw.toString(); } )
-				.join(" ")
+			switches
+				.switchesToString()
+				.fixSlashes()
 				.sformat(target, mode, "");
 	}
 	
@@ -176,7 +265,7 @@ class Conf
 		
 		char[][] errors;
 
-		private static Switch[] splitSwitches(char[] str)
+		static Switch[] splitSwitches(char[] str)
 		{
 			Switch[] ret = [];
 			bool inPlainSwitch=false;
@@ -305,7 +394,7 @@ class Conf
 						{
 							foreach(char[] target; currTargets)
 							foreach(char[] mode;   currModes)
-								conf.flags[target][mode] = stmtPred.splitSwitches();
+								conf.flags[target][mode] ~= stmtPred.splitSwitches();
 						}
 						break;
 					default:

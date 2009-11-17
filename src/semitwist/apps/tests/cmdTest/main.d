@@ -14,6 +14,7 @@ However, it should be easy to backport to Tango 0.99.8 (with DMD 1.043):
   
 This has been tested to work with:
   - DMD 1.051 / Tango trunk r5149 / Rebuild 0.76
+  - DMD 1.051 / Tango trunk r5149 / xfBuild 0.4
 */
 
 module semitwist.apps.tests.cmdTest.main;
