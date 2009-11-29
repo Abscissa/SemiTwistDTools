@@ -26,6 +26,7 @@ This has been tested to work with:
 //TODO? Use Goldie to parse .conf file
 //TODO: Get obj dir from conf switches instead of hardcoding to "obj/target/mode"
 //TODO: Allow extra compiler/buildtool params on the cmd line
+//TODO: When using xfbuild, make sure root filenames end in ".d" (ie "src/main.d" instead of "src/main")
 
 module semitwist.apps.stmanage.stbuild.main;
 

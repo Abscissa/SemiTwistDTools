@@ -13,6 +13,7 @@ import semitwist.util.ctfe;
 import semitwist.util.mixins;
 
 /**
+Notes:
 Anything in "data" must be doubly escaped.
 
 For instance, if you want the generated function to return newline (ie, "\n"),
@@ -37,7 +38,6 @@ mixin(multiTypeString("unixNewlineEscSequence", r"\\n"));
 (This requirement could be changed if there is a way to automatically
 escape a string at compile-time.)
 */
-//TODO: Look into using tango.core.Traits.isCharType()
 template multiTypeString(char[] name, char[] data, char[] access="public")
 {
 	const char[] multiTypeString = 
@@ -51,105 +51,6 @@ template multiTypeString(char[] name, char[] data, char[] access="public")
 }
 
 mixin(multiTypeString!("whitespaceChars", r" \n\r\t\v\f"));
-mixin(multiTypeString!("emptyString", r""));
-mixin(multiTypeString!("lowerLetterA", r"a"));
-mixin(multiTypeString!("lowerLetterZ", r"z"));
-mixin(multiTypeString!("upperLetterA", r"A"));
-mixin(multiTypeString!("upperLetterZ", r"Z"));
-mixin(multiTypeString!("digit0", r"0"));
-mixin(multiTypeString!("digit9", r"9"));
-
-T[] lowercaseLetters(T)()
-{
-	static T[] cache = emptyString!(T)();
-	
-	if(cache == emptyString!(T)())
-	{
-		T currChar;
-		for(currChar  = lowerLetterA!(T)()[0];
-			currChar <= lowerLetterZ!(T)()[0];
-			currChar++)
-		{
-			cache ~= currChar;
-		}
-	}
-
-	return cache;
-}
-
-T[] uppercaseLetters(T)()
-{
-	static T[] cache = emptyString!(T)();
-	
-	if(cache == emptyString!(T)())
-	{
-		T currChar;
-		for(currChar  = upperLetterA!(T)()[0];
-			currChar <= upperLetterZ!(T)()[0];
-			currChar++)
-		{
-			cache ~= currChar;
-		}
-	}
-
-	return cache;
-}
-
-T[] digitChars(T)()
-{
-	static T[] cache = emptyString!(T)();
-	
-	if(cache == emptyString!(T)())
-	{
-		T currChar;
-		for(currChar  = digit0!(T)()[0];
-			currChar <= digit9!(T)()[0];
-			currChar++)
-		{
-			cache ~= currChar;
-		}
-	}
-
-	return cache;
-}
-/+
-/// Returns true iff [0-9]
-bool isDigit(T:char)(T chr)  {return _isDigit(chr);}
-bool isDigit(T:wchar)(T chr) {return _isDigit(chr);}
-bool isDigit(T:dchar)(T chr) {return _isDigit(chr);}
-private bool _isDigit(T)(T chr)
-{
-	uint uintChr = cast(uint)chr;
-	return (uintChr >= cast(uint)'0' && uintChr <= cast(uint)'9');
-}
-
-/// Note: Currently only supports [a-zA-Z]
-bool isAlpha(T:char)(T chr)  {return _isAlpha(chr);}
-bool isAlpha(T:wchar)(T chr) {return _isAlpha(chr);}
-bool isAlpha(T:dchar)(T chr) {return _isAlpha(chr);}
-private bool _isAlpha(T)(T chr)
-{
-	uint uintChr = cast(uint)chr;
-	return (uintChr >= cast(uint)'a' && uintChr <= cast(uint)'z') ||
-		   (uintChr >= cast(uint)'A' && uintChr <= cast(uint)'Z');
-}
-
-bool isAlphaNumeric(T:char)(T chr)  {return _isAlphaNumeric(chr);}
-bool isAlphaNumeric(T:wchar)(T chr) {return _isAlphaNumeric(chr);}
-bool isAlphaNumeric(T:dchar)(T chr) {return _isAlphaNumeric(chr);}
-private bool _isAlphaNumeric(T)(T chr)
-{
-	return isDigit(chr) || isAlpha(chr);
-}
-
-bool isWhitespace(T:char)(T chr)  {return _isWhitespace(chr);}
-bool isWhitespace(T:wchar)(T chr) {return _isWhitespace(chr);}
-bool isWhitespace(T:dchar)(T chr) {return _isWhitespace(chr);}
-private bool _isWhitespace(T)(T chr)
-{
-	return contains(whitespaceChars!(T)(), chr);
-}
-+/
 
 bool startsWith(T)(T[] source, T[] match)
 {
@@ -162,35 +63,18 @@ bool endsWith(T)(T[] source, T[] match)
 	return (source.locatePatternPrior(match) == source.length - match.length);
 }
 
-mixin(multiTypeString!("winEOL",  r"\r\n"));
-mixin(multiTypeString!("macEOL",  r"\r"));
-mixin(multiTypeString!("unixEOL", r"\n"));
-mixin(multiTypeString!("tabChar", r"\t"));
-
-version(Windows) char[] nativeEOL = "\r\n";
-version(OSX)     char[] nativeEOL = "\r";
-version(linux)   char[] nativeEOL = "\n";
-
-static this()
-{
-	assert(unixEOL!(char)() == "\n"c,  "unixEOL() is incorrent");
-	assert(tabChar!(char)() == "\t"c,  "tabChar() is incorrent");
-	assert( winEOL!(char)() == "\r\n"c, "winEOL() is incorrent");
-	assert( macEOL!(char)() == "\r"c,   "macEOL() is incorrent");
-}
-
 /// Unix EOL: "\n"
 void toUnixEOL(T)(ref T[] str)
 {
-	str = substitute(str, winEOL!(T)(), unixEOL!(T)()); // Win -> Unix
-	str = substitute(str, macEOL!(T)(), unixEOL!(T)()); // Mac -> Unix
+	str = substitute(str, winEOL!(T)(),  unixEOL!(T)()); // Win  -> Unix
+	str = substitute(str, mac9EOL!(T)(), unixEOL!(T)()); // Mac9 -> Unix
 }
 
-/// Mac EOL: "\r"
-void toMacEOL(T)(ref T[] str)
+/// Mac9 EOL: "\r"
+void toMac9EOL(T)(ref T[] str)
 {
-	str = substitute(str, winEOL!(T)(),  macEOL!(T)()); // Win  -> Mac
-	str = substitute(str, unixEOL!(T)(), macEOL!(T)()); // Unix -> Mac
+	str = substitute(str, winEOL!(T)(),  mac9EOL!(T)()); // Win  -> Mac9
+	str = substitute(str, unixEOL!(T)(), mac9EOL!(T)()); // Unix -> Mac9
 }
 
 /// Win EOL: "\r\n"
@@ -203,7 +87,7 @@ void toWinEOL(T)(ref T[] str)
 T[] toNativeEOL(T)(T[] str)
 {
 	version(Windows) toWinEOL(str);
-	version(OSX)     toMacEOL(str);
+	version(OSX)     toUnixEOL(str);
 	version(linux)   toUnixEOL(str);
 	return str;
 }
@@ -211,7 +95,6 @@ T[] toNativeEOL(T)(T[] str)
 T[] toNativeEOLFromUnix(T)(T[] str)
 {
 	     version(Windows) return str.toNativeEOL();
-	else version(OSX)     return str.toNativeEOL();
 	else return str;
 }
 
@@ -222,19 +105,36 @@ T[] toNativeEOLFromWin(T)(T[] str)
 	else return str;
 }
 
-T[] toNativeEOLFromMac(T)(T[] str)
+T[] toNativeEOLFromMac9(T)(T[] str)
 {
-	     version(Windows) return str.toNativeEOL();
-	else version(linux)   return str.toNativeEOL();
-	else return str;
+	return str.toNativeEOL();
 }
 
 enum EscapeSequence
 {
-	SemiTwist,
-	DoubleQuoteString
+	DDQS, // D Double Quote String, ex: `"foo\t"` <--> `foo	`
+	
+	//TODO: Implement these
+	//HTML, // ex: `&amp;` <--> `&`
+	//URI,  // ex: `%20` <--> ` `
+	//SQL,  //TODO: Include different types of SQL escaping (SQL's about as standardized as BASIC)
 }
 
+/++
+Note:
+For the escape and unescape functions, chaining one with the other
+(ex: "unescape(escape(str))") will result in a string that is
+semantically equivalent to the original, but it is *not* necessarily
+guaranteed to be exactly identical to the original string.
+
+For example:
+  char[] str;
+  str = `"\x41\t"`;        // 0x41 is ASCII and UTF-8 for A
+  str = unescapeDDQS(str); // == `A	` (That's an actual tab character)
+  str = escapeDDQS(str);   // == `"A\t"c`
+
+  Note that "\x41\t" and "A\t"c are equivalent, but not identical.
++/
 T[] escape(T)(T[] str, EscapeSequence type)
 {
 	mixin(ensureCharType!("T"));
@@ -243,8 +143,8 @@ T[] escape(T)(T[] str, EscapeSequence type)
 	
 	switch(type)
 	{
-	case EscapeSequence.DoubleQuoteString:
-		ret = escapeDoubleQuoteString(str);
+	case EscapeSequence.DDQS:
+		ret = escapeDDQS(str);
 		break;
 		
 	default:
@@ -262,12 +162,8 @@ T[] unescape(T)(T[] str, EscapeSequence type)
 	
 	switch(type)
 	{
-	case EscapeSequence.SemiTwist:
-		ret = unescapeSemiTwist(str);
-		break;
-		
-	case EscapeSequence.DoubleQuoteString:
-		ret = unescapeDoubleQuoteString(str);
+	case EscapeSequence.DDQS:
+		ret = unescapeDDQS(str);
 		break;
 		
 	default:
@@ -286,86 +182,77 @@ T[] unescapeChar(T)(T[] str, T[] escapeSequence)
 	return ret;
 }
 
-mixin(multiTypeString!("escSequence_SemiTwist_Digit",                r"\\d"));
-mixin(multiTypeString!("escSequence_SemiTwist_UppercaseAlpha",       r"\\u"));
-mixin(multiTypeString!("escSequence_SemiTwist_LowercaseAlpha",       r"\\l"));
-mixin(multiTypeString!("escSequence_SemiTwist_Whitespace",           r"\\s"));
-mixin(multiTypeString!("escSequence_SemiTwist_Backslash",            r"\\\\"));
-mixin(multiTypeString!("escSequence_SemiTwist_OpeningSquareBracket", r"\\["));
-mixin(multiTypeString!("escSequence_SemiTwist_ClosingSquareBracket", r"\\]"));
-mixin(multiTypeString!("escSequence_SemiTwist_Caret",                r"\\^"));
-mixin(multiTypeString!("escSequence_SemiTwist_Asterisk",             r"\\*"));
-mixin(multiTypeString!("escSequence_SemiTwist_Plus",                 r"\\+"));
-
-T[] unescapeSemiTwist(T)(T[] str)
+/// Warning: This doesn't unescape all escape sequences yet.
+T[] unescapeDDQS(T)(T[] str)
 {
 	mixin(ensureCharType!("T"));
+	const char[] errStr = "str doesn't contain a valid D Double Quote String";
 
+	if(str.length < 2)
+		throw new Exception(errStr);
+		
 	T[] ret = str.dup;
 	
-	ret = substitute(ret, escSequence_SemiTwist_Digit!(T)(),          digitChars!(T)());
-	ret = substitute(ret, escSequence_SemiTwist_UppercaseAlpha!(T)(), uppercaseLetters!(T)());
-	ret = substitute(ret, escSequence_SemiTwist_LowercaseAlpha!(T)(), lowercaseLetters!(T)());
-	ret = substitute(ret, escSequence_SemiTwist_Whitespace!(T)(),     whitespaceChars!(T)());
+	//TODO: Do this better
+	ret = ctfe_substitute!(T)(ret, `\\`, `\`);
+	ret = ctfe_substitute!(T)(ret, `\"`, `"`);
+	ret = ctfe_substitute!(T)(ret, `\'`, `'`);
+
+	ret = ctfe_substitute!(T)(ret, `\r`, "\r");
+	ret = ctfe_substitute!(T)(ret, `\n`, "\n");
+	ret = ctfe_substitute!(T)(ret, `\t`, "\t");
+
+	ret = ctfe_substitute!(T)(ret, `\?`, "\?");
+	ret = ctfe_substitute!(T)(ret, `\a`, "\a");
+	ret = ctfe_substitute!(T)(ret, `\b`, "\b");
+	ret = ctfe_substitute!(T)(ret, `\f`, "\f");
+	ret = ctfe_substitute!(T)(ret, `\v`, "\v");
+	//TODO: All the others
+
+	if(ret[0..1] != `"`)
+		throw new Exception(errStr);
 	
-	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_Backslash!(T)());
-	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_OpeningSquareBracket!(T)());
-	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_ClosingSquareBracket!(T)());
-	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_Caret!(T)());
-	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_Asterisk!(T)());
-	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_Plus!(T)());
+	auto last = ret[$-1..$];
+	auto secondLast = ret[$-2..$-1];
 	
-	return ret;
-}
-
-/+
-// This stuff (substitute/unescapeChar) won't work at compile-time
-mixin(multiTypeString!("escSequence_DoubleQuoteString_Quote", r"\\\""));
-mixin(multiTypeString!("escSequence_DoubleQuoteString_Backslash", r"\\\\"));
-
-T[] unescapeDoubleQuoteString(T)(T[] str)
-{
-	mixin(ensureCharType!("T"));
-
-	T[] ret = str.dup;
+	if(last != `"`)
+	{
+		if(secondLast != `"`)
+			throw new Exception(errStr);
+		else if(secondLast != "c" && secondLast != "w" && secondLast != "d")
+			throw new Exception(errStr);
+		else
+			return ret[1..$-2];
+	}
 	
-/*	ret = substitute(ret, escSequence_SemiTwist_Digit!(T)(),          digitChars!(T)());
-	ret = substitute(ret, escSequence_SemiTwist_UppercaseAlpha!(T)(), uppercaseLetters!(T)());
-	ret = substitute(ret, escSequence_SemiTwist_LowercaseAlpha!(T)(), lowercaseLetters!(T)());
-	ret = substitute(ret, escSequence_SemiTwist_Whitespace!(T)(),     whitespaceChars!(T)());
-*/	
-	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_Backslash!(T)());
-	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_OpeningSquareBracket!(T)());
-	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_ClosingSquareBracket!(T)());
-	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_Caret!(T)());
-	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_Asterisk!(T)());
-	ret = unescapeChar!(T)(ret, escSequence_SemiTwist_Plus!(T)());
-	
-	return ret;
-}
-+/
-
-T[] unescapeDoubleQuoteString(T)(T[] str)
-{
-	mixin(ensureCharType!("T"));
-
-	T[] ret = str.dup;
-	
-	ret = ctfe_substitute(ret, cast(T[])`\\`, cast(T[])`\`);
-	ret = ctfe_substitute(ret, cast(T[])`\"`, cast(T[])`"`);
-
 	return ret[1..$-1];
 }
 
-T[] escapeDoubleQuoteString(T)(T[] str)
+T[] escapeDDQS(T)(T[] str)
 {
 	mixin(ensureCharType!("T"));
 		
 	T[] ret = str.dup;
 	
-	ret = ctfe_substitute!(T)(ret, cast(T[])`\`, cast(T[])`\\`);
-	ret = ctfe_substitute!(T)(ret, cast(T[])`"`, cast(T[])`\"`);
-
+	ret = ctfe_substitute!(T)(ret, `\`, `\\`);
+	ret = ctfe_substitute!(T)(ret, `"`, `\"`);
+	ret = ctfe_substitute!(T)(ret, "\r", `\r`); // To prevent accidential conversions to platform-specific EOL
+	ret = ctfe_substitute!(T)(ret, "\n", `\n`); // To prevent accidential conversions to platform-specific EOL
+	ret = ctfe_substitute!(T)(ret, "\t", `\t`); // To prevent possible problems with automatic tab->space conversion
+	// The rest don't need to be escaped
+	
+	//TODO? Use this suffix
+	/+
+	static if(is(T==char))
+		const T[] suffix = "c";
+	else static if(is(T==wchar))
+		const T[] suffix = "w";
+	else static if(is(T==dchar))
+		const T[] suffix = "d";
+		
+	return `"`~ret~`"`~suffix;
+	+/
+	
 	return `"`~ret~`"`;
 }
 
@@ -373,25 +260,36 @@ T[] escapeDoubleQuoteString(T)(T[] str)
 const char[] doubleQuoteTestStr = `"They said \"10 \\ 5 = 2\""`;
 
 pragma(msg, "orig:        "~doubleQuoteTestStr);
-pragma(msg, "unesc:       "~unescapeDoubleQuoteString(doubleQuoteTestStr));
-pragma(msg, "esc:         "~escapeDoubleQuoteString(doubleQuoteTestStr));
-pragma(msg, "esc(unesc):  "~escapeDoubleQuoteString(unescapeDoubleQuoteString(doubleQuoteTestStr)));
-pragma(msg, "unesc(esc):  "~unescapeDoubleQuoteString(escapeDoubleQuoteString(doubleQuoteTestStr)));
+pragma(msg, "unesc:       "~unescapeDDQS(doubleQuoteTestStr));
+pragma(msg, "esc:         "~escapeDDQS(doubleQuoteTestStr));
+pragma(msg, "esc(unesc):  "~escapeDDQS(unescapeDDQS(doubleQuoteTestStr)));
+pragma(msg, "unesc(esc):  "~unescapeDDQS(escapeDDQS(doubleQuoteTestStr)));
 
-pragma(msg, "unesc:       "~unescape(doubleQuoteTestStr, EscapeSequence.DoubleQuoteString));
-pragma(msg, "unesc:       "~doubleQuoteTestStr.unescape(EscapeSequence.DoubleQuoteString));
+pragma(msg, "unesc:       "~unescape(doubleQuoteTestStr, EscapeSequence.DDQS));
+pragma(msg, "unesc:       "~doubleQuoteTestStr.unescape(EscapeSequence.DDQS));
 
 unittest
 {
-	Stdout.formatln("{}{}", "wchar:       ", unescapeDoubleQuoteString(`"They said \"10 \\ 5 = 2\""`w));
-	Stdout.formatln("{}{}", "dchar:       ", unescapeDoubleQuoteString(`"They said \"10 \\ 5 = 2\""`d));
-//	Stdout.formatln("{}{}", "int:         ", unescapeDoubleQuoteString([cast(int)1,2,3]));
+	const wchar[] ctEscW = escapeDDQS(`"They said \"10 \\ 5 = 2\""`w);
+	const dchar[] ctEscD = escapeDDQS(`"They said \"10 \\ 5 = 2\""`d);
+	const wchar[] ctUnescW = unescapeDDQS(`"They said \"10 \\ 5 = 2\""`w);
+	const dchar[] ctUnescD = unescapeDDQS(`"They said \"10 \\ 5 = 2\""`d);
+	Stdout.formatln("{}{}", "ctEscW:      ", ctEscW);
+	Stdout.formatln("{}{}", "ctEscD:      ", ctEscD);
+	Stdout.formatln("{}{}", "ctUnescW:    ", ctUnescW);
+	Stdout.formatln("{}{}", "ctUnescD:    ", ctUnescD);
+
+	Stdout.formatln("{}{}", "unesc wchar: ", unescapeDDQS(`"They said \"10 \\ 5 = 2\""`w));
+	Stdout.formatln("{}{}", "unesc dchar: ", unescapeDDQS(`"They said \"10 \\ 5 = 2\""`d));
+	Stdout.formatln("{}{}", "esc wchar:   ", escapeDDQS(`"They said \"10 \\ 5 = 2\""`w));
+	Stdout.formatln("{}{}", "esc dchar:   ", escapeDDQS(`"They said \"10 \\ 5 = 2\""`d));
+//	Stdout.formatln("{}{}", "int:         ", unescapeDDQS([cast(int)1,2,3]));
 
 	Stdout.formatln("{}{}", "orig:        ", doubleQuoteTestStr);
-	Stdout.formatln("{}{}", "unesc:       ", unescapeDoubleQuoteString(doubleQuoteTestStr));
-	Stdout.formatln("{}{}", "esc:         ", escapeDoubleQuoteString(doubleQuoteTestStr));
-	Stdout.formatln("{}{}", "esc(unesc):  ", escapeDoubleQuoteString(unescapeDoubleQuoteString(doubleQuoteTestStr)));
-	Stdout.formatln("{}{}", "unesc(esc):  ", unescapeDoubleQuoteString(escapeDoubleQuoteString(doubleQuoteTestStr)));
+	Stdout.formatln("{}{}", "unesc:       ", unescapeDDQS(doubleQuoteTestStr));
+	Stdout.formatln("{}{}", "esc:         ", escapeDDQS(doubleQuoteTestStr));
+	Stdout.formatln("{}{}", "esc(unesc):  ", escapeDDQS(unescapeDDQS(doubleQuoteTestStr)));
+	Stdout.formatln("{}{}", "unesc(esc):  ", unescapeDDQS(escapeDDQS(doubleQuoteTestStr)));
 }
 +/
 

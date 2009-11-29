@@ -18,7 +18,7 @@ private char[] genOSParam(char[] name, char[][] values)
 		char[] osStr = enumToString(cast(OS)i);
 
 		str ~=
-			"const char[] "~name~"_"~osStr~" = "~escapeDoubleQuoteString(value)~";\n"~
+			"const char[] "~name~"_"~osStr~" = "~escapeDDQS(value)~";\n"~
 			"static if(os == OS."~osStr~")\n"~
 			"    const char[] "~name~" = "~name~"_"~osStr~";\n";
 	}
@@ -30,9 +30,10 @@ version(Windows) const OS os = OS.Windows;
 version(linux)   const OS os = OS.Linux;
 version(freebsd) const OS os = OS.BSD;
 
-mixin(genOSParam("objExt",  [ ".obj"[], ".o", ".o" ]));
-mixin(genOSParam("libExt",  [ ".lib"[], ".a", ".a" ]));
-mixin(genOSParam("exeExt",  [ ".exe"[], "",   ""   ]));
-mixin(genOSParam("pathSep", [ "\\"  [], "/",  "/"  ]));
+mixin(genOSParam("objExt",  [ ".obj" [], ".o", ".o" ]));
+mixin(genOSParam("libExt",  [ ".lib" [], ".a", ".a" ]));
+mixin(genOSParam("exeExt",  [ ".exe" [], "",   ""   ]));
+mixin(genOSParam("pathSep", [ "\\"   [], "/",  "/"  ]));
+mixin(genOSParam("nlStr",   [ "\r\n" [], "\n", "\n" ]));
 
 mixin(genOSParam("selfExeLink", [ ""[], "/proc/self/exe", "/proc/curproc/file" ]));
