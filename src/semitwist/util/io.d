@@ -9,20 +9,29 @@ import tango.stdc.stringz;
 import tango.text.Util;
 
 import semitwist.os;
+import semitwist.util.mixins;
 
 version(Win32)
 	import tango.sys.win32.UserGdi;
 else
 	import tango.stdc.posix.unistd;
 
-wchar[] readNullTerminatedWString(DataInput reader)
+T[] readStringz(T)(DataInput reader)
 {
-	wchar[] str;
-	wchar c;
+	mixin(ensureCharType!("T"));
+	
+	T[] str;
+	T c;
 	
 	do
 	{
-		c = cast(wchar)reader.getShort();
+		static if(is(T == char))
+			c = cast(T)reader.getByte();
+		else static if(is(T == wchar))
+			c = cast(T)reader.getShort();
+		else
+			c = cast(T)reader.getInt();
+			
 		str ~= c;
 	} while(c != 0);
 

@@ -95,7 +95,7 @@ T[] ctfe_subMapJoin(T)(T[] str, T[] match, T[][] replacements)
 
 	return value;
 }
-import semitwist.util.mixins;
+
 unittest
 {
 	// ctfe_pad ---------------------------

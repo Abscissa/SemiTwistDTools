@@ -8,6 +8,7 @@ import tango.io.Stdout;
 import tango.text.Unicode;
 import tango.text.Util;
 import tango.text.convert.Layout;
+import tango.text.convert.Utf;
 
 import semitwist.util.ctfe;
 import semitwist.util.mixins;
@@ -50,6 +51,7 @@ template multiTypeString(char[] name, char[] data, char[] access="public")
 	"}";
 }
 
+/// Warning: This is missing some unicode whitespace chars
 mixin(multiTypeString!("whitespaceChars", r" \n\r\t\v\f"));
 
 bool startsWith(T)(T[] source, T[] match)
@@ -332,4 +334,17 @@ T[] stripNonPrintable(T)(T[] str)
 	T[] ret = str.dup;
 	auto numRemaining = ret.removeIf( (T c){return !isPrintable(c);} );
 	return ret[0..numRemaining];
+}
+
+/// Return value is number of code units
+uint nextCodePointSize(T)(T[] str)
+{
+	static assert(
+		is(T==char) || is(T==wchar),
+		"From 'nextCodePointSize': 'T' must be char or wchar, not '"~T.stringof~"'"
+	);
+	
+	uint ret;
+	str.decode(ret);
+	return ret;
 }
