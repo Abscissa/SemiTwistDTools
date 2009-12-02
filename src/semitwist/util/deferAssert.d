@@ -9,7 +9,7 @@ public import semitwist.util.reflect;
 import tango.io.Stdout;
 import tango.util.Convert;
 
-import semitwist.util.text;
+import semitwist.util.all;
 
 //TODO: Properly handle stuff that (for whatever bizarre reason) throws null.
 //TODO: Modify deferEnsureThrows to (optionally?) accept subclasses of TExpected

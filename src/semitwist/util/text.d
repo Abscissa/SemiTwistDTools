@@ -9,9 +9,9 @@ import tango.text.Unicode;
 import tango.text.Util;
 import tango.text.convert.Layout;
 import tango.text.convert.Utf;
+import tango.util.Convert;
 
-import semitwist.util.ctfe;
-import semitwist.util.mixins;
+import semitwist.util.all;
 
 /**
 Notes:
@@ -68,22 +68,22 @@ bool endsWith(T)(T[] source, T[] match)
 /// Unix EOL: "\n"
 void toUnixEOL(T)(ref T[] str)
 {
-	str = substitute(str, winEOL!(T)(),  unixEOL!(T)()); // Win  -> Unix
-	str = substitute(str, mac9EOL!(T)(), unixEOL!(T)()); // Mac9 -> Unix
+	str = substitute(str, to!(T[])(nlStr_Windows), to!(T[])(nlStr_Linux)); // Win  -> Unix
+	str = substitute(str, to!(T[])(nlStr_Mac9),    to!(T[])(nlStr_Linux)); // Mac9 -> Unix
 }
 
 /// Mac9 EOL: "\r"
 void toMac9EOL(T)(ref T[] str)
 {
-	str = substitute(str, winEOL!(T)(),  mac9EOL!(T)()); // Win  -> Mac9
-	str = substitute(str, unixEOL!(T)(), mac9EOL!(T)()); // Unix -> Mac9
+	str = substitute(str, to!(T[])(nlStr_Windows), to!(T[])(nlStr_Mac9)); // Win  -> Mac9
+	str = substitute(str, to!(T[])(nlStr_Linux),   to!(T[])(nlStr_Mac9)); // Unix -> Mac9
 }
 
 /// Win EOL: "\r\n"
 void toWinEOL(T)(ref T[] str)
 {
 	toUnixEOL(str); // All -> Unix
-	str = substitute(str, unixEOL!(T)(), winEOL!(T)()); // Unix -> Win
+	str = substitute(str, to!(T[])(nlStr_Linux), to!(T[])(nlStr_Windows)); // Unix -> Win
 }
 
 T[] toNativeEOL(T)(T[] str)

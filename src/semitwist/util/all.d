@@ -31,3 +31,5 @@ public import semitwist.util.mixins;
 public import semitwist.util.deferAssert;
 public import semitwist.util.reflect;
 public import semitwist.util.text;
+public import semitwist.os;
+public import semitwist.ver;

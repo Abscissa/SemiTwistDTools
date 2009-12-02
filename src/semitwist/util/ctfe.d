@@ -6,7 +6,7 @@ module semitwist.util.ctfe;
 import tango.core.Version;
 import tango.io.Stdout;
 
-import semitwist.util.deferAssert;
+import semitwist.util.all;
 
 T[] ctfe_pad(T)(T[] str, int length, T[] padChar=" ")
 {

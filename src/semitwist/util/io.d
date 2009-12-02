@@ -8,8 +8,7 @@ import tango.io.stream.Data;
 import tango.stdc.stringz;
 import tango.text.Util;
 
-import semitwist.os;
-import semitwist.util.mixins;
+import semitwist.util.all;
 
 version(Win32)
 	import tango.sys.win32.UserGdi;

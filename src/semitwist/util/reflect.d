@@ -6,8 +6,7 @@ module semitwist.util.reflect;
 import tango.core.Traits;
 import tango.core.Version;
 
-import semitwist.util.ctfe;
-import semitwist.util.deferAssert;
+import semitwist.util.all;
 
 /**
 If you have a class MyClass(T), then nameof!(MyClass) will return "MyClass".

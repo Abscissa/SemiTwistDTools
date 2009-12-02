@@ -4,10 +4,9 @@
 module semitwist.util.functional;
 
 import tango.core.Array;
-/+version(Unittest)+/ import semitwist.util.deferAssert;
-
 /+version(Unittest)+/ import tango.io.Stdout;
-/+version(Unittest)+/ import semitwist.util.mixins;
+
+import semitwist.util.all;
 
 
 //TODO: Think about new naming scheme. Take a look at how tango does it.

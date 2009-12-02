@@ -5,8 +5,7 @@
 
 module semitwist.os;
 
-import semitwist.util.mixins;
-import semitwist.util.text;
+import semitwist.util.all;
 
 private char[] genOSParam(char[] name, char[][] values)
 {
@@ -35,5 +34,6 @@ mixin(genOSParam("libExt",  [ ".lib" [], ".a", ".a" ]));
 mixin(genOSParam("exeExt",  [ ".exe" [], "",   ""   ]));
 mixin(genOSParam("pathSep", [ "\\"   [], "/",  "/"  ]));
 mixin(genOSParam("nlStr",   [ "\r\n" [], "\n", "\n" ]));
+const char[] nlStr_Mac9 = "\r";
 
 mixin(genOSParam("selfExeLink", [ ""[], "/proc/self/exe", "/proc/curproc/file" ]));

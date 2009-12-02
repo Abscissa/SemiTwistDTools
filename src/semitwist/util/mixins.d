@@ -6,9 +6,7 @@ module semitwist.util.mixins;
 import tango.core.Traits;
 import tango.io.Stdout;
 
-import semitwist.util.ctfe;
-import semitwist.util.reflect;
-import semitwist.util.text;
+import semitwist.util.all;
 
 /++
 Useful in constructors for DRY.
@@ -149,7 +147,7 @@ template traceVal(bool useNewline, values...)
 	else
 	{
 		const char[] traceVal =
-			"Stdout.formatln(\"{}:"~(useNewline?"\\n":" ")~"{}\", "~values[0].stringof~", "~unescape(values[0].stringof, EscapeSequence.DoubleQuoteString)~");"
+			"Stdout.formatln(\"{}:"~(useNewline?"\\n":" ")~"{}\", "~values[0].stringof~", "~unescapeDDQS(values[0].stringof)~");"
 			~ traceVal!(useNewline, values[1..$]);
 	}
 }
@@ -302,7 +300,7 @@ template traceValCT(bool useNewline, values...)
 	else
 	{
 		const char[] traceValCT =
-			"pragma(msg, "~escapeDoubleQuoteString(values[0])~"~\":"~(useNewline? "\\n":" ")~"\" ~ ("~values[0]~"));\n"~
+			"pragma(msg, "~escapeDDQS(values[0])~"~\":"~(useNewline? "\\n":" ")~"\" ~ ("~values[0]~"));\n"~
 			traceValCT!(useNewline, values[1..$]);
 
 		//pragma(msg, "traceValCT: " ~ traceValCT);
