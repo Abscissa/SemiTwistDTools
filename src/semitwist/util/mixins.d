@@ -168,11 +168,11 @@ mixin(trace!());
 Turns Into:
 
 ----
-Stdout.formatln("{}({}): trace", __FILE__, __LINE__);
+Stdout.formatln("{}({}): trace", __FILE__, __LINE__); Stdout.flush();
 funcSuspectedOfCrashing1_notTheRealCause()
-Stdout.formatln("{}{}({}): trace", "--EASY TO VISUALLY GREP--", __FILE__, __LINE__);
+Stdout.formatln("{}{}({}): trace", "--EASY TO VISUALLY GREP--", __FILE__, __LINE__); Stdout.flush();
 funcSuspectedOfCrashing2_isTheRealCause()
-Stdout.formatln("{}({}): trace", __FILE__, __LINE__);
+Stdout.formatln("{}({}): trace", __FILE__, __LINE__); Stdout.flush();
 ----
 
 Example Output:
@@ -187,10 +187,10 @@ template trace(char[] prefix="")
 {
 	static if(prefix=="")
 		const char[] trace =
-			`Stdout.formatln("{}({}): trace", __FILE__, __LINE__);`;
+			`Stdout.formatln("{}({}): trace", __FILE__, __LINE__); Stdout.flush();`;
 	else
 		const char[] trace =
-			`Stdout.formatln("{}: {}({}): trace", `~prefix.stringof~`, __FILE__, __LINE__);`;
+			`Stdout.formatln("{}: {}({}): trace", `~prefix.stringof~`, __FILE__, __LINE__); Stdout.flush();`;
 }
 
 /++

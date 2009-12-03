@@ -4,7 +4,7 @@
 module semitwist.util.deferAssert;
 
 // deferEnsure requires this to exist in the calling context
-public import semitwist.util.reflect;
+//public import semitwist.util.reflect;
 
 import tango.io.Stdout;
 import tango.util.Convert;

@@ -17,11 +17,9 @@ public import tango.util.Convert;
 
 public import semitwist.cmd.plain;
 public import semitwist.cmdlineparser;
-public import semitwist.os;
 public import semitwist.refbox;
 public import semitwist.treeout;
 public import semitwist.util.all;
-public import semitwist.ver;
 
 static if(Tango.Major == 0 && Tango.Minor <= 998)
 {
