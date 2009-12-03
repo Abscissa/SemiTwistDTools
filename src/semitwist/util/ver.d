@@ -1,7 +1,7 @@
 // SemiTwist D Tools: Library
 // Written in the D programming language.
 
-module semitwist.ver;
+module semitwist.util.ver;
 
 import tango.io.Stdout;
 import tango.math.Math;
@@ -11,6 +11,7 @@ import tango.util.Convert;
 import semitwist.util.all;
 
 //TODO: Support versions that have different semantics
+//TODO: Document ordering semantics of this
 struct Ver
 {
 	uint[] ver;

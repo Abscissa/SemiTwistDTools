@@ -19,7 +19,8 @@ In SVN comments:
 //   DMD output capturing for Programmer's Notepad:
 //   ((.)*: )?(warning - )?([ \t]*instantiatied in )?((.)*@)?%f\(%l(:%c)?\):
 
-//TODO: Change apps to use .ver.Ver "0.00.1" instead of "v0.01(pre)"
+//TODO***: Change apps to use .ver.Ver "0.00.1" instead of "v0.01(pre)"
+//TODO***: Move build scripts and pnproj files into their own directories.
 
 module semitwist.util.all;
 
@@ -31,5 +32,5 @@ public import semitwist.util.mixins;
 public import semitwist.util.deferAssert;
 public import semitwist.util.reflect;
 public import semitwist.util.text;
-public import semitwist.os;
-public import semitwist.ver;
+public import semitwist.util.os;
+public import semitwist.util.ver;

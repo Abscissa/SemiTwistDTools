@@ -1,9 +1,7 @@
 // SemiTwist D Tools: Library
 // Written in the D programming language.
 
-//TODO: Move this whole module into the semitwist.util package.
-
-module semitwist.os;
+module semitwist.util.os;
 
 import semitwist.util.all;
 

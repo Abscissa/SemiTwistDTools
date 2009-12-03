@@ -243,18 +243,6 @@ T[] escapeDDQS(T)(T[] str)
 	ret = ctfe_substitute!(T)(ret, "\t", `\t`); // To prevent possible problems with automatic tab->space conversion
 	// The rest don't need to be escaped
 	
-	//TODO? Use this suffix
-	/+
-	static if(is(T==char))
-		const T[] suffix = "c";
-	else static if(is(T==wchar))
-		const T[] suffix = "w";
-	else static if(is(T==dchar))
-		const T[] suffix = "d";
-		
-	return `"`~ret~`"`~suffix;
-	+/
-	
 	return `"`~ret~`"`;
 }
 

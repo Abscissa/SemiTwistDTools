@@ -15,17 +15,17 @@ This has been tested to work with:
 //TODO: Clean all if stbuild.conf has changed
 //TODO: Clean all if using a different build tool from last time
 //TODO: User-defined options (ex: set preference for default: rebuild or xfbuild)
-//TODO: Handle screwup when user does "stbuild myproj clean"
-//TODO: Handle screwup when user does "stbuild --help" without an stbuild.conf
-//TODO: Handle screwup when user does "stbuild undefined_target"
-//TODO: Handle non-existant combinations
+//TODO***: Handle screwup when user does "stbuild myproj badmode"
+//TODO***: Handle screwup when user does "stbuild --help" without an stbuild.conf
+//TODO***: Handle screwup when user does "stbuild undefined_target"
+//TODO***: Handle non-existant combinations
 //TODO: Handle DMD patched for -ww
 //      Use STBUILD_OPTS env var: STBUILD_OPTS=dmdpatch_ww;whatever...
 //TODO: Disallow crazy characters in target names
 //TODO: $(proj), $(mode), $(#), $proj, $#, $$, etc.
 //TODO? Use Goldie to parse .conf file
 //TODO: Get obj dir from conf switches instead of hardcoding to "obj/target/mode"
-//TODO: Allow extra compiler/buildtool params on the cmd line
+//TODO***: Allow extra compiler/buildtool params on the cmd line
 //TODO: When using xfbuild, make sure root filenames end in ".d" (ie "src/main.d" instead of "src/main")
 
 module semitwist.apps.stmanage.stbuild.main;
