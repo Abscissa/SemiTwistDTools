@@ -1,0 +1,3 @@
+<Project name="cmdTest">
+<File path="..\src\semitwist\apps\tests\cmdTest\main.d"></File>
+</Project>

@@ -1,0 +1,3 @@
+<Project name="deferAssertTest">
+<File path="..\src\semitwist\apps\tests\deferAssertTest\main.d"></File>
+</Project>

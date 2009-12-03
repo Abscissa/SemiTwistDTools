@@ -1,0 +1,1 @@
+<Project name="stbuild"><File path="..\src\semitwist\apps\stmanage\stbuild\main.d"></File><File path="..\src\semitwist\apps\stmanage\stbuild\conf.d"></File><File path="..\src\semitwist\apps\stmanage\stbuild\cmdArgs.d"></File></Project>

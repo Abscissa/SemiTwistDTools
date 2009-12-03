@@ -1,5 +1,5 @@
 @echo off
-call bootstrap_stbuild_xf.bat
+call scripts\bootstrap_stbuild_xf.bat
 bin\stbuild_bootstrap all all -clean
 bin\stbuild_bootstrap all release -tool:xf
 bin\stbuild_bootstrap all debug -tool:xf

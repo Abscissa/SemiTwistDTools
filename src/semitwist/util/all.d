@@ -1,7 +1,7 @@
 // SemiTwist Library
 // Written in the D programming language.
 
-/** 
+/++
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
@@ -13,14 +13,13 @@ This has been tested to work with:
 In SVN comments:
 (B): Breaking changes
 (NB): Non-Breaking changes
-*/
++/
 
 // Potentially handy note:
 //   DMD output capturing for Programmer's Notepad:
 //   ((.)*: )?(warning - )?([ \t]*instantiatied in )?((.)*@)?%f\(%l(:%c)?\):
 
 //TODO***: Change apps to use .ver.Ver "0.00.1" instead of "v0.01(pre)"
-//TODO***: Move build scripts and pnproj files into their own directories.
 
 module semitwist.util.all;
 
