@@ -52,7 +52,7 @@ class CmdArgs
 		cmdLine = new CmdLineParser();
 		mixin(defineArg!(cmdLine, "help",     help,         ArgFlag.Optional, "Displays a help summary and exits" ));
 		mixin(defineArg!(cmdLine, "morehelp", moreHelp,     ArgFlag.Optional, "Displays a detailed help message and exits" ));
-		mixin(defineArg!(cmdLine, "tm",       targetMode,   ArgFlag.Optional|ArgFlag.Switchless, "First is target, second is optional mode" ));
+		mixin(defineArg!(cmdLine, "",         targetMode,   ArgFlag.Optional, "First is target, second is optional mode" ));
 		mixin(defineArg!(cmdLine, "clean",    cleanOnly,    ArgFlag.Optional, "Clean, don't build" ));
 		mixin(defineArg!(cmdLine, "conf",     confFile,     ArgFlag.Optional, "Configuration file to use" ));
 		mixin(defineArg!(cmdLine, "tool",     buildToolStr, ArgFlag.Optional, "Build tool [\"re\" or \"xf\"]" ));

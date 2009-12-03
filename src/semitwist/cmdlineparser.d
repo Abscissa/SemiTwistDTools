@@ -80,10 +80,8 @@ enum ArgFlag
 {
 	Optional   = 0b0000_0000,
 	Required   = 0b0000_0001,
-	Switchless = 0b0000_0010, // There can be only one [arg set to Switchless]
 	//Unique = 0b0000_0100,
 	ToLower    = 0b0000_1000, // If arg is char[], the value gets converted to all lower-case (for case-insensitivity)
-	RequiredSwitchless = ArgFlag.Required | ArgFlag.Switchless,
 	Advanced   = 0b0001_0000,
 }
 
@@ -104,7 +102,6 @@ template defineArg(alias cmdLineParser, char[] name, alias var, int flags = cast
 			"auto _cmdarg_refbox_"~name~" = new "~nameof!(RefBox)~"!("~typeof(var).stringof~")(&"~var.stringof~");\n"~
 			"auto _cmdarg_"~name~" = new Arg(_cmdarg_refbox_"~name~`, "`~name~`", `~desc.stringof~`);`~"\n"~
 			cmdLineParser.stringof~".addArg(_cmdarg_"~name~", cast(ArgFlag)("~flags.stringof~"));\n";
-		//pragma(msg, "defineArg: " ~ defineArg);
 	}
 }
 
@@ -114,7 +111,6 @@ template setArgAllowableValues(char[] name, allowableValues...)
 		PreventStaticArray!(typeof(allowableValues[0])).stringof~"[] _cmdarg_allowablevals_"~name~";\n"
 		~_setArgAllowableValues!(name, allowableValues)
 		~"_cmdarg_"~name~".setAllowableValues(_cmdarg_allowablevals_"~name~");\n";
-	//pragma(msg, "setArgAllowableValues:\n" ~ setArgAllowableValues);
 }
 
 private template _setArgAllowableValues(char[] name, allowableValues...)
@@ -125,7 +121,6 @@ private template _setArgAllowableValues(char[] name, allowableValues...)
 		const char[] _setArgAllowableValues =
 			"_cmdarg_allowablevals_"~name~" ~= "~allowableValues[0].stringof~";\n"
 			~ _setArgAllowableValues!(name, allowableValues[1..$]);
-	//	pragma(msg, "_setArgAllowableValues:" ~ _setArgAllowableValues);
 }
 
 //TODO? Add float, double, byte, short, long, and unsigned of each.
@@ -192,13 +187,10 @@ class Arg
 		void ensureValidName(char[] name)
 		{
 			if(!CmdLineParser.isValidArgName(name))
-				throw new Exception(`Tried to define an invalid arg name: "{}". Arg names must be "[a-zA-Z0-9_?]+"`.sformat(name));
+				throw new Exception(`Tried to define an invalid arg name: "{}". Arg names must be "[a-zA-Z0-9_?]*"`.sformat(name));
 		}
 		ensureValidName(name);
 		ensureValidName(altName);
-		
-		if(name == "")
-			throw new Exception(`Tried to define a blank arg name`);
 	}
 }
 
@@ -264,7 +256,7 @@ class CmdLineParser
 	{
 		args ~= arg;
 
-		bool isSwitchless = ((flags & ArgFlag.Switchless) != 0);
+		bool isSwitchless = arg.name == "";
 		bool isRequired   = ((flags & ArgFlag.Required)   != 0);
 		bool toLower      = ((flags & ArgFlag.ToLower)    != 0);
 		bool isAdvanced   = ((flags & ArgFlag.Advanced)   != 0);
@@ -526,7 +518,12 @@ class CmdLineParser
 		{
 			if(arg.isRequired && !arg.isSet)
 			{
-				_errorMsg ~= `Missing switch: {} ({})`.sformatln(arg.name, arg.desc);
+				_errorMsg ~=
+					`Missing switch: {} ({})`
+						.sformatln(
+							arg.name=="" ? "<"~getArgTypeName(arg)~">" : arg.name,
+							arg.desc
+						);
 				error = true;
 			}
 		}
@@ -556,12 +553,6 @@ class CmdLineParser
   this means multiple values are accepted.
   Example:
     /s:<text[]>: /s:file1 /s:file2 /s:anotherfile
-  
-  Switchless: This means the "/s:" portion can be omitted
-  Example:
-    /s:true -> true
-    /s:Hello -> Hello
-    /s:12 -> 12
 `;
 
 	char[] getArgTypeName(Arg arg)
@@ -586,8 +577,6 @@ class CmdLineParser
 		char[] advancedArgStr;
 		
 		ret ~= "Switches: (prefixes can be '/', '-' or '--')\n";
-		if(switchlessArgExists)
-			ret ~= "Switchless arg: {} ({})\n".sformat(args[switchlessArg].name, args[switchlessArg].desc);
 
 		foreach(Arg arg; args)
 		{
@@ -611,17 +600,20 @@ class CmdLineParser
 			char[] requiredStr = arg.isRequired ?
 				"(Required) " : "";
 			
-			char[] argSuffix = valAsBool ? "" : ":<"~getArgTypeName(arg)~">" ;
+			char[] argType = "<"~getArgTypeName(arg)~">";
+			char[] argSuffix = valAsBool ? "" : (":"~argType);
 
-			char[] argName = "/"~arg.name~argSuffix;
+			char[] argName;
+			if(arg.name=="")
+				argName = argType;
+			else
+				argName = "/"~arg.name~argSuffix;
 			if(arg.altName != "")
 				argName ~= ", /"~arg.altName~argSuffix;
-			
-			char[] switchless = arg.isSwitchless? " (Switch name can be omitted)" : "";
 	
 			char[] nameColumnWidthStr = "{}".sformat(nameColumnWidth);
 			*argStr ~= sformat("{}{,-"~nameColumnWidthStr~"}{}{}\n",
-			                    indent, argName~" ", requiredStr~arg.desc~switchless, defaultValStr);
+			                    indent, argName~" ", requiredStr~arg.desc, defaultValStr);
 		}
 		if(basicArgStr != "") basicArgStr = "\nBasic: \n"~basicArgStr;
 		if(advancedArgStr != "") advancedArgStr = "\nAdvanced: \n"~advancedArgStr;
@@ -640,9 +632,11 @@ class CmdLineParser
 		{
 			char[]* argStr = arg.isAdvanced? &advancedArgStr : &basicArgStr;
 
-			char[] argName = "/"~arg.name;
+			char[] argName = arg.isSwitchless? "" : "/"~arg.name;
 			if(arg.altName != "")
 				argName ~= ", /"~arg.altName;
+			if(!arg.isSwitchless || arg.altName != "")
+				argName ~= " ";
 	
 			// For some reason, unbox can't see Arg's private member "defaultValue"
 			auto argDefaultValue = arg.defaultValue;
@@ -670,11 +664,11 @@ class CmdLineParser
 			defaultVal    = arg.isRequired   ? "" : ", Default: "~defaultVal;
 			requiredStr   = arg.isRequired   ? "Required" : "Optional";
 			toLowerStr    = arg.toLower      ? ", Case-Insensitive" : "";
-			switchlessStr = arg.isSwitchless ? ", Switchless" : "";
+			switchlessStr = arg.isSwitchless ? ", Nameless" : "";
 			advancedStr   = arg.isAdvanced   ? ", Advanced" : ", Basic";
 			
 			*argStr ~= "\n";
-			*argStr ~= sformat("{} ({}), {}{}{}{}\n",
+			*argStr ~= sformat("{}({}), {}{}{}{}\n",
 			                   argName, getArgTypeName(arg),
 							   requiredStr, switchlessStr, toLowerStr, advancedStr, defaultVal);
 			*argStr ~= sformat("{}\n", arg.desc);

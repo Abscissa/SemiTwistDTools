@@ -47,7 +47,7 @@ void main(char[][] args)
 	mixin(defineArg!(cmd, "_odd98_name", _odd98_name, ArgFlag.Optional,   "Odd name"   ));
 	mixin(defineArg!(cmd, "myInt",       myInt,       ArgFlag.Optional,   "My Int"));
 	mixin(defineArg!(cmd, "r",           required,    ArgFlag.Required,   "This is required, and internal name differs"));
-	mixin(defineArg!(cmd, "switchless",  switchless,  ArgFlag.Switchless, "Switchless Multiple" ));
+	mixin(defineArg!(cmd, "",            switchless,  ArgFlag.Optional,   "Switchless Multiple" ));
 	mixin(defineArg!(cmd, "myEnum",      myEnum,      ArgFlag.Optional,   `My Enum ("tea" or "coffee")` ));
 	
 	mixin(setArgAllowableValues!("myEnum", "tea", "coffee"));
