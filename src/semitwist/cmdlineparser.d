@@ -13,7 +13,6 @@ public import semitwist.refbox;
 import semitwist.util.all;
 
 //TODO: Add "switch A implies switches B and C"
-//TODO: Don't show "Basic:" or "Advanced:" label if only one type exists
 //TODO: Add in some good ideas from the cmd parser in tango scrapple
 
 //TODO: Convert the following sample code into an actual sample app
@@ -615,8 +614,11 @@ class CmdLineParser
 			*argStr ~= sformat("{}{,-"~nameColumnWidthStr~"}{}{}\n",
 			                    indent, argName~" ", requiredStr~arg.desc, defaultValStr);
 		}
-		if(basicArgStr != "") basicArgStr = "\nBasic: \n"~basicArgStr;
-		if(advancedArgStr != "") advancedArgStr = "\nAdvanced: \n"~advancedArgStr;
+		if(basicArgStr != "" && advancedArgStr != "")
+		{
+			basicArgStr = "\nBasic: \n"~basicArgStr;
+			advancedArgStr = "\nAdvanced: \n"~advancedArgStr;
+		}
 		return ret~basicArgStr~advancedArgStr;
 	}
 
