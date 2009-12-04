@@ -15,17 +15,13 @@ This has been tested to work with:
 //TODO: Clean all if stbuild.conf has changed
 //TODO: Clean all if using a different build tool from last time
 //TODO: User-defined options (ex: set preference for default: rebuild or xfbuild)
-//TODO***: Handle screwup when user does "stbuild myproj badmode"
-//TODO***: Handle screwup when user does "stbuild --help" without an stbuild.conf
-//TODO***: Handle screwup when user does "stbuild undefined_target"
-//TODO***: Handle non-existant combinations
 //TODO: Handle DMD patched for -ww
 //      Use STBUILD_OPTS env var: STBUILD_OPTS=dmdpatch_ww;whatever...
 //TODO: Disallow crazy characters in target names
 //TODO: $(proj), $(mode), $(#), $proj, $#, $$, etc.
 //TODO? Use Goldie to parse .conf file
 //TODO: Get obj dir from conf switches instead of hardcoding to "obj/target/mode"
-//TODO***: Allow extra compiler/buildtool params on the cmd line
+//TODO: Translate extraArgs between rebuild/xfbuild
 //TODO: When using xfbuild, make sure root filenames end in ".d" (ie "src/main.d" instead of "src/main")
 
 module semitwist.apps.stmanage.stbuild.main;
@@ -36,7 +32,12 @@ import semitwist.apps.stmanage.stbuild.cmdArgs;
 import semitwist.apps.stmanage.stbuild.conf;
 
 const char[] appName = "STBuild";
-const char[] appVer = "v0.01(pre)";
+const char[] appVerStr = "0.01.1";
+Ver appVer;
+static this()
+{
+	appVer = appVerStr.toVer();
+}
 
 CmdArgs cmdArgs;
 Conf conf;
@@ -77,7 +78,10 @@ int build(char[] target, char[] mode, bool verbose)
 	cmd.dir.folder("obj/"~target~"/"~mode).create();
 	
 	int ret;
-	auto cmdLine = buildToolExecName(cmdArgs.buildTool)~" "~conf.getFlags(target, mode, cmdArgs.buildTool);
+	auto cmdLine =
+		buildToolExecName(cmdArgs.buildTool)~" "~
+		conf.getFlags(target, mode, cmdArgs.buildTool)~" "~
+		cmdArgs.extraArgs;
 	
 	if(cmdArgs.showCmd) cmd.echo(cmdLine);
 	cmd.exec(cmdLine, ret);
@@ -114,7 +118,7 @@ int clean(char[] target, char[] mode, bool verbose)
 
 int main(char[][] args)
 {
-	cmdArgs = new CmdArgs(args, appName~" "~appVer);
+	cmdArgs = new CmdArgs(args, appName~" v"~appVerStr);
 	if(cmdArgs.shouldExit)
 		return 1;
 

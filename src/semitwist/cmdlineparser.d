@@ -575,7 +575,10 @@ class CmdLineParser
 		char[] basicArgStr;
 		char[] advancedArgStr;
 		
-		ret ~= "Switches: (prefixes can be '/', '-' or '--')\n";
+		ret ~=
+			"Switches:\n"~
+			"(Prefixes can be '/', '-' or '--')\n"~
+			"('[]' means multiple switches are accepted)\n";
 
 		foreach(Arg arg; args)
 		{

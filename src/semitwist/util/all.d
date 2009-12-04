@@ -19,7 +19,7 @@ In SVN comments:
 //   DMD output capturing for Programmer's Notepad:
 //   ((.)*: )?(warning - )?([ \t]*instantiatied in )?((.)*@)?%f\(%l(:%c)?\):
 
-//TODO***: Change apps to use .ver.Ver "0.00.1" instead of "v0.01(pre)"
+//TODO: Make separate unittest app, like tango
 
 module semitwist.util.all;
 

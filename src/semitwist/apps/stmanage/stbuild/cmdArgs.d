@@ -12,6 +12,7 @@ import semitwist.apps.stmanage.stbuild.conf;
 //TODO: Make validation into delegates passed into CmdLineParser
 //TODO: Move some of the automatic messages into CmdLineParser
 //TODO: Make CmdLineParser auto exit instead of using shouldExit
+//TODO: Clean this up
 class CmdArgs
 {
 	mixin(getter!(bool, "shouldExit"));
@@ -37,12 +38,14 @@ class CmdArgs
 	bool quiet = false;
 	bool showCmd = false;
 	char[] buildToolStr = "re";
+	char[][] extraArgList;
 	
 	// Indirectly determined by cmd line params
 	char[] target;
 	char[] mode = defaultMode;
 	Conf conf;
 	BuildTool buildTool;
+	char[] extraArgs;
 
 	private CmdLineParser cmdLine;
 	private void init()
@@ -56,6 +59,7 @@ class CmdArgs
 		mixin(defineArg!(cmdLine, "tool",     buildToolStr, ArgFlag.Optional, "Build tool [\"re\" or \"xf\"]" ));
 		mixin(defineArg!(cmdLine, "q",        quiet,        ArgFlag.Optional, "Quiet, ie. don't show progress messages" ));
 		mixin(defineArg!(cmdLine, "cmd",      showCmd,      ArgFlag.Optional, "Show commands" ));
+		mixin(defineArg!(cmdLine, "x",        extraArgList, ArgFlag.Optional, "Pass extra argument to build tool" ));
 
 		mixin(setArgAllowableValues!("tool", "re", "xf"));
 	}
@@ -74,6 +78,7 @@ class CmdArgs
 		}
 		else
 			cmd.echo("No Targets Available");
+		cmd.echo;
 	}
 	
 	private void showModes()
@@ -82,8 +87,8 @@ class CmdArgs
 		modes.sort();
 
 		cmd.echo("Modes:", modes);
-		cmd.echo;
 		cmd.echo("Default Mode:", defaultMode);
+		cmd.echo;
 	}
 	
 	private void showUsage()
@@ -98,6 +103,9 @@ class CmdArgs
 	private void showHeader()
 	{
 		cmd.echo(header);
+		cmd.echo("Copyright (c) 2009 Nick Sabalausky");
+		cmd.echo("See LICENSE.txt for license info");
+		cmd.echo("Site: http://www.dsource.org/projects/semitwist");
 	}
 
 	void showHelpHowTo()
@@ -110,32 +118,53 @@ class CmdArgs
 	{
 		cmdLine.parse(args);
 
-		try
-			conf = new Conf(confFile);
-		catch(STBuildConfException e)
-		{
-			cmd.echo(e.msg);
-			cmd.echo;
-			showHelpHowTo();
-			return false;
-		}
-
 		if(moreHelp)
 		{
-			cmd.echo(header);
+			showHeader();
 			cmd.echo(cmdLine.errorMsg);
+			try
+				conf = new Conf(confFile);
+			catch(STBuildConfException e)
+			{
+				cmd.echo(e.msg);
+				cmd.echo;
+			}
 			cmd.echo(sampleUsageMsg);
+			cmd.echo;
+			showTargets();
+			showModes();
 			cmd.echo(cmdLine.getDetailedUsage());
 			return false;
 		}
 		if(!cmdLine.success || help)
 		{
-			cmd.echo(header);
+			showHeader();
 			cmd.echo(cmdLine.errorMsg);
+			try
+				conf = new Conf(confFile);
+			catch(STBuildConfException e)
+			{
+				cmd.echo(e.msg);
+				cmd.echo;
+			}
 			showUsage();
 			return false;
 		}
 		
+		try
+			conf = new Conf(confFile);
+		catch(STBuildConfException e)
+		{
+			showHeader();
+			cmd.echo(cmdLine.errorMsg);
+
+			cmd.echo(e.msg);
+			cmd.echo;
+			
+			showUsage();
+			return false;
+		}
+
 		switch(targetMode.length)
 		{
 		case 2:
@@ -145,16 +174,18 @@ class CmdArgs
 			target = targetMode[0];
 			break;
 		case 0:
+			showHeader();
+			cmd.echo;
 			cmd.echo("Target not specified");
 			cmd.echo;
-			showTargets();
-			cmd.echo;
-			showHelpHowTo();
+			showUsage();
 			return false;
 		default:
+			showHeader();
+			cmd.echo;
 			cmd.echo("Unexpected extra params:", targetMode[2..$]);
 			cmd.echo;
-			showHelpHowTo();
+			showUsage();
 			return false;
 		}
 		
@@ -170,6 +201,8 @@ class CmdArgs
 			throw new Exception("Internal Error: Unexpected Build Tool Str: "~buildToolStr);
 		}
 		
+		extraArgs = extraArgList.join(" ");
+		
 		// Move to CmdLine
 		if(!conf.targets.contains(target))
 		{
@@ -177,7 +210,7 @@ class CmdArgs
 			cmd.echo;
 			showTargets();
 			showHelpHowTo();
-			return 1;
+			return false;
 		}
 		if(!conf.modes.contains(mode))
 		{
@@ -185,7 +218,7 @@ class CmdArgs
 			cmd.echo;
 			showModes();
 			showHelpHowTo();
-			return 1;
+			return false;
 		}
 
 		return true;
