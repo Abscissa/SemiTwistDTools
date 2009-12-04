@@ -7,6 +7,7 @@ import tango.core.Traits;
 import tango.io.Stdout;
 import tango.text.Unicode;
 import tango.text.Util;
+import tango.util.Convert;
 
 import semitwist.util.all;
 
@@ -132,7 +133,10 @@ class JSONFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
 			elements.reduce
 			(
 				(char[] a, char[] b)
-				{ return a~", "~newline~fullIndent(nodeDepth)~b; }
+				{
+					a ~= ", "~newline~fullIndent(nodeDepth)~b;
+					return a;
+				}
 			);
 	}
 	
@@ -291,15 +295,15 @@ class TreeNode : TreeNodeBase
 		char[] nameStr;
 		char[] valueStr;
 		
-		static if(is(T:char[]))
+		static if(is(T==char[]))
 			nameStr = name;
 		else
-			nameStr = "{}".sformat(name);
+			nameStr = to!(char[])(name);
 			
-		static if(is(U:char[]))
+		static if(is(U==char[]))
 			valueStr = value;
 		else
-			valueStr = "{}".sformat(value);
+			valueStr = to!(char[])(value);
 			
 		attributes[nameStr] = valueStr;
 		return this;
