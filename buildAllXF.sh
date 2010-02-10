@@ -5,4 +5,3 @@
 ./bin/stbuild_bootstrap all debug -tool:xf
 
 rm -f bin/stbuild_bootstrap
-

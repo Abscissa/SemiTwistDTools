@@ -7,6 +7,7 @@ public import tango.core.Version;
 public import tango.io.Console;
 public import tango.io.FilePath;
 public import tango.io.FileSystem;
+public import tango.io.Path;
 public import tango.io.Stdout;
 public import tango.io.device.File;
 public import tango.io.vfs.FileFolder;
@@ -21,43 +22,18 @@ public import semitwist.refbox;
 public import semitwist.treeout;
 public import semitwist.util.all;
 
-static if(Tango.Major == 0 && Tango.Minor <= 998)
-{
-	public import tango.util.PathUtil;
-	public import tango.text.Util;
-	
-	// Workaround for conflict between tango.text.Util and tango.io.Path
-	// on 'join',
-	// and for conflict between tango.core.Array and tango.io.Path
-	// on 'replace' and 'remove'.
-	public static import tango.io.Path;
-	public import tango.io.Path:
-		PathParser,
-		exists, modified, accessed, created,
-		fileSize, isWritable, isFolder, isFile,
-		timeStamps,
-		createFile, createFolder, createPath,
-		rename, copy, children,
-		standard, native,
-		pop, split, parse;
-}
-else
-{
-	public import tango.io.Path;
-
-	// Workaround for conflict between tango.text.Util and tango.core.Array
-	// on 'contains', 'mismatch', 'count', 'replace'.
-	public static import tango.text.Util;
-	public import tango.text.Util:
-		trim, triml, trimr, strip, stripl, stripr,
-		chopl, chopr, delimit, split, splitLines,
-		head, join, prefix, postfix, combine,
-		repeat, substitute,
-		containsPattern,
-		index, locate, locatePrior, locatePattern, locatePatternPrior, indexOf,
-		matching, isSpace, unescape,
-		layout, lines, quotes, delimiters, patterns;
-}
+// Workaround for conflict between tango.text.Util and tango.core.Array
+// on 'contains', 'mismatch', 'count', 'replace'.
+public static import tango.text.Util;
+public import tango.text.Util:
+	trim, triml, trimr, strip, stripl, stripr,
+	chopl, chopr, delimit, split, splitLines,
+	head, join, prefix, postfix, combine,
+	repeat, substitute,
+	containsPattern,
+	index, locate, locatePrior, locatePattern, locatePatternPrior, indexOf,
+	matching, isSpace, unescape,
+	layout, lines, quotes, delimiters, patterns;
 
 // Workaround for Tango issue #1588  where contains returns size_t instead of bool.
 public import tango.core.Array:

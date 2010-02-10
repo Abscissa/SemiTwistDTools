@@ -4,22 +4,16 @@
 module semitwist.cmd.plain;
 
 //import tango.stdc.stdio;
-import tango.core.Version;
 import tango.io.Console;
 import tango.io.FilePath;
 import tango.io.FileSystem;
+import tango.io.Path;
 import tango.io.Stdout;
 import tango.io.vfs.FileFolder;
+import tango.sys.Environment;
 import tango.sys.Process;
 import tango.text.Util;
 import tango.text.convert.Layout;
-static if(Tango.Major == 0 && Tango.Minor <= 998)
-	import tango.util.PathUtil;
-else
-{
-	import tango.io.Path;
-	import tango.sys.Environment;
-}
 
 import semitwist.util.all;
 
@@ -68,10 +62,7 @@ class Cmd
 
 	this()
 	{
-		static if(Tango.Major == 0 && Tango.Minor <= 998)
-			_dir = new FilePath(FileSystem.getDirectory());
-		else
-			_dir = new FilePath(Environment.cwd);
+		_dir = new FilePath(Environment.cwd);
 		_dir.standard();
 	}
 	
@@ -94,15 +85,11 @@ class Cmd
 	}
 	FileFolder dir(char[] value)
 	{
-		static if(Tango.Major == 0 && Tango.Minor <= 998)
-			value = FileSystem.toAbsolute(value, _dir.toString());
-		else
-		{
-			auto cwdSave = Environment.cwd;
-			Environment.cwd = _dir.toString();
-			value = Environment.toAbsolute(value);
-			Environment.cwd = cwdSave;
-		}
+		auto cwdSave = Environment.cwd;
+		Environment.cwd = _dir.toString();
+		value = Environment.toAbsolute(value);
+		Environment.cwd = cwdSave;
+
 		scope newDir = new FilePath(value);
 		if(newDir.isFolder() && newDir.exists())
 			_dir.set( normalize(newDir.toString()), true );

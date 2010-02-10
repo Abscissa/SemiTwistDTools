@@ -103,27 +103,3 @@ unittest
 	const char[][] templateArgsToStrings_test = templateArgsToStrings!(i, func1);
 	mixin(deferEnsure!(`templateArgsToStrings_test`, `_ == ["i"[], "func1"]`));
 }
-
-static if(Tango.Major == 0 && Tango.Minor <= 998)
-{
-	/// This is included here directly from a trunk version of tango.core.Traits
-	/// because it is required by SemiTwist D Tools, but does not exist in the
-	/// latest official Tango release (0.99.8).
-	template isArrayType(T)
-	{
-		static if (is( T U : U[] ))
-			const bool isArrayType=true;
-		else
-			const bool isArrayType=false;
-	}
-
-	/// ditto
-	template KeyTypeOfAA(T){
-		alias typeof(T.init.keys[0]) KeyTypeOfAA;
-	}
-
-	/// ditto
-	template ValTypeOfAA(T){
-		alias typeof(T.init.values[0]) ValTypeOfAA;
-	}
-}

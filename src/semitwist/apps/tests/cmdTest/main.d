@@ -6,30 +6,12 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-This program, as-is, requires Tango trunk.
-However, it should be easy to backport to Tango 0.99.8 (with DMD 1.043):
-  1. Replace occurrences of 'Environment.cwd' with
-     'FileSystem.getDirectory' and 'FileSystem.setDirectory'.
-  2. Remove the 'Wrong Tango' static assert.
-  
 This has been tested to work with:
-  - DMD 1.051 / Tango trunk r5149 / Rebuild 0.76
-  - DMD 1.051 / Tango trunk r5149 / xfBuild 0.4
+  - DMD 1.056 / Tango 0.99.9 / Rebuild 0.76
+  - DMD 1.056 / Tango 0.99.9 / xfBuild 0.4
 +/
 
 module semitwist.apps.tests.cmdTest.main;
-
-import tango.core.Version;
-static if(Tango.Major == 0 && Tango.Minor <= 998)
-{
-	pragma(msg,
-		"  This program, as-is, requires Tango trunk.\n"~
-		"  However, it should be easy to backport to Tango 0.99.8 (with DMD 1.043):\n"~
-		"    1. Replace occurrences of 'Environment.cwd' with\n"~
-		"       'FileSystem.getDirectory' and 'FileSystem.setDirectory'.\n"~
-		"    2. Remove the 'Wrong Tango' static assert.\n");
-	static assert(false, "Wrong Tango");
-}
 
 import semitwist.cmd.all;
 import semitwist.util.all;
