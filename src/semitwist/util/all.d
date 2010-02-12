@@ -19,6 +19,13 @@ In SVN comments:
 //   ((.)*: )?(warning - )?([ \t]*instantiatied in )?((.)*@)?%f\(%l(:%c)?\):
 
 //TODO: Make separate unittest app, like tango
+//TODO: Make automatically-generatable app that forwards to other programs:
+//      Ex: Apps: neededApp.exe, foo1.exe, and foo2.exe
+//          (Where "foo1" and "foo2" are commonly-used names likely to already be on path):
+//          neededApp.exe -> "Usage: 'neededApp foo1' or 'neededApp foo2'"
+//          neededApp.exe foo1 param1 -> foo1.exe param1
+//          neededApp.exe foo2 a b    -> foo2.exe a b
+//      Ex: "goldie parse ...", "goldie calculatorStatic"
 
 module semitwist.util.all;
 

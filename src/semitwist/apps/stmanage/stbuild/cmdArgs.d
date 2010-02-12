@@ -37,7 +37,7 @@ class CmdArgs
 	bool cleanOnly = false;
 	bool quiet = false;
 	bool showCmd = false;
-	char[] buildToolStr = "re";
+	char[] buildToolStr = "xf";
 	char[][] extraArgList;
 	
 	// Indirectly determined by cmd line params
