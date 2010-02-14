@@ -12,6 +12,7 @@ import tango.text.convert.Utf;
 import tango.util.Convert;
 
 import semitwist.util.all;
+import semitwist.util.compat.all;
 
 /**
 Notes:
@@ -39,9 +40,9 @@ mixin(multiTypeString("unixNewlineEscSequence", r"\\n"));
 (This requirement could be changed if there is a way to automatically
 escape a string at compile-time.)
 */
-template multiTypeString(char[] name, char[] data, char[] access="public")
+template multiTypeString(string name, string data, string access="public")
 {
-	const char[] multiTypeString = 
+	const string multiTypeString = 
 	access~" T[] "~name~"(T)()"~
 	"{"~
 	"		 static if(is(T ==  char)) { return \""~data~"\"c; }"~
@@ -130,7 +131,7 @@ semantically equivalent to the original, but it is *not* necessarily
 guaranteed to be exactly identical to the original string.
 
 For example:
-  char[] str;
+  string str;
   str = `"\x41\t"`;        // 0x41 is ASCII and UTF-8 for A
   str = unescapeDDQS(str); // == `A	` (That's an actual tab character)
   str = escapeDDQS(str);   // == `"A\t"c`
@@ -188,7 +189,7 @@ T[] unescapeChar(T)(T[] str, T[] escapeSequence)
 T[] unescapeDDQS(T)(T[] str)
 {
 	mixin(ensureCharType!("T"));
-	const char[] errStr = "str doesn't contain a valid D Double Quote String";
+	const string errStr = "str doesn't contain a valid D Double Quote String";
 
 	if(str.length < 2)
 		throw new Exception(errStr);
@@ -247,7 +248,7 @@ T[] escapeDDQS(T)(T[] str)
 }
 
 /+
-const char[] doubleQuoteTestStr = `"They said \"10 \\ 5 = 2\""`;
+const string doubleQuoteTestStr = `"They said \"10 \\ 5 = 2\""`;
 
 pragma(msg, "orig:        "~doubleQuoteTestStr);
 pragma(msg, "unesc:       "~unescapeDDQS(doubleQuoteTestStr));
@@ -260,10 +261,10 @@ pragma(msg, "unesc:       "~doubleQuoteTestStr.unescape(EscapeSequence.DDQS));
 
 unittest
 {
-	const wchar[] ctEscW = escapeDDQS(`"They said \"10 \\ 5 = 2\""`w);
-	const dchar[] ctEscD = escapeDDQS(`"They said \"10 \\ 5 = 2\""`d);
-	const wchar[] ctUnescW = unescapeDDQS(`"They said \"10 \\ 5 = 2\""`w);
-	const dchar[] ctUnescD = unescapeDDQS(`"They said \"10 \\ 5 = 2\""`d);
+	const wstring ctEscW = escapeDDQS(`"They said \"10 \\ 5 = 2\""`w);
+	const dstring ctEscD = escapeDDQS(`"They said \"10 \\ 5 = 2\""`d);
+	const wstring ctUnescW = unescapeDDQS(`"They said \"10 \\ 5 = 2\""`w);
+	const dstring ctUnescD = unescapeDDQS(`"They said \"10 \\ 5 = 2\""`d);
 	Stdout.formatln("{}{}", "ctEscW:      ", ctEscW);
 	Stdout.formatln("{}{}", "ctEscD:      ", ctEscD);
 	Stdout.formatln("{}{}", "ctUnescW:    ", ctUnescW);

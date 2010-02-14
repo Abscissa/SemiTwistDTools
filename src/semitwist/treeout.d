@@ -10,33 +10,34 @@ import tango.text.Util;
 import tango.util.Convert;
 
 import semitwist.util.all;
+import semitwist.util.compat.all;
 
 abstract class TreeFormatter
 {
-	char[] fullIndent(int nodeDepth)
+	string fullIndent(int nodeDepth)
 	{
 		return strip()? "" : indent().repeat(nodeDepth);
 	}
 	
-	char[] newline()
+	string newline()
 	{
 		return strip()? "" : "\n";
 	}
 	
-	char[] indent();
+	string indent();
 	bool strip();
-	char[] processData(char[] content, int nodeDepth);
-	char[] processComment(char[] content, int nodeDepth);
-	char[] processAttribute(char[] name, char[] value, int nodeDepth);
-	char[] processNode(char[] name, char[] attributes, char[] content, int nodeDepth);
-	char[] reduceAttributes(char[][] attributes, int nodeDepth);
-	char[] reduceNodes(char[][] nodes, int nodeDepth);
-	char[] finalize(char[] content);
+	string processData(string content, int nodeDepth);
+	string processComment(string content, int nodeDepth);
+	string processAttribute(string name, string value, int nodeDepth);
+	string processNode(string name, string attributes, string content, int nodeDepth);
+	string reduceAttributes(string[] attributes, int nodeDepth);
+	string reduceNodes(string[] nodes, int nodeDepth);
+	string finalize(string content);
 }
 
-class XMLFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
+class XMLFormatter(bool _strip, string _indent="\t") : TreeFormatter
 {
-	char[] toValidName(char[] str)
+	string toValidName(string str)
 	{
 		str = str.map
 		(
@@ -50,7 +51,7 @@ class XMLFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
 		return str;
 	}
 	
-	char[] indent()
+	string indent()
 	{
 		return _indent;
 	}
@@ -60,22 +61,22 @@ class XMLFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
 		return _strip;
 	}
 	
-	char[] processData(char[] content, int nodeDepth)
+	string processData(string content, int nodeDepth)
 	{
 		return fullIndent(nodeDepth)~"<![CDATA["~content~"]]>"~newline;
 	}
 	
-	char[] processComment(char[] content, int nodeDepth)
+	string processComment(string content, int nodeDepth)
 	{
 		return fullIndent(nodeDepth)~"<!--"~content~"-->"~newline;
 	}
 	
-	char[] processAttribute(char[] name, char[] value, int nodeDepth)
+	string processAttribute(string name, string value, int nodeDepth)
 	{
 		return ` {}="{}"`.sformat(name.toValidName(), value);
 	}
 	
-	char[] processNode(char[] name, char[] attributes, char[] content, int nodeDepth)
+	string processNode(string name, string attributes, string content, int nodeDepth)
 	{
 		auto formatStr =
 			(content=="")? 
@@ -88,31 +89,31 @@ class XMLFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
 		return formatStr.sformat(fullIndent(nodeDepth), newline(), name.toValidName(), attributes, content);
 	}
 	
-	char[] reduceAttributes(char[][] attributes, int nodeDepth)
+	string reduceAttributes(string[] attributes, int nodeDepth)
 	{
 		return reduce!(`a~b`)(attributes);
 //		return attributes.reduce!(`a~" "~b`)(); // Don't work
 	}
 	
-	char[] reduceNodes(char[][] nodes, int nodeDepth)
+	string reduceNodes(string[] nodes, int nodeDepth)
 	{
 		return reduce!(`a~b`)(nodes);
 	}
 	
-	char[] finalize(char[] content)
+	string finalize(string content)
 	{
 		return content;
 	}
 }
 
-class JSONFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
+class JSONFormatter(bool _strip, string _indent="\t") : TreeFormatter
 {
-	override char[] fullIndent(int nodeDepth)
+	override string fullIndent(int nodeDepth)
 	{
 		return super.fullIndent(nodeDepth+1);
 	}
 
-	char[] indent()
+	string indent()
 	{
 		return _indent;
 	}
@@ -122,17 +123,17 @@ class JSONFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
 		return _strip;
 	}
 	
-	char[] processString(char[] content)
+	string processString(string content)
 	{
 		return `"` ~ content.substitute(`\`, `\\`).substitute(`"`, `\"`) ~ `"`;
 	}
 	
-	char[] processList(char[][] elements, int nodeDepth)
+	string processList(string[] elements, int nodeDepth)
 	{
 		return elements.length==0? "" :
 			elements.reduce
 			(
-				(char[] a, char[] b)
+				(string a, string b)
 				{
 					a ~= ", "~newline~fullIndent(nodeDepth)~b;
 					return a;
@@ -140,34 +141,34 @@ class JSONFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
 			);
 	}
 	
-	char[] processPair(char[] name, char[] content)
+	string processPair(string name, string content)
 	{
 		return "{}: {}".sformat(name.processString(), content);
 	}
 	
-	char[] processComment(char[] content, int nodeDepth)
+	string processComment(string content, int nodeDepth)
 	{
 		return "";
 	}
 
-	char[] processData(char[] content, int nodeDepth)
+	string processData(string content, int nodeDepth)
 	{
 		return content.processString();
 	}
 	
-	char[] processAttribute(char[] name, char[] value, int nodeDepth)
+	string processAttribute(string name, string value, int nodeDepth)
 	{
 		return processPair(name, value.processString());
 	}
 	
-	char[] processNode(char[] name, char[] attributes, char[] content, int nodeDepth)
+	string processNode(string name, string attributes, string content, int nodeDepth)
 	{
 		return processNode(name, attributes, content, nodeDepth, false);
 	}
 	
-	char[] processNode(char[] name, char[] attributes, char[] content, int nodeDepth, bool nameless)
+	string processNode(string name, string attributes, string content, int nodeDepth, bool nameless)
 	{
-		char[] attrAndContent = 
+		string attrAndContent = 
 			(attributes == "" && content == "")? "" :
 			(attributes != "" && content == "")? fullIndent(nodeDepth+1)~attributes~newline :
 			(attributes == "" && content != "")? fullIndent(nodeDepth+1)~content~newline :
@@ -186,17 +187,17 @@ class JSONFormatter(bool _strip, char[] _indent="\t") : TreeFormatter
 			);
 	}
 	
-	char[] reduceAttributes(char[][] attributes, int nodeDepth)
+	string reduceAttributes(string[] attributes, int nodeDepth)
 	{
 		return attributes.processList(nodeDepth+1);
 	}
 	
-	char[] reduceNodes(char[][] nodes, int nodeDepth)
+	string reduceNodes(string[] nodes, int nodeDepth)
 	{
 		return nodes.processList(nodeDepth+1);
 	}
 	
-	char[] finalize(char[] content)
+	string finalize(string content)
 	{
 		return processNode("", "", content, -1, true);
 	}
@@ -216,22 +217,22 @@ static this()
 
 abstract class TreeNodeBase
 {
-	abstract char[] toString(TreeFormatter formatter, char[] content, int nodeDepth);
+	abstract string toString(TreeFormatter formatter, string content, int nodeDepth);
 }
 
 /// NOTE: Might not be implemented correctly by the formatters, atm.
 class TreeNodeData : TreeNodeBase 
 {
-	char[] data;
+	string data;
 	
 	this(){}
 	
 	// ctor templates don't seem to work
 /*	this(T)(T data)
 	{
-		char[] dataStr;
+		string dataStr;
 		
-		static if(is(T:char[]))
+		static if(is(T:string))
 			dataStr = data;
 		else
 			dataStr = sformat("{}", data);
@@ -239,12 +240,12 @@ class TreeNodeData : TreeNodeBase
 		this.data = dataStr;
 	}
 */
-	this(char[] data)
+	this(string data)
 	{
 		this.data = data;
 	}
 
-	char[] toString(TreeFormatter formatter, char[] content, int nodeDepth)
+	string toString(TreeFormatter formatter, string content, int nodeDepth)
 	{
 		return formatter.processData(content, nodeDepth);
 	}
@@ -253,12 +254,12 @@ class TreeNodeData : TreeNodeBase
 class TreeNodeComment : TreeNodeData
 {
 	this(){}
-	this(char[] data)
+	this(string data)
 	{
 		super(data);
 	}
 
-	char[] toString(TreeFormatter formatter, char[] content, int nodeDepth)
+	string toString(TreeFormatter formatter, string content, int nodeDepth)
 	{
 		return formatter.processComment(content, nodeDepth);
 	}
@@ -266,17 +267,17 @@ class TreeNodeComment : TreeNodeData
 
 class TreeNode : TreeNodeBase
 {
-	char[] name;
-	char[][char[]] attributes;
+	string name;
+	string[string] attributes;
 	
 	TreeNodeBase[] subNodes;
 	
-	this(char[] name, char[][char[]] attributes)
+	this(string name, string[string] attributes)
 	{
 		this(name, cast(TreeNode)null, attributes);
 	}
 	
-	this(char[] name, TreeNodeBase subNodes=null, char[][char[]] attributes=null)
+	this(string name, TreeNodeBase subNodes=null, string[string] attributes=null)
 	{
 		TreeNodeBase[] contentArray;
 		if(subNodes !is null)
@@ -285,33 +286,33 @@ class TreeNode : TreeNodeBase
 		this(name, contentArray, attributes);
 	}
 	
-	this(char[] name, TreeNodeBase[] subNodes, char[][char[]] attributes=null)
+	this(string name, TreeNodeBase[] subNodes, string[string] attributes=null)
 	{
 		mixin(initMember!(name, subNodes, attributes));
 	}
 	
 	TreeNode addAttribute(T, U)(T name, U value)
 	{
-		char[] nameStr;
-		char[] valueStr;
+		string nameStr;
+		string valueStr;
 		
-		static if(is(T==char[]))
+		static if(is(T==string))
 			nameStr = name;
 		else
-			nameStr = to!(char[])(name);
+			nameStr = to!(string)(name);
 			
-		static if(is(U==char[]))
+		static if(is(U==string))
 			valueStr = value;
 		else
-			valueStr = to!(char[])(value);
+			valueStr = to!(string)(value);
 			
 		attributes[nameStr] = valueStr;
 		return this;
 	}
 	
-	TreeNode addAttributes(char[][char[]] attributes)
+	TreeNode addAttributes(string[string] attributes)
 	{
-		foreach(char[] key, char[] value; attributes)
+		foreach(string key, string value; attributes)
 			this.attributes[key] = value;
 			
 		return this;
@@ -331,12 +332,12 @@ class TreeNode : TreeNodeBase
 		return this;
 	}
 	
-	char[] format(TreeFormatter formatter)
+	string format(TreeFormatter formatter)
 	{
 		return formatter.finalize(this.toString(formatter, "", 0));
 	}
 	
-	char[] toString(TreeFormatter formatter, char[] content, int nodeDepth)
+	string toString(TreeFormatter formatter, string content, int nodeDepth)
 	{
 		auto reduceAttributes = &formatter.reduceAttributes;
 		auto reduceNodes      = &formatter.reduceNodes;

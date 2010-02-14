@@ -9,6 +9,7 @@ import tango.text.Util;
 import tango.util.Convert;
 
 import semitwist.util.all;
+import semitwist.util.compat.all;
 
 //TODO: Support versions that have different semantics
 //TODO: Document ordering semantics of this
@@ -35,13 +36,13 @@ struct Ver
 		return this.opCmp(v) == 0;
 	}
 	
-	char[] toString()
+	string toString()
 	{
-		return join(to!(char[][])(ver), ".");
+		return join(to!(string[])(ver), ".");
 	}
 }
 
-Ver toVer(char[] str)
+Ver toVer(string str)
 {
 	return Ver( to!(uint[])(str.delimit(".")) );
 }

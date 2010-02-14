@@ -17,23 +17,24 @@ import tango.io.Stdout;
 
 import semitwist.util.all;
 import semitwist.cmdlineparser;
+import semitwist.util.compat.all;
 
-void main(char[][] args)
+void main(string[] args)
 {
 	bool help;
 	bool detailHelp;
 	bool myBool;
 	bool myFlag;
 	bool myFlagX=true;
-	char[] myStr;
-	char[] myStrX="default";
+	string myStr;
+	string myStrX="default";
 	bool _odd98_name;
 	
 	int myInt;
-	char[] required="hni";
-	char[][] switchless;
+	string required="hni";
+	string[] switchless;
 	
-	char[] myEnum;
+	string myEnum;
 	
 	auto cmd = new CmdLineParser();
 	mixin(defineArg!(cmd, "help",        help,        ArgFlag.Optional,   "Displays a help summary and exits" ));

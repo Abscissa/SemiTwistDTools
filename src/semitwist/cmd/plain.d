@@ -16,6 +16,7 @@ import tango.text.Util;
 import tango.text.convert.Layout;
 
 import semitwist.util.all;
+import semitwist.util.compat.all;
 
 Cmd cmd;
 static this()
@@ -83,7 +84,7 @@ class Cmd
 	{
 		return dir(value.toString());
 	}
-	FileFolder dir(char[] value)
+	FileFolder dir(string value)
 	{
 		auto cwdSave = Environment.cwd;
 		Environment.cwd = _dir.toString();
@@ -98,24 +99,24 @@ class Cmd
 	
 	//TODO: Abstract the interface so that the same exec calls work on both win and lin.
 	// Plain Versions
-	void exec(char[] cmd)
+	void exec(string cmd)
 	{
 		int errLevel;
 		exec(cmd, errLevel);
 	}
-	void exec(char[] app, char[][] params)
+	void exec(string app, string[] params)
 	{
 		int errLevel;
 		exec(app, params, errLevel);
 	}
 	
 	// With errLevel
-	void exec(char[] cmd, out int errLevel)
+	void exec(string cmd, out int errLevel)
 	{
 		auto p = new Process(cmd);
 		execProcess(p, errLevel);
 	}
-	void exec(char[] app, char[][] params, out int errLevel)
+	void exec(string app, string[] params, out int errLevel)
 	{
 		auto p = new Process(app ~ params);
 		execProcess(p, errLevel);
@@ -176,16 +177,16 @@ class Cmd
 	}
 
 	// Input is Utf8-only for now because Cin is used which is Utf8-only
-	char[] prompt(T)(T[] promptMsg, bool delegate(char[]) accept=null, T[] rejectedMsg="")
+	string prompt(T)(T[] promptMsg, bool delegate(string) accept=null, T[] rejectedMsg="")
 	{
-		char[] reader()
+		string reader()
 		{
-			char[] input;
+			string input;
 			Cin.readln(input);
 			return trim(input);
 		}
 		
-		return _prompt!(char[],T)(promptMsg, accept, rejectedMsg, &reader);
+		return _prompt!(string,T)(promptMsg, accept, rejectedMsg, &reader);
 	}
 
 /+
@@ -219,9 +220,9 @@ class Cmd
 		prompt("Press Enter to continue...");
 	}
 /+
-	char[] prompt(char[] msg, bool delegate(char[]) accept=null, char[] msgRejected="")
+	string prompt(string msg, bool delegate(string) accept=null, string msgRejected="")
 	{
-		char[] input;
+		string input;
 		while(true)
 		{
 			Stdout(msg).flush;
@@ -246,7 +247,7 @@ class Cmd
 	}
 +/
 /+
-	bool isHelpSwitch(char[] str)
+	bool isHelpSwitch(string str)
 	{
 		if(str.length < 3)
 			return false;

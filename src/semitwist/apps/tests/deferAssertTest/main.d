@@ -14,6 +14,7 @@ This has been tested to work with:
 module semitwist.apps.tests.deferAssertTest.main;
 
 import semitwist.util.all;
+import semitwist.util.compat.all;
 
 void main()
 {
@@ -24,7 +25,7 @@ void main()
 unittest
 {
 	int foo = 2;
-	char[] bar = "hello";
+	string bar = "hello";
 
 	bool throwsException()
 	{

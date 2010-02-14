@@ -15,7 +15,7 @@ module semitwist.apps.samples.cmdSample.main;
 
 import semitwist.cmd.all;
 
-void showSectionHeader(char[] str)
+void showSectionHeader(string str)
 {
 	cmd.echo();
 	cmd.echo("--------", str, "--------");
@@ -23,9 +23,9 @@ void showSectionHeader(char[] str)
 
 //TODO: Find those functions in tango to read and maybe write a file in one line.
 //      And add the import to semitwist.cmd.all, and add samples for it here.
-//   -> tango.io.device.File: char[] blah = cast(char[])File.get("blah.txt");
+//   -> tango.io.device.File: string blah = cast(string)File.get("blah.txt");
 
-void main(char[][] args)
+void main(string[] args)
 {
 	// ----- semitwist.cmd: cmd.pause -----
 	// - Prompt and wait for the user to press Enter
@@ -45,7 +45,7 @@ void main(char[][] args)
 	cmd.echo("No worry about forgetting spaces:");
 	cmd.echo(32, 64, 128, 256);
 	class Foo {
-		char[] toString() {
+		string toString() {
 			return "Any type that Stdout can handle is ok.";
 		}
 	}
@@ -134,14 +134,14 @@ void main(char[][] args)
 	// - Easy way to prompt for information interactively
 	showSectionHeader("semitwist.cmd: cmd.prompt");
 
-	char[] input;
+	string input;
 	input = cmd.prompt("Type some stuff: ");
 	cmd.echo("You entered:", input);
 
 	// Easy prompt-with-validation
-	char[] promptMsg = "Do you want 'coffee' or 'tea'? ";
-	char[] failureMsg = "Please enter 'coffee' or 'tea', not '{0}'";
-	bool accept(char[] input)
+	string promptMsg = "Do you want 'coffee' or 'tea'? ";
+	string failureMsg = "Please enter 'coffee' or 'tea', not '{0}'";
+	bool accept(string input)
 	{
 		return ["coffee"[], "tea"].contains(toLower(input));
 	}
@@ -177,7 +177,7 @@ void main(char[][] args)
 	cmd.dir = "myNewDir";                    // Enter newly created directory
 	cmd.dir = "..";                          // Back up
 	cmd.dir = cmd.dir.folder("new2").create; // Create/enter new dir in one line
-	  // (Note that cmd.dir can be assigned either char[] or Tango's VfsFolder)
+	  // (Note that cmd.dir can be assigned either string or Tango's VfsFolder)
 	
 	// Create/open/write/close a new file in this new "new2" directory.
 	auto filename = "file.txt";

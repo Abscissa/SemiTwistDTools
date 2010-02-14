@@ -7,6 +7,7 @@ import tango.core.Traits;
 import tango.core.Version;
 
 import semitwist.util.all;
+import semitwist.util.compat.all;
 
 /**
 If you have a class MyClass(T), then nameof!(MyClass) will return "MyClass".
@@ -21,7 +22,7 @@ if the class name changes, helping you keep such strings up-to-date.
 
 template nameof(alias T)
 {
-	const char[] nameof = T.stringof[0..ctfe_find(T.stringof, '(')];
+	const string nameof = T.stringof[0..ctfe_find(T.stringof, '(')];
 }
 
 template isAnyArrayType(T)
@@ -75,7 +76,7 @@ int i;
 void func1(){}
 // void func2(int x){} // This one doesn't work ATM due to DMD Bug #2867
 
-const char[][] foo = templateArgsToStrings!(i, func1);
+const string[] foo = templateArgsToStrings!(i, func1);
 assert(foo == ["i"[], "func1"]);
 ----
 
@@ -83,9 +84,9 @@ assert(foo == ["i"[], "func1"]);
 template templateArgsToStrings(args...)
 {
 	static if(args.length == 0)
-		const char[][] templateArgsToStrings = [];
+		const string[] templateArgsToStrings = [];
 	else
-		const char[][] templateArgsToStrings =
+		const string[] templateArgsToStrings =
 			(	// Ugly hack for DMD Bug #2867
 				(args[0].stringof.length>2 && args[0].stringof[$-2..$]=="()")?
 					args[0].stringof[0..$-2] :
@@ -100,6 +101,6 @@ unittest
 	void func1(){}
 	//void func2(int x){} // This one doesn't work ATM due to DMD Bug #2867
 
-	const char[][] templateArgsToStrings_test = templateArgsToStrings!(i, func1);
+	const string[] templateArgsToStrings_test = templateArgsToStrings!(i, func1);
 	mixin(deferEnsure!(`templateArgsToStrings_test`, `_ == ["i"[], "func1"]`));
 }

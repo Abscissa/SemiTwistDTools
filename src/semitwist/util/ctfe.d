@@ -7,6 +7,7 @@ import tango.core.Version;
 import tango.io.Stdout;
 
 import semitwist.util.all;
+import semitwist.util.compat.all;
 
 T[] ctfe_pad(T)(T[] str, int length, T[] padChar=" ")
 {
@@ -100,70 +101,70 @@ unittest
 {
 	// ctfe_pad ---------------------------
 	
-	const char[] ctfe_pad_test_1 = ctfe_pad("Hi", 5);
+	const string ctfe_pad_test_1 = ctfe_pad("Hi", 5);
 	mixin(deferEnsure!(`ctfe_pad_test_1`, `_ == "   Hi"`));
 
-	const char[] ctfe_pad_test_2 = ctfe_pad("Hi", 5, "-");
+	const string ctfe_pad_test_2 = ctfe_pad("Hi", 5, "-");
 	mixin(deferEnsure!(`ctfe_pad_test_2`, `_ == "---Hi"`));
 
-	const char[] ctfe_pad_test_3 = ctfe_pad("Hi", 1, "-");
+	const string ctfe_pad_test_3 = ctfe_pad("Hi", 1, "-");
 	mixin(deferEnsure!(`ctfe_pad_test_3`, `_ == "Hi"`));
 
-	const char[] ctfe_pad_test_4 = ctfe_pad("Hi", 4, false);
+	const string ctfe_pad_test_4 = ctfe_pad("Hi", 4, false);
 	mixin(deferEnsure!(`ctfe_pad_test_4`, `_ == "Hi  "`));
 
-	const char[] ctfe_pad_test_5 = ctfe_pad("Hi", 1, false);
+	const string ctfe_pad_test_5 = ctfe_pad("Hi", 1, false);
 	mixin(deferEnsure!(`ctfe_pad_test_5`, `_ == "Hi"`));
 
-	const char[] ctfe_pad_test_6 = ctfe_pad("Hi", 5, false, "+");
+	const string ctfe_pad_test_6 = ctfe_pad("Hi", 5, false, "+");
 	mixin(deferEnsure!(`ctfe_pad_test_6`, `_ == "Hi+++"`));
 
-	const wchar[] ctfe_pad_test_7 = ctfe_pad("Hi"w, 5);
+	const wstring ctfe_pad_test_7 = ctfe_pad("Hi"w, 5);
 	mixin(deferEnsure!(`ctfe_pad_test_7`, `_ == "   Hi"w`));
 
-	const dchar[] ctfe_pad_test_8 = ctfe_pad("Hi"d, 5);
+	const dstring ctfe_pad_test_8 = ctfe_pad("Hi"d, 5);
 	mixin(deferEnsure!(`ctfe_pad_test_8`, `_ == "   Hi"d`));
 
 /+
 	// Fails right now
-	const char[] ctfe_pad_test_9 = ctfe_pad("日本語", 5, "五");
+	const string ctfe_pad_test_9 = ctfe_pad("日本語", 5, "五");
 	mixin(deferEnsure!(`ctfe_pad_test_9`, `_ == "五五日本語"`));
 +/
 
 	// ctfe_repeat ---------------------------
 	
-	const char[] ctfe_repeat_test_aneg1 = ctfe_repeat("a", -1);
+	const string ctfe_repeat_test_aneg1 = ctfe_repeat("a", -1);
 	mixin(deferEnsure!(`ctfe_repeat_test_aneg1`, `_ == ""`));
 
-	const char[] ctfe_repeat_test_a2 = ctfe_repeat("a", 2);
+	const string ctfe_repeat_test_a2 = ctfe_repeat("a", 2);
 	mixin(deferEnsure!(`ctfe_repeat_test_a2`, `_ == "aa"`));
 
-	const char[] ctfe_repeat_test_Ab5 = ctfe_repeat("Ab", 5);
+	const string ctfe_repeat_test_Ab5 = ctfe_repeat("Ab", 5);
 	mixin(deferEnsure!(`ctfe_repeat_test_Ab5`, `_ == "AbAbAbAbAb"`));
 
-	const char[] ctfe_repeat_test_Ab0 = ctfe_repeat("Ab", 0);
+	const string ctfe_repeat_test_Ab0 = ctfe_repeat("Ab", 0);
 	mixin(deferEnsure!(`ctfe_repeat_test_Ab0`, `_ == ""`));
 
-	const wchar[] ctfe_repeat_test_a4w = ctfe_repeat("a"w, 4);
+	const wstring ctfe_repeat_test_a4w = ctfe_repeat("a"w, 4);
 	mixin(deferEnsure!(`ctfe_repeat_test_a4w`, `_ == "aaaa"w`));
 
-	const dchar[] ctfe_repeat_test_a4d = ctfe_repeat("a"d, 4);
+	const dstring ctfe_repeat_test_a4d = ctfe_repeat("a"d, 4);
 	mixin(deferEnsure!(`ctfe_repeat_test_a4d`, `_ == "aaaa"d`));
 
-	const char[] ctfe_repeat_test_日本語3 = ctfe_repeat("日本語", 3);
+	const string ctfe_repeat_test_日本語3 = ctfe_repeat("日本語", 3);
 	mixin(deferEnsure!(`ctfe_repeat_test_日本語3`, `_ == "日本語日本語日本語"`));
 	
 	// ctfe_subMapJoin ---------------------------
 	
-	const char[] ctfe_subMapJoin_test_c = ctfe_subMapJoin("Hi WHO. ", "WHO", ["Joey"[], "Q", "Sue"]);
+	const string ctfe_subMapJoin_test_c = ctfe_subMapJoin("Hi WHO. ", "WHO", ["Joey"[], "Q", "Sue"]);
 	mixin(deferEnsure!(`ctfe_subMapJoin_test_c`, `_ == "Hi Joey. Hi Q. Hi Sue. "`));
 	
-	const wchar[] ctfe_subMapJoin_test_w = ctfe_subMapJoin("Hi WHO. "w, "WHO"w, ["Joey"w[], "Q"w, "Sue"w]);
+	const wstring ctfe_subMapJoin_test_w = ctfe_subMapJoin("Hi WHO. "w, "WHO"w, ["Joey"w[], "Q"w, "Sue"w]);
 	mixin(deferEnsure!(`ctfe_subMapJoin_test_w`, `_ == "Hi Joey. Hi Q. Hi Sue. "w`));
 	
-	const dchar[] ctfe_subMapJoin_test_d = ctfe_subMapJoin("Hi WHO. "d, "WHO"d, ["Joey"d[], "Q"d, "Sue"d]);
+	const dstring ctfe_subMapJoin_test_d = ctfe_subMapJoin("Hi WHO. "d, "WHO"d, ["Joey"d[], "Q"d, "Sue"d]);
 	mixin(deferEnsure!(`ctfe_subMapJoin_test_d`, `_ == "Hi Joey. Hi Q. Hi Sue. "d`));
 
-	const char[] ctfe_subMapJoin_test_cj = ctfe_subMapJoin("こんにちわ、 だれさん。 ", "だれ", ["わたなべ"[], "ニク", "あおい"]);
+	const string ctfe_subMapJoin_test_cj = ctfe_subMapJoin("こんにちわ、 だれさん。 ", "だれ", ["わたなべ"[], "ニク", "あおい"]);
 	mixin(deferEnsure!(`ctfe_subMapJoin_test_cj`, `_ == "こんにちわ、 わたなべさん。 こんにちわ、 ニクさん。 こんにちわ、 あおいさん。 "`));
 }

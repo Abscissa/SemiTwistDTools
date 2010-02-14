@@ -16,10 +16,9 @@ This has been tested to work with:
 module semitwist.apps.stmanage.stswitch.main;
 
 import tango.io.Stdout;
-import semitwist.util.all;
 import semitwist.cmd.all;
 
-int main(char[][] args)
+int main(string[] args)
 {
 	flushAsserts();
 

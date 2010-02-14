@@ -12,7 +12,7 @@ enum BuildTool
 	xfbuild,
 }
 
-char[] buildToolExecName(BuildTool tool)
+string buildToolExecName(BuildTool tool)
 {
 	switch(tool)
 	{
@@ -27,7 +27,7 @@ char[] buildToolExecName(BuildTool tool)
 
 class STBuildConfException : Exception
 {
-	this(char[] msg)
+	this(string msg)
 	{
 		super(msg);
 	}
@@ -35,29 +35,29 @@ class STBuildConfException : Exception
 
 class Conf
 {
-	char[][] targets;
-	private Switch[][char[]][char[]] flags;
+	string[] targets;
+	private Switch[][string][string] flags;
 	
-	char[][] errors;
+	string[] errors;
 
-	const char[] targetAll   = "all";
-	const char[] modeRelease = "release";
-	const char[] modeDebug   = "debug";
-	const char[] modeAll     = "all";
-	const char[][] predefTargets = [targetAll];
-	const char[][] modes = [modeRelease, modeDebug, modeAll];
+	const string targetAll   = "all";
+	const string modeRelease = "release";
+	const string modeDebug   = "debug";
+	const string modeAll     = "all";
+	const string[] predefTargets = [targetAll];
+	const string[] modes = [modeRelease, modeDebug, modeAll];
 
-	char[][] targetAllElems;
-	char[][] modeAllElems;
+	string[] targetAllElems;
+	string[] modeAllElems;
 	
-	this(char[] filename)
+	this(string filename)
 	{
 		auto parser = new ConfParser();
 		parser.doParse(this, filename);
 		
 		if(parser.errors.length > 0)
 		{
-			foreach(char[] error; parser.errors)
+			foreach(string error; parser.errors)
 				cmd.echo(error);
 				
 			throw new STBuildConfException(
@@ -70,7 +70,7 @@ class Conf
 		modeAllElems   = modes.allExcept(modeAll);
 	}
 	
-	private Switch[] getFlagsSafe(char[] target, char[] mode)
+	private Switch[] getFlagsSafe(string target, string mode)
 	{
 		if(target in flags && mode in flags[target])
 		{
@@ -84,7 +84,7 @@ class Conf
 		return [];
 	}
 	
-	private static int convertPrefix(ref Switch[] switches, char[] fromPrefix, char[] toPrefix)
+	private static int convertPrefix(ref Switch[] switches, string fromPrefix, string toPrefix)
 	{
 		int numConverted = 0;
 		foreach(ref Switch sw; switches)
@@ -99,7 +99,7 @@ class Conf
 		return numConverted;
 	}
 	
-	private static int removePrefix(ref Switch[] switches, char[] prefix)
+	private static int removePrefix(ref Switch[] switches, string prefix)
 	{
 		int[] switchIndicies = [];
 		foreach(int index, Switch sw; switches)
@@ -116,7 +116,7 @@ class Conf
 		return switchIndicies.length;
 	}
 
-	private static int combinePrefix(ref Switch[] switches, char[] fromPrefix, char[] fromSwitch, char[] toPrefix)
+	private static int combinePrefix(ref Switch[] switches, string fromPrefix, string fromSwitch, string toPrefix)
 	{
 		auto numRemoved = switches.removePrefix(fromSwitch);
 		if(numRemoved > 0)
@@ -124,7 +124,7 @@ class Conf
 		return 0;
 	}
 	
-	private static int splitPrefix(ref Switch[] switches, char[] fromPrefix, char[] toPrefix, char[] toSwitch)
+	private static int splitPrefix(ref Switch[] switches, string fromPrefix, string toPrefix, string toSwitch)
 	{
 		auto numConverted = switches.convertPrefix(fromPrefix, toPrefix);
 		if(numConverted > 0)
@@ -157,7 +157,7 @@ class Conf
 		}
 	}
 	
-	private static char[] switchesToString(Switch[] switches)
+	private static string switchesToString(Switch[] switches)
 	{
 		return
 			switches
@@ -188,7 +188,7 @@ class Conf
 		mixin(deferEnsure!(`switches.switchesToString()`, `_ == re2`));
 	}
 	
-	private static bool addDefault(ref Switch[] switches, char[] prefix, char[] defaultVal)
+	private static bool addDefault(ref Switch[] switches, string prefix, string defaultVal)
 	{
 		bool prefixFound=false;
 		foreach(Switch sw; switches)
@@ -210,7 +210,7 @@ class Conf
 		switches.addDefault("+D", "obj/{0}/{1}/deps");
 	}
 	
-	private static char[] fixSlashes(char[] str)
+	private static string fixSlashes(string str)
 	{
 		version(Windows)
 			str.replace('/', '\\');
@@ -219,7 +219,7 @@ class Conf
 		return str;
 	}
 	
-	char[] getFlags(char[] target, char[] mode, BuildTool tool)
+	string getFlags(string target, string mode, BuildTool tool)
 	{
 		auto isTargetAll = (target == targetAll);
 		auto isModeAll   = (mode   == modeAll  );
@@ -241,9 +241,9 @@ class Conf
 	
 	struct Switch
 	{
-		char[] data;
+		string data;
 		bool quoted;
-		char[] toString()
+		string toString()
 		{
 			return quoted? `"`~data~`"` : data;
 		}
@@ -252,20 +252,20 @@ class Conf
 	private class ConfParser
 	{
 		private Conf conf;
-		private char[] filename;
+		private string filename;
 		
 		private uint stmtLineNo;
-		private char[] partialStmt=null;
+		private string partialStmt=null;
 		
-		char[][] currTargets;
-		char[][] currModes;
+		string[] currTargets;
+		string[] currModes;
 		
-		char[][] targets=null;
-		char[][] modes=null;
+		string[] targets=null;
+		string[] modes=null;
 		
-		char[][] errors;
+		string[] errors;
 
-		static Switch[] splitSwitches(char[] str)
+		static Switch[] splitSwitches(string str)
 		{
 			Switch[] ret = [];
 			bool inPlainSwitch=false;
@@ -277,14 +277,14 @@ class Conf
 					if(isWhitespace(c))
 						inPlainSwitch = false;
 					else
-						ret[$-1].data ~= to!(char[])(c);
+						ret[$-1].data ~= to!(string)(c);
 				}
 				else if(inQuotedSwitch)
 				{
 					if(c == `"`d[0])
 						inQuotedSwitch = false;
 					else
-						ret[$-1].data ~= to!(char[])(c);
+						ret[$-1].data ~= to!(string)(c);
 				}
 				else
 				{
@@ -295,7 +295,7 @@ class Conf
 					}
 					else if(!isWhitespace(c))
 					{
-						ret ~= Switch(to!(char[])(c), false);
+						ret ~= Switch(to!(string)(c), false);
 						inPlainSwitch = true;
 					}
 				}
@@ -303,7 +303,7 @@ class Conf
 			return ret;
 		}
 		
-		private void doParse(Conf conf, char[] filename)
+		private void doParse(Conf conf, string filename)
 		{
 			mixin(initMember!(conf, filename));
 
@@ -312,9 +312,9 @@ class Conf
 					"Can't find configuration file '{}'".sformat(filename)
 				);
 
-			auto input = cast(char[])File.get(cmd.dir.file(filename).toString);
+			auto input = cast(string)File.get(cmd.dir.file(filename).toString);
 			uint lineno = 1;
-			foreach(char[] line; lines(input))
+			foreach(string line; lines(input))
 			{
 				parseLine(line, lineno);
 				lineno++;
@@ -328,7 +328,7 @@ class Conf
 			conf.errors  = errors;
 		}
 		
-		private void parseLine(char[] line, uint lineno)
+		private void parseLine(string line, uint lineno)
 		{
 			auto commentStart = line.locate('#');
 			auto stmt = line[0..commentStart].trim();
@@ -392,8 +392,8 @@ class Conf
 							error("'{}' must be in a target definition".sformat(stmtCmd));
 						else
 						{
-							foreach(char[] target; currTargets)
-							foreach(char[] mode;   currModes)
+							foreach(string target; currTargets)
+							foreach(string mode;   currModes)
 								conf.flags[target][mode] ~= stmtPred.splitSwitches();
 						}
 						break;
@@ -405,21 +405,21 @@ class Conf
 			}
 		}
 
-		private void error(char[] msg)
+		private void error(string msg)
 		{
 			errors ~= "{}({}): {}".sformat(filename, stmtLineNo, msg);
 		}
 		
-		private char[][] parseCSV(char[] str)
+		private string[] parseCSV(string str)
 		{
-			char[][] ret;
-			foreach(char[] name; str.delimit(","))
+			string[] ret;
+			foreach(string name; str.delimit(","))
 				if(name.trim() != "")
 					ret ~= name.trim();
 			return ret;
 		}
 
-		private void setList(ref char[][] set, char[] command, char[] listStr, char[][] predefined)
+		private void setList(ref string[] set, string command, string listStr, string[] predefined)
 		{
 			if(currTargets !is null)
 			{
@@ -434,7 +434,7 @@ class Conf
 			}
 
 			set ~= listStr.parseCSV();
-			foreach(int i, char[] elem; set)
+			foreach(int i, string elem; set)
 			{
 				if(predefined.contains(elem))
 					error("'{}' is a reserved value for '{}'".sformat(elem, command));

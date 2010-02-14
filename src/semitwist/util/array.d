@@ -4,6 +4,7 @@
 module semitwist.util.array;
 
 import tango.core.Array;
+import semitwist.util.compat.all;
 
 size_t maxLength(T)(T[][] arrays)
 {
@@ -71,7 +72,7 @@ size_t findPrior(T)(T[] collection, bool delegate(T[], size_t) isFound, size_t s
 }
 
 // Returns everything in 'from' minus the values in 'except'.
-// Note: using ref didn't work when params were (const char[][] here).dup
+// Note: using ref didn't work when params were (const string[] here).dup
 T[] allExcept(T)(T[] from, T[] except)
 {
 	T[] f = from.dup;

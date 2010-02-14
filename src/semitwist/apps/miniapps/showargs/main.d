@@ -14,10 +14,11 @@ This has been tested to work with:
 module semitwist.apps.miniapps.showargs.main;
 
 import tango.io.Stdout;
+import semitwist.util.compat.all;
 
-void main(char[][] args)
+void main(string[] args)
 {
 	Stdout.formatln("args.length: {}", args.length);
-	foreach(int i, char[] arg; args)
+	foreach(int i, string arg; args)
 		Stdout.formatln("args[{}]: {}", i, arg);
 }

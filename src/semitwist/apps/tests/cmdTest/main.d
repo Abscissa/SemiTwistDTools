@@ -14,10 +14,9 @@ This has been tested to work with:
 module semitwist.apps.tests.cmdTest.main;
 
 import semitwist.cmd.all;
-import semitwist.util.all;
 
 // Damn, can't make templated nested func
-void displayNodes(TElem, TColl)(TColl collection, char[] label)
+void displayNodes(TElem, TColl)(TColl collection, string label)
 {
 	Stdout.formatln("");
 	Stdout.formatln("{}:", label);
@@ -25,7 +24,7 @@ void displayNodes(TElem, TColl)(TColl collection, char[] label)
 		Stdout.formatln(" -{}", elem.toString());
 }
 
-void testVfs(char[] dir)
+void testVfs(string dir)
 {
 	auto folder = new FileFolder(dir);
 
@@ -39,7 +38,7 @@ void testVfs(char[] dir)
 }
 
 //TODO: Add errLevel stuff
-void main(char[][] args)
+void main(string[] args)
 {
 	Stdout("SemiTwist Library: semitwist.cmd test");
 
@@ -72,7 +71,7 @@ void main(char[][] args)
 	Stdout(
 		cmd.prompt(
 			`Enter "yes" or "no":`,
-			(char[] input) {
+			(string input) {
 				return cast(bool)tango.core.Array.contains(["yes","no"], input);
 			},
 			`'{}' is not valid, must enter "yes" or "no"!`
@@ -83,7 +82,7 @@ void main(char[][] args)
 	Stdout.newline;
 	bool done = false;
 
-	const char[] helpMsg = `
+	const string helpMsg = `
 --Supported Commands--
 help                 Displays this message
 echo <text>          Echos <text>
@@ -98,24 +97,24 @@ promptyn             Prompt for "yes" or "no"
 exit                 Exits
 `;
 
-	void delegate(char[] params)[char[]] cmdLookup = [
-		""[]        : (char[] params) { },
-		"help"      : (char[] params) { Stdout(helpMsg);         },
-		"exit"      : (char[] params) { done = true;             },
-		"echo"      : (char[] params) { cmd.echo(params);        },
-		"pwd"       : (char[] params) { Stdout(cmd.dir).newline; },
-		"cd"        : (char[] params) { cmd.dir = params;        },
-		"exec"      : (char[] params) { cmd.exec(params);        },
-		"isechoing" : (char[] params) { Stdout(cmd.echoing? "on" : "off").newline; },
+	void delegate(string params)[string] cmdLookup = [
+		""[]        : (string params) { },
+		"help"      : (string params) { Stdout(helpMsg);         },
+		"exit"      : (string params) { done = true;             },
+		"echo"      : (string params) { cmd.echo(params);        },
+		"pwd"       : (string params) { Stdout(cmd.dir).newline; },
+		"cd"        : (string params) { cmd.dir = params;        },
+		"exec"      : (string params) { cmd.exec(params);        },
+		"isechoing" : (string params) { Stdout(cmd.echoing? "on" : "off").newline; },
 		
 		"ls":
-		(char[] params) {
+		(string params) {
 			displayNodes!(VfsFolder)(cmd.dir, "Directories");
 			displayNodes!(VfsFile  )(cmd.dir.self.catalog, "Files");
 		},
 		
 		"prompt":
-		(char[] params) {
+		(string params) {
 			Stdout.formatln(
 				"You entered: {}",
 				cmd.prompt("Enter anything:")
@@ -123,12 +122,12 @@ exit                 Exits
 		},
 		
 		"promptyn":
-		(char[] params) {
+		(string params) {
 			Stdout.formatln(
 				"You entered: {}",
 				cmd.prompt(
 					`Enter "yes" or "no":`,
-					(char[] input) {
+					(string input) {
 						return cast(bool)tango.core.Array.contains(["yes","no"], input);
 					},
 					`'{}' is not valid. Please enter "yes" or "no".`
@@ -137,7 +136,7 @@ exit                 Exits
 		},
 		
 		"echoing":
-		(char[] params) {
+		(string params) {
 			switch(params)
 			{
 			case "on":
@@ -157,13 +156,13 @@ exit                 Exits
 	{
 		Stdout("cmdTest>").flush;
 		
-		char[] input;
+		string input;
 		Cin.readln(input);
 		input = trim(input);
 		
 		auto splitIndex = input.locate(' ');
-		char[] command = input[0..splitIndex];
-		char[] params = splitIndex==input.length? "" : input[splitIndex+1..$];
+		string command = input[0..splitIndex];
+		string params = splitIndex==input.length? "" : input[splitIndex+1..$];
 		params = trim(params);
 		
 		if(command in cmdLookup)
@@ -174,7 +173,7 @@ exit                 Exits
 			{
 				Stdout("ERR: ");
 				//Stdout("ERR: "~e.classinfo.name~": ");
-				e.writeOut( (char[] msg) {Stdout(msg);} );
+				e.writeOut( (string msg) {Stdout(msg);} );
 				//Stdout.formatln("Exception: {}", e.msg);
 			}
 		}

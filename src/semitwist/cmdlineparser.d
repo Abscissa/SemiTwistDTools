@@ -11,6 +11,7 @@ import convInt = tango.text.convert.Integer;
 
 public import semitwist.refbox;
 import semitwist.util.all;
+import semitwist.util.compat.all;
 
 //TODO: Add "switch A implies switches B and C"
 //TODO: Add in some good ideas from the cmd parser in tango scrapple
@@ -20,13 +21,13 @@ import semitwist.util.all;
 ----- THIS IS PROBABLY OUTDATED -----
 Usage:
 
-void main(char[][] args)
+void main(string[] args)
 {
 	bool help;
 	bool detailhelp;
 	int myInt = 2; // Default value == 2
 	bool myBool;   // Default value == bool.init (ie, false)
-	char[] myStr;  // Default value == (char[]).init (ie, "")
+	string myStr;  // Default value == (string).init (ie, "")
 
 	auto cmd = new CmdLineParser();
 	mixin(defineArg!(cmd, help,       "help",       "Displays a help summary and exits" ));
@@ -71,7 +72,7 @@ Switches: (prefixes can be '/', '-' or '--')
   /detailhelp         Displays a detailed help message and exits
   /num:<int>          An integer (default: 2)
   /flag               A flag
-  /str:<char[]>       A string
+  /str:<string>       A string
   
 */
 
@@ -80,44 +81,44 @@ enum ArgFlag
 	Optional   = 0b0000_0000,
 	Required   = 0b0000_0001,
 	//Unique = 0b0000_0100,
-	ToLower    = 0b0000_1000, // If arg is char[], the value gets converted to all lower-case (for case-insensitivity)
+	ToLower    = 0b0000_1000, // If arg is string, the value gets converted to all lower-case (for case-insensitivity)
 	Advanced   = 0b0001_0000,
 }
 
-template defineArg(alias cmdLineParser, char[] name, alias var, int flags = cast(int)ArgFlag.Optional, char[] desc = "")
-//template defineArg(alias cmdLineParser, char[] name, alias var, ArgFlag flags = ArgFlag.Optional, char[] desc = "")
+template defineArg(alias cmdLineParser, string name, alias var, int flags = cast(int)ArgFlag.Optional, string desc = "")
+//template defineArg(alias cmdLineParser, string name, alias var, ArgFlag flags = ArgFlag.Optional, string desc = "")
 {
 	//TODO: Is there a better way to do this? Ex. "static if(typeof(var) !contained_in listOfSupportedTypes)"
 	static if(!is(typeof(var) == int   ) && !is(typeof(var) == int[]   ) && 
 	          !is(typeof(var) == bool  ) && !is(typeof(var) == bool[]  ) && 
-			  !is(typeof(var) == char[]) && !is(typeof(var) == char[][]) )
+			  !is(typeof(var) == string) && !is(typeof(var) == string[]) )
 	{
 		static assert(false, `Attempted to pass variable '`~var.stringof~`' of type '`~typeof(var).stringof~`' to defineArg's 'var' param.`"\n"
-		                     `(The type must be one of, or an array of, one of the following: 'int' 'bool' 'char[]')`);
+		                     `(The type must be one of, or an array of, one of the following: 'int' 'bool' 'string')`);
 	}
 	else
 	{
-		const char[] defineArg = "\n"~
+		const string defineArg = "\n"~
 			"auto _cmdarg_refbox_"~name~" = new "~nameof!(RefBox)~"!("~typeof(var).stringof~")(&"~var.stringof~");\n"~
 			"auto _cmdarg_"~name~" = new Arg(_cmdarg_refbox_"~name~`, "`~name~`", `~desc.stringof~`);`~"\n"~
 			cmdLineParser.stringof~".addArg(_cmdarg_"~name~", cast(ArgFlag)("~flags.stringof~"));\n";
 	}
 }
 
-template setArgAllowableValues(char[] name, allowableValues...)
+template setArgAllowableValues(string name, allowableValues...)
 {
-	const char[] setArgAllowableValues =
+	const string setArgAllowableValues =
 		PreventStaticArray!(typeof(allowableValues[0])).stringof~"[] _cmdarg_allowablevals_"~name~";\n"
 		~_setArgAllowableValues!(name, allowableValues)
 		~"_cmdarg_"~name~".setAllowableValues(_cmdarg_allowablevals_"~name~");\n";
 }
 
-private template _setArgAllowableValues(char[] name, allowableValues...)
+private template _setArgAllowableValues(string name, allowableValues...)
 {
 	static if(allowableValues.length == 0)
-		const char[] _setArgAllowableValues = "";
+		const string _setArgAllowableValues = "";
 	else
-		const char[] _setArgAllowableValues =
+		const string _setArgAllowableValues =
 			"_cmdarg_allowablevals_"~name~" ~= "~allowableValues[0].stringof~";\n"
 			~ _setArgAllowableValues!(name, allowableValues[1..$]);
 }
@@ -129,9 +130,9 @@ private template _setArgAllowableValues(char[] name, allowableValues...)
 
 class Arg
 {
-	char[] name;
-	char[] altName;
-	char[] desc;
+	string name;
+	string altName;
+	string desc;
 
 	bool isSwitchless  = false;
 	bool isRequired    = false;
@@ -145,7 +146,7 @@ class Arg
 	
 	bool isSet = false;
 	
-	this(Object value, char[] name, char[] desc="")
+	this(Object value, string name, string desc="")
 	{
 		mixin(initMember!(value, name, desc));
 		ensureValid();
@@ -180,10 +181,10 @@ class Arg
 		
 		if(!isKnownRefBox!(value))
 		{
-			throw new Exception("Param to Arg contructor must be "~RefBox.stringof~", where T is int, bool or char[] or an array of such types.");
+			throw new Exception("Param to Arg contructor must be "~RefBox.stringof~", where T is int, bool or string or an array of such types.");
 		}
 		
-		void ensureValidName(char[] name)
+		void ensureValidName(string name)
 		{
 			if(!CmdLineParser.isValidArgName(name))
 				throw new Exception(`Tried to define an invalid arg name: "{}". Arg names must be "[a-zA-Z0-9_?]*"`.sformat(name));
@@ -196,13 +197,13 @@ class Arg
 class CmdLineParser
 {
 	private Arg[] args;
-	private Arg[char[]] argLookup;
+	private Arg[string] argLookup;
 	
 	private bool switchlessArgExists=false;
 	private size_t switchlessArg;
 	
 	mixin(getter!(bool, "success"));
-	mixin(getter!(char[], "errorMsg"));
+	mixin(getter!(string, "errorMsg"));
 
 	private enum Prefix
 	{
@@ -214,7 +215,7 @@ class CmdLineParser
 		Done, NotFound, Error
 	}
 	
-	static bool isValidArgName(char[] name)
+	static bool isValidArgName(string name)
 	{
 		foreach(char c; name)
 		{
@@ -273,7 +274,7 @@ class CmdLineParser
 		}
 	}
 	
-	private void addToArgLookup(char[] name, Arg argDef)
+	private void addToArgLookup(string name, Arg argDef)
 	{
 		if(name in argLookup)
 			throw new Exception(`Argument name "{}" defined more than once.`.sformat(name));
@@ -281,9 +282,9 @@ class CmdLineParser
 		argLookup[name] = argDef;
 	}
 	
-	private void splitArg(char[] fullArg, out Prefix prefix, out char[] name, out char[] suffix)
+	private void splitArg(string fullArg, out Prefix prefix, out string name, out string suffix)
 	{
-		char[] argNoPrefix;
+		string argNoPrefix;
 
 		// Get prefix
 		if(fullArg.length > 2 && fullArg[0..2] == "--")
@@ -316,7 +317,7 @@ class CmdLineParser
 	}
 	
 	//TODO: Detect and error when numerical arg is passed an out-of-range value
-	private ParseArgResult parseArg(char[] cmdArg, char[] cmdName, char[] suffix)
+	private ParseArgResult parseArg(string cmdArg, string cmdName, string suffix)
 	{
 		ParseArgResult ret = ParseArgResult.Error;
 
@@ -368,7 +369,7 @@ class CmdLineParser
 			}
 			else if(valAsStr || valAsStrs)
 			{
-				char[] val;
+				string val;
 				if(suffix.length > 1 && suffix[0] == ':')
 				{
 					val = trim(suffix[1..$]);
@@ -407,7 +408,7 @@ class CmdLineParser
 				uint parseAte;
 				if(suffix.length > 1 && suffix[0] == ':')
 				{
-					char[] trimmedSuffix = trim(suffix[1..$]);
+					string trimmedSuffix = trim(suffix[1..$]);
 					val = cast(int)convInt.parse(trimmedSuffix, 0, &parseAte);
 					if(parseAte == trimmedSuffix.length)
 					{
@@ -455,7 +456,7 @@ class CmdLineParser
 
 	//TODO: response file
 
-	public bool parse(char[][] args)
+	public bool parse(string[] args)
 	{
 		bool error=false;
 		
@@ -463,10 +464,10 @@ class CmdLineParser
 		populateLookup();
 		genDefaultValues();
 		
-		foreach(char[] argStr; args[1..$])
+		foreach(string argStr; args[1..$])
 		{
-			char[] suffix;
-			char[] argName;
+			string suffix;
+			string argName;
 			Prefix prefix;
 			
 			splitArg(argStr, prefix, argName, suffix);
@@ -532,7 +533,7 @@ class CmdLineParser
 	
 	//TODO: Make function to get the maximum length of the arg names
 
-	private char[] switchTypesMsg =
+	private string switchTypesMsg =
 `Switch types:
   flag (default):
     Set s to true: /s /s+ /s:true
@@ -554,12 +555,12 @@ class CmdLineParser
     /s:<text[]>: /s:file1 /s:file2 /s:anotherfile
 `;
 
-	char[] getArgTypeName(Arg arg)
+	string getArgTypeName(Arg arg)
 	{
-		char[] typeName = getRefBoxTypeName(arg.value);
+		string typeName = getRefBoxTypeName(arg.value);
 		return
-			(typeName == "char[]"  )? "text"   :
-			(typeName == "char[][]")? "text[]" :
+			(typeName == "string"  )? "text"   :
+			(typeName == "string[]")? "text[]" :
 			(typeName == "bool"    )? "flag"   :
 			(typeName == "bool[]"  )? "flag[]" :
 			(typeName == "int"     )? "num"    :
@@ -568,12 +569,12 @@ class CmdLineParser
 	}
 	
 	//TODO: Fix word wrapping
-	char[] getUsage(int nameColumnWidth=20)
+	string getUsage(int nameColumnWidth=20)
 	{
-		char[] ret;
-		char[] indent = "  ";
-		char[] basicArgStr;
-		char[] advancedArgStr;
+		string ret;
+		string indent = "  ";
+		string basicArgStr;
+		string advancedArgStr;
 		
 		ret ~=
 			"Switches:\n"~
@@ -582,13 +583,13 @@ class CmdLineParser
 
 		foreach(Arg arg; args)
 		{
-			char[]* argStr = arg.isAdvanced? &advancedArgStr : &basicArgStr;
+			string* argStr = arg.isAdvanced? &advancedArgStr : &basicArgStr;
 			
 			// For some reason, unbox can't see Arg's private member "defaultValue"
 			auto argDefaultValue = arg.defaultValue;
 			mixin(unbox!(argDefaultValue, "val"));
 
-			char[] defaultVal;
+			string defaultVal;
 			if(valAsInt)
 				defaultVal = "{}".sformat(valAsInt());
 			else if(valAsBool)
@@ -596,16 +597,16 @@ class CmdLineParser
 			else if(valAsStr)
 				defaultVal = valAsStr() == "" ? "" : `"{}"`.sformat(valAsStr());
 			
-			char[] defaultValStr = defaultVal == "" ?
+			string defaultValStr = defaultVal == "" ?
 				"" : " (default: {})".sformat(defaultVal);
 				
-			char[] requiredStr = arg.isRequired ?
+			string requiredStr = arg.isRequired ?
 				"(Required) " : "";
 			
-			char[] argType = "<"~getArgTypeName(arg)~">";
-			char[] argSuffix = valAsBool ? "" : (":"~argType);
+			string argType = "<"~getArgTypeName(arg)~">";
+			string argSuffix = valAsBool ? "" : (":"~argType);
 
-			char[] argName;
+			string argName;
 			if(arg.name=="")
 				argName = argType;
 			else
@@ -613,7 +614,7 @@ class CmdLineParser
 			if(arg.altName != "")
 				argName ~= ", /"~arg.altName~argSuffix;
 	
-			char[] nameColumnWidthStr = "{}".sformat(nameColumnWidth);
+			string nameColumnWidthStr = "{}".sformat(nameColumnWidth);
 			*argStr ~= sformat("{}{,-"~nameColumnWidthStr~"}{}{}\n",
 			                    indent, argName~" ", requiredStr~arg.desc, defaultValStr);
 		}
@@ -625,19 +626,19 @@ class CmdLineParser
 		return ret~basicArgStr~advancedArgStr;
 	}
 
-	char[] getDetailedUsage()
+	string getDetailedUsage()
 	{
-		char[] ret;
-		char[] indent = "  ";
-		char[] basicArgStr;
-		char[] advancedArgStr;
+		string ret;
+		string indent = "  ";
+		string basicArgStr;
+		string advancedArgStr;
 		
 		ret ~= "Switches: (prefixes can be '/', '-' or '--')\n";
 		foreach(Arg arg; args)
 		{
-			char[]* argStr = arg.isAdvanced? &advancedArgStr : &basicArgStr;
+			string* argStr = arg.isAdvanced? &advancedArgStr : &basicArgStr;
 
-			char[] argName = arg.isSwitchless? "" : "/"~arg.name;
+			string argName = arg.isSwitchless? "" : "/"~arg.name;
 			if(arg.altName != "")
 				argName ~= ", /"~arg.altName;
 			if(!arg.isSwitchless || arg.altName != "")
@@ -647,11 +648,11 @@ class CmdLineParser
 			auto argDefaultValue = arg.defaultValue;
 			mixin(unbox!(argDefaultValue, "val"));
 
-			char[] defaultVal;
-			char[] requiredStr;
-			char[] toLowerStr;
-			char[] switchlessStr;
-			char[] advancedStr;
+			string defaultVal;
+			string requiredStr;
+			string toLowerStr;
+			string switchlessStr;
+			string advancedStr;
 
 			if(valAsInt)
 				defaultVal = "{}".sformat(valAsInt());

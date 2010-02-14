@@ -17,35 +17,35 @@ class CmdArgs
 {
 	mixin(getter!(bool, "shouldExit"));
 
-	char[] header;
-	public this(char[][] args, char[] header)
+	string header;
+	public this(string[] args, string header)
 	{
 		mixin(initMember!(header));
 		init();
 		shouldExit = !parse(args);
 	}
 	
-	const char[] sampleUsageMsg = "Usage: stbuild [options] target [mode] [options]";
-	const char[] defaultMode = Conf.modeRelease;
+	const string sampleUsageMsg = "Usage: stbuild [options] target [mode] [options]";
+	const string defaultMode = Conf.modeRelease;
 	
 	// Cmd line params
 	bool help = false;
 	bool moreHelp = false;
 
-	char[] confFile = "stbuild.conf";
-	char[][] targetMode;
+	string confFile = "stbuild.conf";
+	string[] targetMode;
 	bool cleanOnly = false;
 	bool quiet = false;
 	bool showCmd = false;
-	char[] buildToolStr = "xf";
-	char[][] extraArgList;
+	string buildToolStr = "xf";
+	string[] extraArgList;
 	
 	// Indirectly determined by cmd line params
-	char[] target;
-	char[] mode = defaultMode;
+	string target;
+	string mode = defaultMode;
 	Conf conf;
 	BuildTool buildTool;
-	char[] extraArgs;
+	string extraArgs;
 
 	private CmdLineParser cmdLine;
 	private void init()
@@ -114,7 +114,7 @@ class CmdArgs
 	}
 	
 	// Returns: Should processing proceed? If false, the program should exit.
-	private bool parse(char[][] args)
+	private bool parse(string[] args)
 	{
 		cmdLine.parse(args);
 

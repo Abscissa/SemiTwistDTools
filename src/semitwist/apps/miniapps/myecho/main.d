@@ -20,8 +20,9 @@ module semitwist.apps.miniapps.myecho.main;
 
 import tango.io.Stdout;
 import tango.text.Util;
+import semitwist.util.compat.all;
 
-void main(char[][] args)
+void main(string[] args)
 {
 	Stdout( args[1..$].join(" ") ).newline;
 }

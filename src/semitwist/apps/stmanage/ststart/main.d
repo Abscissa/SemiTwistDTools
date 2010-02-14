@@ -17,7 +17,7 @@ module semitwist.apps.stmanage.ststart.main;
 
 import semitwist.cmd.all;
 
-const char[] main_d_src = 
+const string main_d_src = 
 `// {0}
 // Written in the D programming language
 
@@ -25,19 +25,19 @@ module {0}.main;
 
 import tango.io.Stdout;
 
-int main(char[][] args)
+int main(string[] args)
 {{
 	Stdout("{0}: Hello World!").newline;
 	return 0;
 }
 `;
 
-void main(char[][] args)
+void main(string[] args)
 {
 	// Prompt stuff
-	const char[] promptOverwrite = "Delete and overwrite (yes/no)? ";
-	const char[] msgFailedYesNo = "You must enter 'yes' or 'no', not '{}'.";
-	bool acceptYesNo(char[] input)
+	const string promptOverwrite = "Delete and overwrite (yes/no)? ";
+	const string msgFailedYesNo = "You must enter 'yes' or 'no', not '{}'.";
+	bool acceptYesNo(string input)
 	{
 		return input=="yes" || input=="no";
 	}
@@ -52,7 +52,7 @@ void main(char[][] args)
 	Stdout.newline;
 	
 	// Do Checks
-	char[] projectName;
+	string projectName;
 	if(args.length > 1)
 		projectName = args[1];
 	else
@@ -69,9 +69,9 @@ void main(char[][] args)
 	}
 	
 	// Set up dirs/files for initial commit
-	void createDirs(char[][] dirs)
+	void createDirs(string[] dirs)
 	{
-		foreach(char[] dir; dirs)
+		foreach(string dir; dirs)
 			cmd.dir.folder(dir).create;
 	}
 

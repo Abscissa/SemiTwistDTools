@@ -21,6 +21,7 @@ public import semitwist.cmdlineparser;
 public import semitwist.refbox;
 public import semitwist.treeout;
 public import semitwist.util.all;
+public import semitwist.util.compat.all;
 
 // Workaround for conflict between tango.text.Util and tango.core.Array
 // on 'contains', 'mismatch', 'count', 'replace'.

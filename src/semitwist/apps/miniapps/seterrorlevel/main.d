@@ -14,8 +14,9 @@ This has been tested to work with:
 module semitwist.apps.miniapps.seterrorlevel.main;
 
 import tango.util.Convert;
+import semitwist.util.compat.all;
 
-int main(char[][] args)
+int main(string[] args)
 {
 	if(args.length < 2)
 		return 0;

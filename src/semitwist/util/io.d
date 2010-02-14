@@ -9,6 +9,7 @@ import tango.stdc.stringz;
 import tango.text.Util;
 
 import semitwist.util.all;
+import semitwist.util.compat.all;
 
 version(Win32)
 	import tango.sys.win32.UserGdi;
@@ -41,7 +42,7 @@ T[] readStringz(T)(DataInput reader)
 /// regardless of working directory or PATH env var or anything else.
 FilePath getExecFilePath()
 {
-	char[] file = new char[1024];
+	string file = new char[1024];
 	int filenameLength;
 	version (Win32)
 		filenameLength = GetModuleFileNameA(null, file.ptr, file.length-1);
@@ -53,19 +54,19 @@ FilePath getExecFilePath()
 	return fp;
 }
 /// ditto
-char[] getExec()
+string getExec()
 {
 	return getExecFilePath().toString().trim();
 }
 
 /// Like getExec, but doesn't include the path.
-char[] getExecName()
+string getExecName()
 {
 	return getExecFilePath().file().trim();
 }
 
 /// Like getExec, but only returns the path (including trailing path separator).
-char[] getExecPath()
+string getExecPath()
 {
 	return getExecFilePath().path().trim();
 }

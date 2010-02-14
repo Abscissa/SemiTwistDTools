@@ -4,20 +4,21 @@
 module semitwist.util.os;
 
 import semitwist.util.all;
+import semitwist.util.compat.all;
 
-private char[] genOSParam(char[] name, char[][] values)
+private string genOSParam(string name, string[] values)
 {
 	assert(values.length == OS_length, "Wrong number of OSes provided for OS param '"~name~"'");
 	
-	char[] str = "";
-	foreach(int i, char[] value; values)
+	string str = "";
+	foreach(int i, string value; values)
 	{
-		char[] osStr = enumToString(cast(OS)i);
+		string osStr = enumToString(cast(OS)i);
 
 		str ~=
-			"const char[] "~name~"_"~osStr~" = "~escapeDDQS(value)~";\n"~
+			"const string "~name~"_"~osStr~" = "~escapeDDQS(value)~";\n"~
 			"static if(os == OS."~osStr~")\n"~
-			"    const char[] "~name~" = "~name~"_"~osStr~";\n";
+			"    const string "~name~" = "~name~"_"~osStr~";\n";
 	}
 	return str;
 }
@@ -32,6 +33,6 @@ mixin(genOSParam("libExt",  [ ".lib" [], ".a", ".a" ]));
 mixin(genOSParam("exeExt",  [ ".exe" [], "",   ""   ]));
 mixin(genOSParam("pathSep", [ "\\"   [], "/",  "/"  ]));
 mixin(genOSParam("nlStr",   [ "\r\n" [], "\n", "\n" ]));
-const char[] nlStr_Mac9 = "\r";
+const string nlStr_Mac9 = "\r";
 
 mixin(genOSParam("selfExeLink", [ ""[], "/proc/self/exe", "/proc/curproc/file" ]));

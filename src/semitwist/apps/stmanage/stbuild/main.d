@@ -30,8 +30,8 @@ import semitwist.cmd.all;
 import semitwist.apps.stmanage.stbuild.cmdArgs;
 import semitwist.apps.stmanage.stbuild.conf;
 
-const char[] appName = "STBuild";
-const char[] appVerStr = "0.01.1";
+const string appName = "STBuild";
+const string appVerStr = "0.01.1";
 Ver appVer;
 static this()
 {
@@ -41,22 +41,22 @@ static this()
 CmdArgs cmdArgs;
 Conf conf;
 
-void moveMapFiles(char[] subDir=".")
+void moveMapFiles(string subDir=".")
 {
 	foreach(VfsFile mapFile; cmd.dir.self.catalog("*.map"))
 		cmd.dir.folder("obj/"~subDir).open.file(mapFile.name).move(mapFile);
 }
 
-int process(char[] target, char[] mode, bool verbose)
+int process(string target, string mode, bool verbose)
 {
 	auto processor = ( cmdArgs.cleanOnly? &clean : &build );
 	
-	char[][] targetsToProcess = (target == conf.targetAll)? conf.targetAllElems : [target];
-	char[][] modesToProcess   = (mode   == conf.modeAll)?   conf.modeAllElems   : [mode  ];
+	string[] targetsToProcess = (target == conf.targetAll)? conf.targetAllElems : [target];
+	string[] modesToProcess   = (mode   == conf.modeAll)?   conf.modeAllElems   : [mode  ];
 	
 	int errLevel = 0;
-	foreach(char[] currTarget; targetsToProcess)
-	foreach(char[] currMode;   modesToProcess  )
+	foreach(string currTarget; targetsToProcess)
+	foreach(string currMode;   modesToProcess  )
 	{
 		auto result = processor(currTarget, currMode, verbose);
 		if(result > errLevel)
@@ -66,7 +66,7 @@ int process(char[] target, char[] mode, bool verbose)
 	return errLevel;
 }
 
-int build(char[] target, char[] mode, bool verbose)
+int build(string target, string mode, bool verbose)
 {
 	mixin(deferAssert!(`target != conf.targetAll`, "target 'all' passed to build()"));
 	mixin(deferAssert!(`mode != conf.modeAll`, "mode 'all' passed to build()"));
@@ -89,7 +89,7 @@ int build(char[] target, char[] mode, bool verbose)
 	return ret;
 }
 
-int clean(char[] target, char[] mode, bool verbose)
+int clean(string target, string mode, bool verbose)
 {
 	mixin(deferAssert!(`target != conf.targetAll`, "target 'all' passed to clean()"));
 	mixin(deferAssert!(`mode != conf.modeAll`, "mode 'all' passed to clean()"));
@@ -115,7 +115,7 @@ int clean(char[] target, char[] mode, bool verbose)
 	return 0;
 }
 
-int main(char[][] args)
+int main(string[] args)
 {
 	cmdArgs = new CmdArgs(args, appName~" v"~appVerStr);
 	if(cmdArgs.shouldExit)

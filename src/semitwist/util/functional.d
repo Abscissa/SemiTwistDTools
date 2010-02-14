@@ -7,23 +7,24 @@ import tango.core.Array;
 /+version(Unittest)+/ import tango.io.Stdout;
 
 import semitwist.util.all;
+import semitwist.util.compat.all;
 
 
 //TODO: Think about new naming scheme. Take a look at how tango does it.
-template makeDg2To1(char[] str, T)
+template makeDg2To1(string str, T)
 {
-	const char[] makeDg2To1 = "("~T.stringof~" a, "~T.stringof~" b){ return ("~str~"); }";
+	const string makeDg2To1 = "("~T.stringof~" a, "~T.stringof~" b){ return ("~str~"); }";
 	//pragma(msg, "makeDg2To1: "~makeDg2To1);
 }
-template makeDg2To1(char[] str, T1, T2)
+template makeDg2To1(string str, T1, T2)
 {
-	const char[] makeDg2To1 = "("~T1.stringof~" a, "~T2.stringof~" b){ return ("~str~"); }";
+	const string makeDg2To1 = "("~T1.stringof~" a, "~T2.stringof~" b){ return ("~str~"); }";
 	//pragma(msg, "makeDg2To1: "~makeDg2To1);
 }
 
-template makeDg1To1(char[] str, T)
+template makeDg1To1(string str, T)
 {
-	const char[] makeDg1To1 = "("~T.stringof~" a){ return ("~str~"); }";
+	const string makeDg1To1 = "("~T.stringof~" a){ return ("~str~"); }";
 	//pragma(msg, "makeDg1To1: "~makeDg1To1);
 }
 
@@ -58,22 +59,22 @@ TOut reduceTo(TOut, TIn)(TIn[] list, TOut init, TOut delegate(TOut a, TIn b) dg)
 	return result;
 }
 
-T reduce(char[] dgstr, T)(T[] list)
+T reduce(string dgstr, T)(T[] list)
 {
 	return reduce(list, mixin(makeDg2To1!(dgstr, T)));
 }
 
-T reduce(char[] dgstr, T)(T[] list, T init)
+T reduce(string dgstr, T)(T[] list, T init)
 {
 	return reduce(list, init, mixin(makeDg2To1!(dgstr, T)));
 }
 
-TOut reduceTo(TOut, char[] dgstr, TIn)(TIn[] list)
+TOut reduceTo(TOut, string dgstr, TIn)(TIn[] list)
 {
 	return reduceTo(list, mixin(makeDg2To1!(dgstr, TOut, TIn)));
 }
 
-TOut reduceTo(TOut, char[] dgstr, TIn)(TIn[] list, TOut init)
+TOut reduceTo(TOut, string dgstr, TIn)(TIn[] list, TOut init)
 {
 	return reduceTo(list, init, mixin(makeDg2To1!(dgstr, TOut, TIn)));
 }
@@ -116,32 +117,32 @@ TOut[] mapAAtoATo(TOut, TIn, TKey)(TIn[TKey] list, TOut delegate(TIn a, TKey b) 
 	return result;
 }
 
-T[] map(char[] dgstr, T)(T[] list)
+T[] map(string dgstr, T)(T[] list)
 {
 	return map(list, mixin(makeDg1To1!(dgstr, T)));
 }
 
-T[TKey] map(char[] dgstr, T, TKey)(T[TKey] list)
+T[TKey] map(string dgstr, T, TKey)(T[TKey] list)
 {
 	return map(list, mixin(makeDg2To1!(dgstr, T, TKey)));
 }
 
-TOut[] mapTo(TOut, char[] dgstr, TIn)(TIn[] list)
+TOut[] mapTo(TOut, string dgstr, TIn)(TIn[] list)
 {
 	return map(list, mixin(makeDg1To1!(dgstr, TIn)));
 }
 
-TOut[TKey] mapTo(TOut, char[] dgstr, TIn, TKey)(TIn[TKey] list)
+TOut[TKey] mapTo(TOut, string dgstr, TIn, TKey)(TIn[TKey] list)
 {
 	return map(list, mixin(makeDg2To1!(dgstr, TIn, TKey)));
 }
 
-T[] mapAAtoA(char[] dgstr, T, TKey)(T[TKey] list)
+T[] mapAAtoA(string dgstr, T, TKey)(T[TKey] list)
 {
 	return mapAAtoA(list, mixin(makeDg2To1!(dgstr, T, TKey)));
 }
 
-TOut[] mapAAtoATo(TOut, char[] dgstr, TIn, TKey)(TIn[TKey] list)
+TOut[] mapAAtoATo(TOut, string dgstr, TIn, TKey)(TIn[TKey] list)
 {
 	return mapAAtoATo(list, mixin(makeDg2To1!(dgstr, TIn, TKey)));
 }
@@ -153,7 +154,7 @@ T[] filter(T)(T[] list, bool delegate(T a) dg)
 	return result[0..numRemaining];
 }
 
-T[] filter(char[] dgstr, T)(T[] list)
+T[] filter(string dgstr, T)(T[] list)
 {
 	return filter(list, mixin(makeDg1To1!(dgstr, T)));
 }

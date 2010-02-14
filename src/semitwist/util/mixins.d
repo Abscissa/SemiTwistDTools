@@ -7,6 +7,7 @@ import tango.core.Traits;
 import tango.io.Stdout;
 
 import semitwist.util.all;
+import semitwist.util.compat.all;
 
 /++
 Useful in constructors for DRY.
@@ -27,7 +28,7 @@ this.c = c;
 +/
 template initMember(vars...)
 {
-	const char[] initMember = initMemberX!("this.{} = {}", vars);
+	const string initMember = initMemberX!("this.{} = {}", vars);
 }
 
 /++
@@ -47,9 +48,9 @@ this._b = foo.b;
 this._c = foo.c;
 ----
 +/
-template initMemberX(char[] str, vars...)
+template initMemberX(string str, vars...)
 {
-	const char[] initMemberX = ctfe_subMapJoin(str~";\n", "{}", templateArgsToStrings!(vars));
+	const string initMemberX = ctfe_subMapJoin(str~";\n", "{}", templateArgsToStrings!(vars));
 }
 
 /++
@@ -85,17 +86,17 @@ class myClass
 +/
 template initMemberFrom(alias from, vars...)
 {
-	const char[] initMemberFrom = initMemberX!("this.{} = "~from.stringof~".{}", vars);
+	const string initMemberFrom = initMemberX!("this.{} = "~from.stringof~".{}", vars);
 }
 
 template initMemberTo(alias to, vars...)
 {
-	const char[] initMemberTo = initMemberX!(to.stringof~".{} = {}", vars);
+	const string initMemberTo = initMemberX!(to.stringof~".{} = {}", vars);
 }
 
 template initFrom(alias from, vars...)
 {
-	const char[] initFrom = initMemberX!("{} = "~from.stringof~".{}", vars);
+	const string initFrom = initMemberX!("{} = "~from.stringof~".{}", vars);
 }
 
 /++
@@ -137,16 +138,16 @@ max(4,7): 7
 //TODO: Messes up on "ctfe_repeat_test_日本語3"
 template traceVal(values...)
 {
-	const char[] traceVal = traceVal!(false, values);
+	const string traceVal = traceVal!(false, values);
 }
 
 template traceVal(bool useNewline, values...)
 {
 	static if(values.length == 0)
-		const char[] traceVal = "";
+		const string traceVal = "";
 	else
 	{
-		const char[] traceVal =
+		const string traceVal =
 			"Stdout.formatln(\"{}:"~(useNewline?"\\n":" ")~"{}\", "~values[0].stringof~", "~unescapeDDQS(values[0].stringof)~");"
 			~ traceVal!(useNewline, values[1..$]);
 	}
@@ -183,13 +184,13 @@ C:\path\file.d(1): trace
 {segfault!}
 ----
 +/
-template trace(char[] prefix="")
+template trace(string prefix="")
 {
 	static if(prefix=="")
-		const char[] trace =
+		const string trace =
 			`Stdout.formatln("{}({}): trace", __FILE__, __LINE__); Stdout.flush();`;
 	else
-		const char[] trace =
+		const string trace =
 			`Stdout.formatln("{}: {}({}): trace", `~prefix.stringof~`, __FILE__, __LINE__); Stdout.flush();`;
 }
 
@@ -199,9 +200,9 @@ Wraps a string mixin and displays the string at compile-time. Useful for debuggi
 Usage:
 
 ----
-template defineFloat(char[] name)
-{ const char[] defineFloat = "float "~name~";"; }
-char[] defineInt(char[] name, char[] value)
+template defineFloat(string name)
+{ const string defineFloat = "float "~name~";"; }
+string defineInt(string name, string value)
 { return "int "~name~"="~value";"; }
 
 mixin(traceMixin!("defineFloat!", `"myFloat"`));
@@ -211,9 +212,9 @@ mixin(traceMixin!("defineInt!", `"myInt", 5`));
 Turns Into:
 
 ----
-template defineFloat(char[] name)
-{ const char[] defineFloat = "float "~name~";"; }
-char[] defineInt(char[] name, char[] value)
+template defineFloat(string name)
+{ const string defineFloat = "float "~name~";"; }
+string defineInt(string name, string value)
 { return "int "~name~"="~value";"; }
 
 float myFloat;
@@ -232,9 +233,9 @@ int myInt=5;
 ----
 +/
 
-template traceMixin(char[] name, char[] args)
+template traceMixin(string name, string args)
 {
-	const char[] traceMixin = 
+	const string traceMixin = 
 		`pragma(msg, "` ~ name ~ `: \n"~`~name~`(`~args~`));`~"\n"~
 		"mixin("~name~"("~args~"));\n";
 }
@@ -247,14 +248,14 @@ Only works for string values right now.
 Usage:
 
 ----
-const char[] fooStr = "Hi";
-const char[] fooStr2 = "Hi2";
+const string fooStr = "Hi";
+const string fooStr2 = "Hi2";
 mixin(traceValCT!("fooStr", "fooStr2"));
 mixin(traceValCT!(`fooStr~" Joe"`));
 
 template fooTmpl
 {
-	const char[] fooTempl = "Hello World";
+	const string fooTempl = "Hello World";
 	mixin(traceValCT!(true, "fooTempl"));
 }
 ----
@@ -262,15 +263,15 @@ template fooTmpl
 Turns Into:
 
 ----
-const char[] fooStr = "Hi";
-const char[] fooStr2 = "Hi2";
+const string fooStr = "Hi";
+const string fooStr2 = "Hi2";
 pragma(msg, "fooStr: " ~ (fooStr));
 pragma(msg, "fooStr2: " ~ (fooStr2));
 pragma(msg, "fooStr~\" Joe\""~": " ~ (fooStr~" Joe"));
 
 template fooTmpl
 {
-	const char[] fooTempl = "Hello World";
+	const string fooTempl = "Hello World";
 	pragma(msg, "fooTempl:\n" ~ (fooTempl));
 }
 ----
@@ -288,18 +289,18 @@ Hello World
 
 template traceValCT(values...)
 {
-	const char[] traceValCT = traceValCT!(false, values);
+	const string traceValCT = traceValCT!(false, values);
 }
 
 template traceValCT(bool useNewline, values...)
 {
 	static if(values.length == 0)
 	{
-		const char[] traceValCT = "";
+		const string traceValCT = "";
 	}
 	else
 	{
-		const char[] traceValCT =
+		const string traceValCT =
 			"pragma(msg, "~escapeDDQS(values[0])~"~\":"~(useNewline? "\\n":" ")~"\" ~ ("~values[0]~"));\n"~
 			traceValCT!(useNewline, values[1..$]);
 
@@ -323,7 +324,7 @@ Usage:
 ----
 mixin(getter!(int, "myVar"));
 mixin(getter!("protected", float, "someFloat", 2.5));
-mixin(getter!(char[], "str"));
+mixin(getter!(string, "str"));
 ----
 
 Turns Into:
@@ -351,38 +352,38 @@ public float someFloat()
 	return _someFloat;
 }
 
-private char[] _str;
-private char[] str(char[] _NEW_VAL_)
+private string _str;
+private string str(string _NEW_VAL_)
 {
 	_str = _NEW_VAL_;
 	return _str;
 }
-public char[] str()
+public string str()
 {
 	return _str.dup;
 }
 ----
 +/
-template getter(varType, char[] name, varType initialValue=varType.init)
+template getter(varType, string name, varType initialValue=varType.init)
 {
 	static if(is(varType.init))
-		const char[] getter = getter!("private", varType, name, initialValue);
+		const string getter = getter!("private", varType, name, initialValue);
 	else
-		const char[] getter = getter!("private", varType, name);
+		const string getter = getter!("private", varType, name);
 }
 
-template getter(char[] writeAccess, varType, char[] name, varType initialValue=varType.init)
+template getter(string writeAccess, varType, string name, varType initialValue=varType.init)
 {
 	static if(is(varType.init))
 	{
-		const char[] getter =
+		const string getter =
 			writeAccess~" "~varType.stringof~" _"~name~(initialValue.stringof == varType.init.stringof ? "" : "=" ~ initialValue.stringof)~";\n"~
 			writeAccess~" "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
 			"public "~varType.stringof~" "~name~"() {return _"~name~(isAnyArrayType!(varType)?".dup":"")~";}\n";
 	}
 	else
 	{
-		const char[] getter =
+		const string getter =
 			writeAccess~" "~varType.stringof~" _"~name~";\n"~
 			writeAccess~" "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
 			"public "~varType.stringof~" "~name~"() {return _"~name~(isAnyArrayType!(varType)?".dup":"")~";}\n";
@@ -426,8 +427,8 @@ mixin(getterLazy!(int, "myVar", `
 
 mixin(getterLazy!("protected", int, "myVar2", `return 7;`));
 
-mixin(getterLazy!(char[], "str"));
-private char[] _str_gen()
+mixin(getterLazy!(string, "str"));
+private string _str_gen()
 {
 	return "Hello";
 }
@@ -465,16 +466,16 @@ protected int _myVar2_gen()
 	return 7;
 }
 
-private char[] _str;
+private string _str;
 private bool _str_cached = false;
-public char[] str() {
+public string str() {
 	if(!_str_cached) {
 		_str_cached = true;
 		_str = customGenFunc();
 	}
 	return _str.dup;
 }
-private char[] customGenFunc()
+private string customGenFunc()
 {
 	return "Hello";
 }
@@ -482,14 +483,14 @@ private char[] customGenFunc()
 ----
 +/
 //TODO? Merge with getter if reasonably possible
-template getterLazy(varType, char[] name, char[] genFunc="")
+template getterLazy(varType, string name, string genFunc="")
 {
-	const char[] getterLazy = getterLazy!("private", varType, name, genFunc);
+	const string getterLazy = getterLazy!("private", varType, name, genFunc);
 }
 
-template getterLazy(char[] writeAccess, varType, char[] name, char[] genFunc="")
+template getterLazy(string writeAccess, varType, string name, string genFunc="")
 {
-	const char[] getterLazy =
+	const string getterLazy =
 		"\n"~
 		((genFunc=="")?
 			"static if(!is(typeof(_"~name~"_gen)==function))\n"~
@@ -562,9 +563,9 @@ Error: static assert  "From 'funcForStringsOnly': 'T' must be char, wchar or dch
 ----
 +/
 
-template ensureCharType(char[] nameOfT, char[] nameOfCaller="")
+template ensureCharType(string nameOfT, string nameOfCaller="")
 {
-	const char[] ensureCharType = 
+	const string ensureCharType = 
 		`static assert(`~"\n"~
 		`	is(`~nameOfT~`==char) || is(`~nameOfT~`==wchar) || is(`~nameOfT~`==dchar),`~"\n"~
 		`	"`~(nameOfCaller==""?"":"From '"~nameOfCaller~"': ")~`'`~nameOfT~`' must be char, wchar or dchar, not '"~`~nameOfT~`.stringof~"'"`~"\n"~
@@ -572,7 +573,7 @@ template ensureCharType(char[] nameOfT, char[] nameOfCaller="")
 }
 
 //TODO: Document genEnum
-public char[] genEnum(char[] name, char[][] values)
+public string genEnum(string name, string[] values)
 {
 	return
 		"enum "~name~" {"~values.ctfe_join(", ")~"}\n"~
@@ -581,15 +582,15 @@ public char[] genEnum(char[] name, char[][] values)
 }
 
 // The function this generates could probably be improved.
-public char[] _genEnumToString(char[] enumName, char[][] enumValues)
+public string _genEnumToString(string enumName, string[] enumValues)
 {
-	char[] value = "";
+	string value = "";
 	
-	foreach(char[] enumValue; enumValues)
+	foreach(string enumValue; enumValues)
 		value ~= "    if(value=="~enumName~"."~enumValue~") return \""~enumValue~"\";\n";
 	
 	value =
-		"char[] enumToString("~enumName~" value)\n"~
+		"string enumToString("~enumName~" value)\n"~
 		"{\n"~
 		value~
 		`    throw new Exception("Internal Error: Unhandled value in `~enumName~`ToString");`~"\n"~

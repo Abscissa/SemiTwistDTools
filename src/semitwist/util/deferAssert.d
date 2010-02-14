@@ -10,6 +10,7 @@ import tango.io.Stdout;
 import tango.util.Convert;
 
 import semitwist.util.all;
+import semitwist.util.compat.all;
 
 //TODO: Properly handle stuff that (for whatever bizarre reason) throws null.
 //TODO: Modify deferEnsureThrows to (optionally?) accept subclasses of TExpected
@@ -22,9 +23,9 @@ Sounds like a contradiction of terms, but this is just
 intended to allow unittests to output ALL failures instead
 of only outputting the first one and then stopping.
 */
-template deferAssert(char[] condStr, char[] msg="")
+template deferAssert(string condStr, string msg="")
 {
-	const char[] deferAssert =
+	const string deferAssert =
 	// The "_deferAssert_line" is a workaround for DMD Bug #2887
 	"{ const long _deferAssert_line = __LINE__;\n"~
 	"    try\n"~
@@ -37,7 +38,7 @@ template deferAssert(char[] condStr, char[] msg="")
 	"}\n";
 }
 
-bool _deferAssert(long line, char[] file, char[] condStr, char[] msg="")(bool condResult)
+bool _deferAssert(long line, string file, string condStr, string msg="")(bool condResult)
 {
 	if(!condResult)
 	{
@@ -50,7 +51,7 @@ bool _deferAssert(long line, char[] file, char[] condStr, char[] msg="")(bool co
 	return condResult;
 }
 
-void _deferAssertException(long line, char[] file, char[] condStr, char[] msg="")(Object thrown)
+void _deferAssertException(long line, string file, string condStr, string msg="")(Object thrown)
 {
 	assertCount++;
 	Stdout.format("{}({}): Assert Threw ({}){}:\nThrew: ",
@@ -58,16 +59,16 @@ void _deferAssertException(long line, char[] file, char[] condStr, char[] msg=""
 	              msg=="" ? "" : ": " ~ msg);
 	Exception e = cast(Exception)thrown;
 	if(e)
-		e.writeOut( (char[] msg) {Stdout(msg);} );
+		e.writeOut( (string msg) {Stdout(msg);} );
 	else
 		Stdout.formatln("Object: type '{}': {}", thrown.classinfo.name, thrown);
 }
 
 //TODO: Something like: mixin(blah!(`_1 == (_2 ~ _3)`, `"Hello"`, `"He"`, `"llo"`));
 
-template deferEnsure(char[] value, char[] condStr, char[] msg="")
+template deferEnsure(string value, string condStr, string msg="")
 {
-	const char[] deferEnsure =
+	const string deferEnsure =
 	// The "_deferAssert_line" is a workaround for DMD Bug #2887
 	"{ const long _deferAssert_line = __LINE__;\n"~
 	"    try\n"~
@@ -81,7 +82,7 @@ template deferEnsure(char[] value, char[] condStr, char[] msg="")
 	"}\n";
 }
 
-bool _deferEnsure(long line, char[] file, char[] valueStr, char[] condStr, T, char[] msg="")(T valueResult, bool condResult)
+bool _deferEnsure(long line, string file, string valueStr, string condStr, T, string msg="")(T valueResult, bool condResult)
 {
 	if(!condResult)
 	{
@@ -97,7 +98,7 @@ bool _deferEnsure(long line, char[] file, char[] valueStr, char[] condStr, T, ch
 	return condResult;
 }
 
-void _deferEnsureException(long line, char[] file, char[] valueStr, char[] condStr, char[] msg="")(Object thrown)
+void _deferEnsureException(long line, string file, string valueStr, string condStr, string msg="")(Object thrown)
 {
 	assertCount++;
 	Stdout.format("{}({}): Ensure Threw{}:\n"~
@@ -108,14 +109,14 @@ void _deferEnsureException(long line, char[] file, char[] valueStr, char[] condS
 	                valueStr, condStr);
 	Exception e = cast(Exception)thrown;
 	if(e)
-		e.writeOut( (char[] msg) {Stdout(msg);} );
+		e.writeOut( (string msg) {Stdout(msg);} );
 	else
 		Stdout.formatln("Object: type '{}': {}", thrown.classinfo.name, thrown);
 }
 
-template deferEnsureThrows(char[] stmtStr, TExpected, char[] msg="")
+template deferEnsureThrows(string stmtStr, TExpected, string msg="")
 {
-	const char[] deferEnsureThrows =
+	const string deferEnsureThrows =
 	// The "_deferAssert_line" is a workaround for DMD Bug #2887
 	"{ const long _deferAssert_line = __LINE__;\n"~
 	"    Object _deferAssert_caught=null;\n"~
@@ -127,9 +128,9 @@ template deferEnsureThrows(char[] stmtStr, TExpected, char[] msg="")
 	"}\n";
 }
 
-void _deferEnsureThrows(long line, char[] file, char[] stmtStr, TExpected, char[] msg="")(Object thrown)
+void _deferEnsureThrows(long line, string file, string stmtStr, TExpected, string msg="")(Object thrown)
 {
-	char[] actualType = (thrown is null)? "{null}" : thrown.classinfo.name;
+	string actualType = (thrown is null)? "{null}" : thrown.classinfo.name;
 	
 	if(actualType != TExpected.classinfo.name)
 	{
@@ -142,7 +143,7 @@ void _deferEnsureThrows(long line, char[] file, char[] stmtStr, TExpected, char[
 		              stmtStr, TExpected.classinfo.name, actualType);
 		Exception e = cast(Exception)thrown;
 		if(e)
-			e.writeOut( (char[] msg) {Stdout(msg);} );
+			e.writeOut( (string msg) {Stdout(msg);} );
 		else
 			Stdout.formatln("{}: {}", actualType, thrown);
 	}
@@ -166,7 +167,7 @@ void flushAsserts()
 		assertCount = 0;
 		Stdout.flush();
 		assert(false,
-			to!(char[])(saveAssertCount) ~
+			to!(string)(saveAssertCount) ~
 			" Assert Failure" ~
 			(saveAssertCount == 1 ? "" : "s")
 		);
