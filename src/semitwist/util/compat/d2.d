@@ -18,6 +18,10 @@ module semitwist.util.compat.d2;
 
 // To aid migration, all SemiTwist D Tools code should, by convention,
 // use 'string' instead of 'char[]', etc.
-alias char[]  string;
-alias wchar[] wstring;
-alias dchar[] dstring;
+version(Tango)
+{
+	// These are already defined in Phobos
+	alias char[]  string;
+	alias wchar[] wstring;
+	alias dchar[] dstring;
+}
