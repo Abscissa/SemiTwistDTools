@@ -40,6 +40,8 @@ T[] readStringz(T)(DataInput reader)
 
 /// Gets the full path to the currently running executable,
 /// regardless of working directory or PATH env var or anything else.
+/// Allegedly, OSX needs to use _NSGetExecutablePath, but tango doesn't
+/// appear to provide access to it, and I'm not sure how else to access it.
 FilePath getExecFilePath()
 {
 	string file = new char[1024];

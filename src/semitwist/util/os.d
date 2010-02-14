@@ -23,16 +23,17 @@ private string genOSParam(string name, string[] values)
 	return str;
 }
 
-mixin(genEnum("OS", ["Windows"[], "Linux", "BSD"]));
+mixin(genEnum("OS", ["Windows"[], "Linux", "BSD", "OSX"]));
 version(Windows) const OS os = OS.Windows;
 version(linux)   const OS os = OS.Linux;
 version(freebsd) const OS os = OS.BSD;
+version(OSX)     const OS os = OS.OSX;
 
-mixin(genOSParam("objExt",  [ ".obj" [], ".o", ".o" ]));
-mixin(genOSParam("libExt",  [ ".lib" [], ".a", ".a" ]));
-mixin(genOSParam("exeExt",  [ ".exe" [], "",   ""   ]));
-mixin(genOSParam("pathSep", [ "\\"   [], "/",  "/"  ]));
-mixin(genOSParam("nlStr",   [ "\r\n" [], "\n", "\n" ]));
+mixin(genOSParam("objExt",  [ ".obj" [], ".o", ".o", ".o" ]));
+mixin(genOSParam("libExt",  [ ".lib" [], ".a", ".a", ".a" ]));
+mixin(genOSParam("exeExt",  [ ".exe" [], "",   "",   ""   ]));
+mixin(genOSParam("pathSep", [ "\\"   [], "/",  "/",  "/"  ]));
+mixin(genOSParam("nlStr",   [ "\r\n" [], "\n", "\n", "\n" ]));
 const string nlStr_Mac9 = "\r";
 
-mixin(genOSParam("selfExeLink", [ ""[], "/proc/self/exe", "/proc/curproc/file" ]));
+mixin(genOSParam("selfExeLink", [ ""[], "/proc/self/exe", "/proc/curproc/file", "/proc/curproc/file" ]));
