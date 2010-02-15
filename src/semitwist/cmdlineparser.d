@@ -561,6 +561,8 @@ class CmdLineParser
 		return
 			(typeName == "string"  )? "text"   :
 			(typeName == "string[]")? "text[]" :
+			(typeName == "char[]"  )? "text"   :
+			(typeName == "char[][]")? "text[]" :
 			(typeName == "bool"    )? "flag"   :
 			(typeName == "bool[]"  )? "flag[]" :
 			(typeName == "int"     )? "num"    :

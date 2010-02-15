@@ -3,6 +3,7 @@
 
 module semitwist.cmd.all;
 
+public import tango.core.Exception;
 public import tango.core.Version;
 public import tango.io.Console;
 public import tango.io.FilePath;
