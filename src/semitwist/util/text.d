@@ -57,6 +57,9 @@ mixin(multiTypeString!("whitespaceChars", r" \n\r\t\v\f"));
 
 bool startsWith(T)(T[] source, T[] match)
 {
+	if(source.length == 0)
+		return match.length == 0;
+		
 	return (source.locatePattern(match) == 0);
 }
 
