@@ -4,7 +4,7 @@
 module semitwist.util.deferAssert;
 
 // deferEnsure requires this to exist in the calling context
-//public import semitwist.util.reflect;
+public import tango.core.Traits : _deferAssert_ExprTypeOf = ExprTypeOf;
 
 import tango.io.Stdout;
 import tango.util.Convert;
@@ -75,7 +75,7 @@ template deferEnsure(string value, string condStr, string msg="")
 	"    {\n"~
 	"        auto _ = ("~value~");\n"~
 	"        bool _deferAssert_condResult = ("~condStr~");\n"~
-	"        _deferEnsure!(_deferAssert_line, __FILE__, "~value.stringof~", "~condStr.stringof~", ExprTypeOf!(typeof("~value~")), "~msg.stringof~")(_, _deferAssert_condResult);\n"~
+	"        _deferEnsure!(_deferAssert_line, __FILE__, "~value.stringof~", "~condStr.stringof~", _deferAssert_ExprTypeOf!(typeof("~value~")), "~msg.stringof~")(_, _deferAssert_condResult);\n"~
 	"    }\n"~
 	"    catch(Object _deferAssert_e)\n"~
 	"        _deferEnsureException!(_deferAssert_line, __FILE__, "~value.stringof~", "~condStr.stringof~", "~msg.stringof~")(_deferAssert_e);\n"~

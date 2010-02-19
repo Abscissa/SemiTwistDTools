@@ -9,7 +9,7 @@ import tango.core.Version;
 import semitwist.util.all;
 import semitwist.util.compat.all;
 
-/**
+/++
 If you have a class MyClass(T), then nameof!(MyClass) will return "MyClass".
 
 One benefit of this is that you can do things like:
@@ -18,8 +18,7 @@ or
 	throw new Exception("Something's wrong with a "~nameof!(MyClass)~" object!";
 and the "MyClass" will be checked by the compiler, alerting you immediately
 if the class name changes, helping you keep such strings up-to-date.
-*/
-
++/
 template nameof(alias T)
 {
 	const string nameof = T.stringof[0..ctfe_find(T.stringof, '(')];
@@ -32,7 +31,21 @@ template isAnyArrayType(T)
 		isAssocArrayType!(T);
 }
 
-// If T is a static array, it's changed to a dynamic array, otherwise just returns T.
+// isStringType has been submitted for inclusion in Tango (ticket #1864),
+// so define it only if it doesn't already exist.
+static if(!is(typeof( isStringType!(char[]) )))
+{
+	/// Evaluates to true if T is char[], wchar[], or dchar[].
+	template isStringType(T)
+	{
+		const bool isStringType =
+			is( T == char[]  ) ||
+			is( T == wchar[] ) ||
+			is( T == dchar[] );
+	}
+}
+
+/// If T is a static array, it's changed to a dynamic array, otherwise just returns T.
 template PreventStaticArray(T)
 {
 	static if(isArrayType!(T))
@@ -41,26 +54,21 @@ template PreventStaticArray(T)
 		private alias T PreventStaticArray;
 }
 
+/// If T isn't an array, returns T[], otherwise returns T as-is.
+template EnsureArray(T)
+{
+	static if(isArrayType!(T))
+		alias T EnsureArray;
+	else
+		alias T[] EnsureArray;
+}
+
 template callableExists(T)
 {
 	static if(is(T) && isCallableType(typeof(T)))
 		const bool callableExists = true;
 	else
 		const bool callableExists = false;
-}
-
-/// Returns the type that a T would evaluate to in an expression.
-/// It's like ReturnTypeOf, except you can use it when
-/// you neither know nor care whether T actually is callable.
-/// Ie: If T is callable (such as a function or property),
-///     then this returns T's return type,
-///     otherwise, this just returns T's type.
-template ExprTypeOf(T)
-{
-    static if(isCallableType!(T))
-        alias ReturnTypeOf!(T) ExprTypeOf;
-    else
-        alias T ExprTypeOf;
 }
 
 /++

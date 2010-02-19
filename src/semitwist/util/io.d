@@ -3,10 +3,14 @@
 
 module semitwist.util.io;
 
+import tango.core.Traits;
 import tango.io.FilePath;
+import tango.io.device.File;
 import tango.io.stream.Data;
 import tango.stdc.stringz;
 import tango.text.Util;
+import tango.text.convert.UnicodeBom;
+import tango.util.Convert;
 
 import semitwist.util.all;
 import semitwist.util.compat.all;
@@ -15,6 +19,37 @@ version(Win32)
 	import tango.sys.win32.UserGdi;
 else
 	import tango.stdc.posix.unistd;
+
+/++
+Reads any type of Unicode/UTF text file (UTF-8, UTF-16, UTF-32, big or little
+endian), and automatically converts it to native endianness and whatever
+codepoint size specified in TOut:
+	char or char[]:   UTF-8, native endianness
+	wchar or wchar[]: UTF-16, native endianness
+	dchar or dchar[]: UTF-32, native endianness
+	
+Examples:
+	char[]  utf8  = readUnicodeFile!(char   )( "ANY_unicode_file.txt" );
+	char[]  utf8  = readUnicodeFile!(char[] )( "ANY_unicode_file.txt" );
+	wchar[] utf16 = readUnicodeFile!(wchar  )( "ANY_unicode_file.txt" );
+	wchar[] utf16 = readUnicodeFile!(wchar[])( "ANY_unicode_file.txt" );
+	dchar[] utf32 = readUnicodeFile!(dchar  )( "ANY_unicode_file.txt" );
+	dchar[] utf32 = readUnicodeFile!(dchar[])( "ANY_unicode_file.txt" );
++/
+EnsureArray!(TOut) readUnicodeFile(TOut, TFilename)(TFilename filename)
+{
+	static assert(isStringType!(TFilename), "'filename' must be a string type");
+	
+	static if(isCharType!(TOut))
+		alias TOut TChar;
+	else static if(isStringType!(TOut))
+		alias ElementTypeOfArray!(TOut) TChar;
+	else
+		static assert(false, "TOut must be a character or string type");
+
+	auto bom = new UnicodeBom!(TChar)(Encoding.Unknown);
+	return bom.decode(File.get( to!(string)(filename) ));
+}
 
 T[] readStringz(T)(DataInput reader)
 {
