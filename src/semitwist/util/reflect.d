@@ -39,9 +39,9 @@ static if(!is(typeof( isStringType!(char[]) )))
 	template isStringType(T)
 	{
 		const bool isStringType =
-			is( T == char[]  ) ||
-			is( T == wchar[] ) ||
-			is( T == dchar[] );
+			is( T : char[]  ) ||
+			is( T : wchar[] ) ||
+			is( T : dchar[] );
 	}
 }
 
