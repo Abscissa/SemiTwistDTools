@@ -23,7 +23,7 @@ int main(string[] args)
 	flushAsserts();
 
 	mixin(traceVal!(
-		"enumToString(os)",
+		"enumOSToString(os)",
 		"objExt", "libExt", "exeExt", "pathSep"
 	));
 

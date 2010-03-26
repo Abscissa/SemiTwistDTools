@@ -578,23 +578,42 @@ public string genEnum(string name, string[] values)
 	return
 		"enum "~name~" {"~values.ctfe_join(", ")~"}\n"~
 		"const uint "~name~"_length = "~ctfe_i2a(values.length)~";\n"~
-		_genEnumToString(name, values);
+		_genEnumToString(name, values)~
+		_genStringToEnum(name, values);
 }
 
 // The function this generates could probably be improved.
 public string _genEnumToString(string enumName, string[] enumValues)
 {
-	string value = "";
+	string ret = "";
 	
 	foreach(string enumValue; enumValues)
-		value ~= "    if(value=="~enumName~"."~enumValue~") return \""~enumValue~"\";\n";
+		ret ~= "    if(value=="~enumName~"."~enumValue~") return \""~enumValue~"\";\n";
 	
-	value =
-		"string enumToString("~enumName~" value)\n"~
+	ret =
+		"string enum"~enumName~"ToString("~enumName~" value)\n"~
 		"{\n"~
-		value~
-		`    throw new Exception("Internal Error: Unhandled value in `~enumName~`ToString");`~"\n"~
+		ret~
+		`    throw new Exception("Internal Error: Unhandled value in enum`~enumName~`ToString");`~"\n"~
 		"}\n";
 	
-	return value;
+	return ret;
+}
+
+// The function this generates could probably be improved.
+public string _genStringToEnum(string enumName, string[] enumValues)
+{
+	string ret = "";
+	
+	foreach(string enumValue; enumValues)
+		ret ~= "    if(value==\""~enumValue~"\") return "~enumName~"."~enumValue~";\n";
+	
+	ret =
+		enumName~" stringToEnum"~enumName~"(string value)\n"~
+		"{\n"~
+		ret~
+		`    throw new Exception("'"~value~"' is not a valid value for '`~enumName~`'");`~"\n"~
+		"}\n";
+	
+	return ret;
 }

@@ -13,7 +13,7 @@ private string genOSParam(string name, string[] values)
 	string str = "";
 	foreach(int i, string value; values)
 	{
-		string osStr = enumToString(cast(OS)i);
+		string osStr = enumOSToString(cast(OS)i);
 
 		str ~=
 			"const string "~name~"_"~osStr~" = "~escapeDDQS(value)~";\n"~

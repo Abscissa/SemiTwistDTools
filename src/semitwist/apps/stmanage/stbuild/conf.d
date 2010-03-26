@@ -236,7 +236,7 @@ class Conf
 			switches
 				.switchesToString()
 				.fixSlashes()
-				.sformat(target, mode, enumToString(os), "");
+				.sformat(target, mode, enumOSToString(os), "");
 	}
 	
 	struct Switch
