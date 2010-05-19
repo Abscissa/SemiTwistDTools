@@ -35,6 +35,7 @@ static this()
 //TODO? Make dir something folder-specific instead of FileFolder?
 //TODO: Dup Cmd
 //TODO: Add echoerr (or just "err")
+//TODO? Make "cmd.dir" (but not copies) affect Environment.cwd
 class Cmd
 {
 	private FilePath _dir; // Working directory

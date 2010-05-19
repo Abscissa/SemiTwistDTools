@@ -581,7 +581,7 @@ class CmdLineParser
 		ret ~=
 			"Switches:\n"~
 			"(Prefixes can be '/', '-' or '--')\n"~
-			"('[]' means multiple switches are accepted)\n";
+			"('[]' means multiple switches are accepted)\n"; //TODO: Only show this line if such a switch exists
 
 		foreach(Arg arg; args)
 		{
