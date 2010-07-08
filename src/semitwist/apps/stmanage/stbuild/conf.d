@@ -8,6 +8,7 @@ import semitwist.cmd.all;
 
 enum BuildTool
 {
+	rdmd,
 	rebuild,
 	xfbuild,
 }
@@ -16,6 +17,8 @@ string buildToolExecName(BuildTool tool)
 {
 	switch(tool)
 	{
+	case BuildTool.rdmd:
+		return "rdmd";
 	case BuildTool.rebuild:
 		return "rebuild";
 	case BuildTool.xfbuild:
@@ -132,15 +135,53 @@ class Conf
 		return numConverted;
 	}
 	
+	private static void moveSourceFileToEnd(ref Switch[] switches)
+	{
+		int sourceIndex = switches.length;
+		
+		foreach(int i, Switch sw; switches)
+		if( !sw.data.startsWith("-") && !sw.data.startsWith("+") )
+		{
+			sourceIndex = i;
+			break;
+		}
+		
+		if(sourceIndex < switches.length-1)
+		{
+			switches =
+				switches[0..sourceIndex] ~
+				switches[sourceIndex+1..$] ~
+				switches[sourceIndex];
+		}
+	}
+
 	private static void convert(ref Switch[] switches, BuildTool tool)
 	{
 		switch(tool)
 		{
+		case BuildTool.rdmd:
+			switches.convertPrefix("-oq", "-od");
+			switches.convertPrefix("+o", "-of");
+			switches.convertPrefix("+O", "-od");
+			switches.convertPrefix("-C",  ""  );
+			switches.convertPrefix("-v", "--chatty");
+			switches.convertPrefix("+v", "--chatty");
+			switches.convertPrefix("+nolink", "-c");
+			switches.removePrefix("+");
+			
+			// Source file must come last
+			switches.moveSourceFileToEnd();
+			
+			break;
+
 		case BuildTool.rebuild:
 			switches.combinePrefix("+O", "+q", "-oq");
 			switches.convertPrefix("+o", "-of");
 			switches.convertPrefix("+O", "-od");
+			switches.convertPrefix("--chatty", "-v");
+			switches.convertPrefix("+nolink", "-c");
 			switches.removePrefix("+");
+			switches.removePrefix("--");
 			break;
 			
 		case BuildTool.xfbuild:
@@ -150,6 +191,9 @@ class Conf
 			switches.convertPrefix("-C",  ""  );
 			switches.convertPrefix("-of", "+o");
 			switches.convertPrefix("-od", "+O");
+			switches.convertPrefix("--chatty", "+v");
+			switches.convertPrefix("-c", "+nolink");
+			switches.removePrefix("--");
 			break;
 			
 		default:
@@ -208,6 +252,7 @@ class Conf
 		// separate so things don't get screwed up.
 		switches.addDefault("-oq", "obj/{0}/{1}");
 		switches.addDefault("+D", "obj/{0}/{1}/deps");
+		switches.addDefault("--build-only", "");
 	}
 	
 	private static string fixSlashes(string str)

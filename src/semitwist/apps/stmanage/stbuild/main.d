@@ -57,7 +57,7 @@ import semitwist.apps.stmanage.stbuild.cmdArgs;
 import semitwist.apps.stmanage.stbuild.conf;
 
 const string appName = "STBuild";
-const string appVerStr = "0.01.1";
+const string appVerStr = "0.01.2";
 Ver appVer;
 static this()
 {

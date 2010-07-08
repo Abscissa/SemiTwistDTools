@@ -56,12 +56,12 @@ class CmdArgs
 		mixin(defineArg!(cmdLine, "",         targetMode,   ArgFlag.Optional, "First is target, second is optional mode" ));
 		mixin(defineArg!(cmdLine, "clean",    cleanOnly,    ArgFlag.Optional, "Clean, don't build" ));
 		mixin(defineArg!(cmdLine, "conf",     confFile,     ArgFlag.Optional, "Configuration file to use" ));
-		mixin(defineArg!(cmdLine, "tool",     buildToolStr, ArgFlag.Optional, "Build tool [\"re\" or \"xf\"]" ));
+		mixin(defineArg!(cmdLine, "tool",     buildToolStr, ArgFlag.Optional, "Build tool [\"rdmd\", \"re\" or \"xf\"]" ));
 		mixin(defineArg!(cmdLine, "q",        quiet,        ArgFlag.Optional, "Quiet, ie. don't show progress messages" ));
 		mixin(defineArg!(cmdLine, "cmd",      showCmd,      ArgFlag.Optional, "Show commands" ));
 		mixin(defineArg!(cmdLine, "x",        extraArgList, ArgFlag.Optional, "Pass extra argument to build tool" ));
 
-		mixin(setArgAllowableValues!("tool", "re", "xf"));
+		mixin(setArgAllowableValues!("tool", "rdmd", "re", "xf"));
 	}
 	
 	private void showTargets()
@@ -191,6 +191,9 @@ class CmdArgs
 		
 		switch(buildToolStr)
 		{
+		case "rdmd":
+			buildTool = BuildTool.rdmd;
+			break;
 		case "re":
 			buildTool = BuildTool.rebuild;
 			break;
