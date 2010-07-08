@@ -17,6 +17,8 @@ import semitwist.util.compat.all;
 
 version(Win32)
 	import tango.sys.win32.UserGdi;
+else version(OSX)
+	private extern(C) int _NSGetExecutablePath(char* buf, uint* bufsize);
 else
 	import tango.stdc.posix.unistd;
 
@@ -75,14 +77,14 @@ T[] readStringz(T)(DataInput reader)
 
 /// Gets the full path to the currently running executable,
 /// regardless of working directory or PATH env var or anything else.
-/// Allegedly, OSX needs to use _NSGetExecutablePath, but tango doesn't
-/// appear to provide access to it, and I'm not sure how else to access it.
 FilePath getExecFilePath()
 {
-	string file = new char[1024];
+	string file = new char[4*1024];
 	int filenameLength;
 	version (Win32)
 		filenameLength = GetModuleFileNameA(null, file.ptr, file.length-1);
+	else version(OSX)
+		filenameLength = _NSGetExecutablePath(file.ptr, file.length-1);
 	else
         filenameLength = readlink(toStringz(selfExeLink), file.ptr, file.length-1);
 
