@@ -77,6 +77,7 @@ T[] readStringz(T)(DataInput reader)
 
 /// Gets the full path to the currently running executable,
 /// regardless of working directory or PATH env var or anything else.
+/// Note that this is far more accurate and reliable than using args[0].
 FilePath getExecFilePath()
 {
 	string file = new char[4*1024];
