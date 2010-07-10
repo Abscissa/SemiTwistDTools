@@ -85,7 +85,10 @@ FilePath getExecFilePath()
 	version (Win32)
 		filenameLength = GetModuleFileNameA(null, file.ptr, file.length-1);
 	else version(OSX)
-		filenameLength = _NSGetExecutablePath(file.ptr, file.length-1);
+	{
+		filenameLength = file.length-1;
+		_NSGetExecutablePath(file.ptr, &filenameLength);
+	}
 	else
         filenameLength = readlink(toStringz(selfExeLink), file.ptr, file.length-1);
 
