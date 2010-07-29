@@ -21,6 +21,7 @@ This has been tested to work with:
 //TODO: Get obj dir from conf switches instead of hardcoding to "obj/target/mode"
 //TODO: Translate extraArgs between rebuild/xfbuild
 //TODO: When using xfbuild, make sure root filenames end in ".d" (ie "src/main.d" instead of "src/main")
+//TODO: Fix: 'stbuild.conf' errors get displayed before header message.
 
 module semitwist.apps.stmanage.stbuild.main;
 
