@@ -3,13 +3,15 @@
 
 module semitwist.util.text;
 
-import tango.core.Array;
-import tango.io.Stdout;
-import tango.text.Unicode;
-import tango.text.Util;
-import tango.text.convert.Layout;
-import tango.text.convert.Utf;
-import tango.util.Convert;
+//import tango.core.Array;
+import std.stdio;//tango.io.Stdout;
+//import tango.text.Unicode;
+//import tango.text.Util;
+//import tango.text.convert.Layout;
+//import tango.text.convert.Utf;
+//import tango.util.Convert;
+import std.traits;
+import std.string;
 
 import semitwist.util.all;
 import semitwist.util.compat.all;
@@ -55,7 +57,7 @@ template multiTypeString(string name, string data, string access="public")
 /// Warning: This is missing some unicode whitespace chars
 mixin(multiTypeString!("whitespaceChars", r" \n\r\t\v\f"));
 
-bool startsWith(T)(T[] source, T[] match)
+/+bool startsWith(T)(T[] source, T[] match)
 {
 	if(source.length == 0)
 		return match.length == 0;
@@ -67,7 +69,7 @@ bool startsWith(T)(T[] source, T[] match)
 bool endsWith(T)(T[] source, T[] match)
 {
 	return (source.locatePatternPrior(match) == source.length - match.length);
-}
+}+/
 
 /// Unix EOL: "\n"
 void toUnixEOL(T)(ref T[] str)
@@ -141,11 +143,11 @@ For example:
 
   Note that "\x41\t" and "A\t"c are equivalent, but not identical.
 +/
-T[] escape(T)(T[] str, EscapeSequence type)
+T escape(T)(T str, EscapeSequence type) if(isSomeString!T)
 {
-	mixin(ensureCharType!("T"));
+	//mixin(ensureCharType!("T"));
 
-	T[] ret;
+	T ret;
 	
 	switch(type)
 	{
@@ -160,11 +162,11 @@ T[] escape(T)(T[] str, EscapeSequence type)
 	return ret;
 }
 
-T[] unescape(T)(T[] str, EscapeSequence type)
+T unescape(T)(T str, EscapeSequence type) if(isSomeString!T)
 {
-	mixin(ensureCharType!("T"));
+	//mixin(ensureCharType!("T"));
 
-	T[] ret;
+	T ret;
 	
 	switch(type)
 	{
@@ -179,25 +181,25 @@ T[] unescape(T)(T[] str, EscapeSequence type)
 	return ret;
 }
 
-T[] unescapeChar(T)(T[] str, T[] escapeSequence)
+T unescapeChar(T)(T str, T escapeSequence) if(isSomeString!T)
 {
-	mixin(ensureCharType!("T"));
+	//mixin(ensureCharType!("T"));
 
-	T[] ret = str.dup;
+	T ret = str.dup;
 	ret = substitute(ret, escapeSequence, escapeSequence[$-1..$]);
 	return ret;
 }
 
 /// Warning: This doesn't unescape all escape sequences yet.
-T[] unescapeDDQS(T)(T[] str)
+T unescapeDDQS(T)(T str) if(isSomeString!T)
 {
-	mixin(ensureCharType!("T"));
+	//mixin(ensureCharType!("T"));
 	const string errStr = "str doesn't contain a valid D Double Quote String";
 
 	if(str.length < 2)
 		throw new Exception(errStr);
 		
-	T[] ret = str.dup;
+	T ret = str.dup;
 	
 	//TODO: Do this better
 	ret = ctfe_substitute!(T)(ret, `\\`, `\`);
@@ -234,11 +236,11 @@ T[] unescapeDDQS(T)(T[] str)
 	return ret[1..$-1];
 }
 
-T[] escapeDDQS(T)(T[] str)
+T escapeDDQS(T)(T str) if(isSomeString!T)
 {
-	mixin(ensureCharType!("T"));
+//	mixin(ensureCharType!("T"));
 		
-	T[] ret = str.dup;
+	T ret = str;
 	
 	ret = ctfe_substitute!(T)(ret, `\`, `\\`);
 	ret = ctfe_substitute!(T)(ret, `"`, `\"`);
@@ -268,26 +270,51 @@ unittest
 	const dstring ctEscD = escapeDDQS(`"They said \"10 \\ 5 = 2\""`d);
 	const wstring ctUnescW = unescapeDDQS(`"They said \"10 \\ 5 = 2\""`w);
 	const dstring ctUnescD = unescapeDDQS(`"They said \"10 \\ 5 = 2\""`d);
-	Stdout.formatln("{}{}", "ctEscW:      ", ctEscW);
-	Stdout.formatln("{}{}", "ctEscD:      ", ctEscD);
-	Stdout.formatln("{}{}", "ctUnescW:    ", ctUnescW);
-	Stdout.formatln("{}{}", "ctUnescD:    ", ctUnescD);
+	writefln("%s%s", "ctEscW:      ", ctEscW);
+	writefln("%s%s", "ctEscD:      ", ctEscD);
+	writefln("%s%s", "ctUnescW:    ", ctUnescW);
+	writefln("%s%s", "ctUnescD:    ", ctUnescD);
 
-	Stdout.formatln("{}{}", "unesc wchar: ", unescapeDDQS(`"They said \"10 \\ 5 = 2\""`w));
-	Stdout.formatln("{}{}", "unesc dchar: ", unescapeDDQS(`"They said \"10 \\ 5 = 2\""`d));
-	Stdout.formatln("{}{}", "esc wchar:   ", escapeDDQS(`"They said \"10 \\ 5 = 2\""`w));
-	Stdout.formatln("{}{}", "esc dchar:   ", escapeDDQS(`"They said \"10 \\ 5 = 2\""`d));
-//	Stdout.formatln("{}{}", "int:         ", unescapeDDQS([cast(int)1,2,3]));
+	writefln("%s%s", "unesc wchar: ", unescapeDDQS(`"They said \"10 \\ 5 = 2\""`w));
+	writefln("%s%s", "unesc dchar: ", unescapeDDQS(`"They said \"10 \\ 5 = 2\""`d));
+	writefln("%s%s", "esc wchar:   ", escapeDDQS(`"They said \"10 \\ 5 = 2\""`w));
+	writefln("%s%s", "esc dchar:   ", escapeDDQS(`"They said \"10 \\ 5 = 2\""`d));
+//	writefln("%s%s", "int:         ", unescapeDDQS([cast(int)1,2,3]));
 
-	Stdout.formatln("{}{}", "orig:        ", doubleQuoteTestStr);
-	Stdout.formatln("{}{}", "unesc:       ", unescapeDDQS(doubleQuoteTestStr));
-	Stdout.formatln("{}{}", "esc:         ", escapeDDQS(doubleQuoteTestStr));
-	Stdout.formatln("{}{}", "esc(unesc):  ", escapeDDQS(unescapeDDQS(doubleQuoteTestStr)));
-	Stdout.formatln("{}{}", "unesc(esc):  ", unescapeDDQS(escapeDDQS(doubleQuoteTestStr)));
+	writefln("%s%s", "orig:        ", doubleQuoteTestStr);
+	writefln("%s%s", "unesc:       ", unescapeDDQS(doubleQuoteTestStr));
+	writefln("%s%s", "esc:         ", escapeDDQS(doubleQuoteTestStr));
+	writefln("%s%s", "esc(unesc):  ", escapeDDQS(unescapeDDQS(doubleQuoteTestStr)));
+	writefln("%s%s", "unesc(esc):  ", unescapeDDQS(escapeDDQS(doubleQuoteTestStr)));
 }
 +/
 
-private Layout!(char)  _sformatc;
+int locate(Char)(in Char[] s, dchar c, CaseSensitive cs = CaseSensitive.yes)
+{
+	auto result = indexOf(s, c, cs);
+	return result == -1? s.length : result;
+}
+
+int locatePrior(in char[] s, dchar c, CaseSensitive cs = CaseSensitive.yes)
+{
+	auto result = lastIndexOf(s, c, cs);
+	return result == -1? s.length : result;
+}
+
+int locate(Char1, Char2)(in Char1[] s, in Char2[] sub, CaseSensitive cs = CaseSensitive.yes)
+{
+	auto result = indexOf(s, sub, cs);
+	return result == -1? s.length : result;
+}
+
+int locatePrior(in char[] s, in char[] sub, CaseSensitive cs = CaseSensitive.yes)
+{
+	auto result = lastIndexOf(s, sub, cs);
+	return result == -1? s.length : result;
+}
+
+
+/+private Layout!(char)  _sformatc;
 private Layout!(wchar) _sformatw;
 private Layout!(dchar) _sformatd;
 static this()
@@ -308,10 +335,10 @@ private T[] _sformat(T)(TypeInfo[] arguments, ArgList args, T[] formatStr)
 	else
 		return _sformatd(arguments, args, formatStr);
 }
-
++/
 /// Suggested usage:
-///   "Hello {}!".sformat("World");
-T[] sformat(T)(T[] formatStr, ...)
+///   "Hello %s!".format("World");
+/+T[] sformat(T)(T[] formatStr, ...)
 {
 	return _sformat!(T)(_arguments, _argptr, formatStr);
 }
@@ -320,22 +347,27 @@ T[] sformatln(T)(T[] formatStr, ...)
 {
 	return _sformat!(T)(_arguments, _argptr, formatStr)~"\n";
 }
-
-T[] stripNonPrintable(T)(T[] str)
++/
+string formatln(T...)(T args)
 {
-	T[] ret = str.dup;
+	return format(args)~"\n";
+}
+
+T stripNonPrintable(T)(T str) if(isSomeString!T)
+{
+	T ret = str.dup;
 	auto numRemaining = ret.removeIf( (T c){return !isPrintable(c);} );
 	return ret[0..numRemaining];
 }
 
 /// Return value is number of code units
-uint nextCodePointSize(T)(T[] str)
+uint nextCodePointSize(T)(T str) if(is(T==string) || is(T==wstring))
 {
-	static assert(
-		is(T==char) || is(T==wchar),
-		"From 'nextCodePointSize': 'T' must be char or wchar, not '"~T.stringof~"'"
+/+	static assert(
+		is(T==string) || is(T==wstring),
+		"From 'nextCodePointSize': 'T' must be string or wstring, not '"~T.stringof~"'"
 	);
-	
++/	
 	uint ret;
 	str.decode(ret);
 	return ret;

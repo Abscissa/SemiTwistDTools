@@ -3,8 +3,9 @@
 
 module semitwist.util.ctfe;
 
-import tango.core.Version;
-import tango.io.Stdout;
+//import tango.core.Version;
+import std.stdio;//tango.io.Stdout;
+import std.traits;
 
 import semitwist.util.all;
 import semitwist.util.compat.all;
@@ -54,22 +55,22 @@ size_t ctfe_find(T)(T[] collection, T elem, size_t start=0)
 }
 
 //TODO: Test on wchar/dchar
-T[] ctfe_join(T)(T[][] strs, T[] delim)
+T ctfe_join(T)(T[] strs, T delim) if(isSomeString!T)
 {
-	T[] value = "";
+	T value = "";
 	
-	foreach(T[] str; strs)
+	foreach(T str; strs)
 		value ~= (value.length==0?"":delim) ~ str;
 	
 	return value;
 }
 
-T[] ctfe_substitute(T)(T[] str, T[] match, T[] replace)
+T ctfe_substitute(T)(T str, T match, T replace) if(isSomeString!T)
 {
-	T[] value = "";
+	T value = "";
 	
 	if(str.length < match.length)
-		return str.dup;
+		return str;//.dup;
 	
 	int i;
 	for(i=0; i<=str.length-match.length; i++)
@@ -86,12 +87,12 @@ T[] ctfe_substitute(T)(T[] str, T[] match, T[] replace)
 	return value;
 }
 
-/// ctfe_subMapJoin("Hi WHO. ", "WHO", ["Joey"[], "Q", "Sue"])
+/// ctfe_subMapJoin("Hi WHO. ", "WHO", ["Joey", "Q", "Sue"])
 /// --> "Hi Joey. Hi Q. Hi Sue. "
-T[] ctfe_subMapJoin(T)(T[] str, T[] match, T[][] replacements)
+T ctfe_subMapJoin(T)(T str, T match, T[] replacements) if(isSomeString!T)
 {
-	T[] value = "";
-	foreach(T[] replace; replacements)
+	T value = "";
+	foreach(T replace; replacements)
 		value ~= ctfe_substitute(str, match, replace);
 
 	return value;

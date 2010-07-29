@@ -4,10 +4,12 @@
 module semitwist.util.deferAssert;
 
 // deferEnsure requires this to exist in the calling context
-public import tango.core.Traits : _deferAssert_ExprTypeOf = ExprTypeOf;
+import std.traits;//tango.core.Traits : _deferAssert_ExprTypeOf = ExprTypeOf;
+public import semitwist.util.reflect : _deferAssert_ExprTypeOf = ExprTypeOf;
 
-import tango.io.Stdout;
-import tango.util.Convert;
+import std.stdio;//tango.io.Stdout;
+//import tango.util.Convert;
+import std.conv;
 
 import semitwist.util.all;
 import semitwist.util.compat.all;
@@ -43,9 +45,9 @@ bool _deferAssert(long line, string file, string condStr, string msg="")(bool co
 	if(!condResult)
 	{
 		assertCount++;
-		Stdout.formatln("{}({}): Assert Failed ({}){}",
-		                file, line, condStr,
-		                msg=="" ? "" : ": " ~ msg);
+		writefln("%s(%s): Assert Failed (%s)%s",
+		         file, line, condStr,
+		         msg=="" ? "" : ": " ~ msg);
 	}
 	
 	return condResult;
@@ -54,14 +56,14 @@ bool _deferAssert(long line, string file, string condStr, string msg="")(bool co
 void _deferAssertException(long line, string file, string condStr, string msg="")(Object thrown)
 {
 	assertCount++;
-	Stdout.format("{}({}): Assert Threw ({}){}:\nThrew: ",
-	              file, line, condStr,
-	              msg=="" ? "" : ": " ~ msg);
+	writef("%s(%s): Assert Threw (%s)%s:\nThrew: ",
+	       file, line, condStr,
+	       msg=="" ? "" : ": " ~ msg);
 	Exception e = cast(Exception)thrown;
 	if(e)
-		e.writeOut( (string msg) {Stdout(msg);} );
+		write(thrown);
 	else
-		Stdout.formatln("Object: type '{}': {}", thrown.classinfo.name, thrown);
+		writefln("Object: type '%s': %s", thrown.classinfo.name, thrown);
 }
 
 //TODO: Something like: mixin(blah!(`_1 == (_2 ~ _3)`, `"Hello"`, `"He"`, `"llo"`));
@@ -87,12 +89,12 @@ bool _deferEnsure(long line, string file, string valueStr, string condStr, T, st
 	if(!condResult)
 	{
 		assertCount++;
-		Stdout.formatln("{}({}): Ensure Failed{}\n"~
-		                "Expression '{}':\n"~
-		                "Expected: {}\n"~
-		                "Actual: {}",
-		                file, line, msg=="" ? "" : ": " ~ msg,
-		                valueStr, condStr, valueResult);
+		writefln("%s(%s): Ensure Failed%s\n"~
+		         "Expression '%s':\n"~
+		         "Expected: %s\n"~
+		         "Actual: %s",
+		         file, line, msg=="" ? "" : ": " ~ msg,
+		         valueStr, condStr, valueResult);
 	}
 	
 	return condResult;
@@ -101,17 +103,17 @@ bool _deferEnsure(long line, string file, string valueStr, string condStr, T, st
 void _deferEnsureException(long line, string file, string valueStr, string condStr, string msg="")(Object thrown)
 {
 	assertCount++;
-	Stdout.format("{}({}): Ensure Threw{}:\n"~
-	                "Expression '{}':\n"~
-	                "Expected: {}\n"~
-	                "Threw: ",
-	                file, line, msg=="" ? "" : ": " ~ msg,
-	                valueStr, condStr);
+	writef("%s(%s): Ensure Threw%s:\n"~
+	       "Expression '%s':\n"~
+	       "Expected: %s\n"~
+	       "Threw: ",
+	       file, line, msg=="" ? "" : ": " ~ msg,
+	       valueStr, condStr);
 	Exception e = cast(Exception)thrown;
 	if(e)
-		e.writeOut( (string msg) {Stdout(msg);} );
+		write(thrown);
 	else
-		Stdout.formatln("Object: type '{}': {}", thrown.classinfo.name, thrown);
+		writefln("Object: type '%s': %s", thrown.classinfo.name, thrown);
 }
 
 template deferEnsureThrows(string stmtStr, TExpected, string msg="")
@@ -135,17 +137,17 @@ void _deferEnsureThrows(long line, string file, string stmtStr, TExpected, strin
 	if(actualType != TExpected.classinfo.name)
 	{
 		assertCount++;
-		Stdout.format("{}({}): Ensure Throw Failed{}\n"~
-		              "Statement '{}':\n"~
-		              "Expected: {}\n"~
-		              "Actual:   ",
-		              file, line, msg=="" ? "" : ": " ~ msg,
-		              stmtStr, TExpected.classinfo.name, actualType);
+		writef("%s(%s): Ensure Throw Failed%s\n"~
+		       "Statement '%s':\n"~
+		       "Expected: %s\n"~
+		       "Actual:   ",
+		       file, line, msg=="" ? "" : ": " ~ msg,
+		       stmtStr, TExpected.classinfo.name, actualType);
 		Exception e = cast(Exception)thrown;
 		if(e)
 			e.writeOut( (string msg) {Stdout(msg);} );
 		else
-			Stdout.formatln("{}: {}", actualType, thrown);
+			writefln("%s: %s", actualType, thrown);
 	}
 }
 
@@ -165,7 +167,7 @@ void flushAsserts()
 	{
 		uint saveAssertCount = assertCount;
 		assertCount = 0;
-		Stdout.flush();
+		stdout.flush();
 		assert(false,
 			to!(string)(saveAssertCount) ~
 			" Assert Failure" ~

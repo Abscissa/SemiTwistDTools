@@ -4,6 +4,10 @@
 
 module semitwist.apps.stmanage.stbuild.conf;
 
+import std.conv;
+import std.string;
+import std.file;
+
 import semitwist.cmd.all;
 
 enum BuildTool
@@ -24,7 +28,7 @@ string buildToolExecName(BuildTool tool)
 	case BuildTool.xfbuild:
 		return "xfbuild";
 	default:
-		throw new Exception("Internal Error: Unexpected Build Tool #{}".sformat(tool));
+		throw new Exception("Internal Error: Unexpected Build Tool #%s".format(tool));
 	}
 }
 
@@ -43,12 +47,12 @@ class Conf
 	
 	string[] errors;
 
-	const string targetAll   = "all";
-	const string modeRelease = "release";
-	const string modeDebug   = "debug";
-	const string modeAll     = "all";
-	const string[] predefTargets = [targetAll];
-	const string[] modes = [modeRelease, modeDebug, modeAll];
+	enum string targetAll   = "all";
+	enum string modeRelease = "release";
+	enum string modeDebug   = "debug";
+	enum string modeAll     = "all";
+	enum string[] predefTargets = [targetAll];
+	enum string[] modes = [modeRelease, modeDebug, modeAll];
 
 	string[] targetAllElems;
 	string[] modeAllElems;
@@ -64,13 +68,17 @@ class Conf
 				cmd.echo(error);
 				
 			throw new STBuildConfException(
-				"{} error(s) in conf file '{}'"
-					.sformat(parser.errors.length, filename)
+				"%s error(s) in conf file '%s'"
+					.format(parser.errors.length, filename)
 			);
 		}
 
-		targetAllElems = targets.allExcept(targetAll);
-		modeAllElems   = modes.allExcept(modeAll);
+		targetAllElems = array(std.algorithm.filter!(
+			(a) { return a != targetAll; })(targets)
+		);//targets.allExcept(targetAll);
+		modeAllElems   = array(std.algorithm.filter!(
+			(a) { return a != modeAll; })(modes)
+		);//modes.allExcept(modeAll);
 	}
 	
 	private Switch[] getFlagsSafe(string target, string mode)
@@ -78,8 +86,8 @@ class Conf
 		if(target in flags && mode in flags[target])
 		{
 			Switch[] ret = flags[target][mode].dup;
-			foreach(int i, Switch sw; ret)
-				ret[i].data = ret[i].data.dup;
+			//foreach(int i, Switch sw; ret)
+			//	ret[i].data = ret[i].data.dup;
 
 			return ret;
 		}
@@ -121,15 +129,15 @@ class Conf
 
 	private static int combinePrefix(ref Switch[] switches, string fromPrefix, string fromSwitch, string toPrefix)
 	{
-		auto numRemoved = switches.removePrefix(fromSwitch);
+		auto numRemoved = removePrefix(switches, fromSwitch);
 		if(numRemoved > 0)
-			return switches.convertPrefix(fromPrefix, toPrefix);
+			return convertPrefix(switches, fromPrefix, toPrefix);
 		return 0;
 	}
 	
 	private static int splitPrefix(ref Switch[] switches, string fromPrefix, string toPrefix, string toSwitch)
 	{
-		auto numConverted = switches.convertPrefix(fromPrefix, toPrefix);
+		auto numConverted = convertPrefix(switches, fromPrefix, toPrefix);
 		if(numConverted > 0)
 			switches ~= Switch(toSwitch, false);
 		return numConverted;
@@ -160,53 +168,54 @@ class Conf
 		switch(tool)
 		{
 		case BuildTool.rdmd:
-			switches.convertPrefix("-oq", "-od");
-			switches.convertPrefix("+o", "-of");
-			switches.convertPrefix("+O", "-od");
-			switches.convertPrefix("-C",  ""  );
-			switches.convertPrefix("-v", "--chatty");
-			switches.convertPrefix("+v", "--chatty");
-			switches.convertPrefix("+nolink", "-c");
-			switches.removePrefix("+");
+			convertPrefix(switches, "-oq", "-od");
+			convertPrefix(switches, "+o", "-of");
+			convertPrefix(switches, "+O", "-od");
+			convertPrefix(switches, "-C",  ""  );
+			convertPrefix(switches, "-v", "--chatty");
+			convertPrefix(switches, "+v", "--chatty");
+			convertPrefix(switches, "+nolink", "-c");
+			removePrefix(switches, "+");
 			
 			// Source file must come last
-			switches.moveSourceFileToEnd();
+			moveSourceFileToEnd(switches);
 			
 			break;
 
 		case BuildTool.rebuild:
-			switches.combinePrefix("+O", "+q", "-oq");
-			switches.convertPrefix("+o", "-of");
-			switches.convertPrefix("+O", "-od");
-			switches.convertPrefix("--chatty", "-v");
-			switches.convertPrefix("+nolink", "-c");
-			switches.removePrefix("+");
-			switches.removePrefix("--");
+			combinePrefix(switches, "+O", "+q", "-oq");
+			convertPrefix(switches, "+o", "-of");
+			convertPrefix(switches, "+O", "-od");
+			convertPrefix(switches, "--chatty", "-v");
+			convertPrefix(switches, "+nolink", "-c");
+			removePrefix(switches, "+");
+			removePrefix(switches, "--");
 			break;
 			
 		case BuildTool.xfbuild:
 			//switches.splitPrefix("-oq", "+O", "+q"); //Doesn't work for DMD
-			switches.convertPrefix("-oq", "+O");
+			convertPrefix(switches, "-oq", "+O");
 			
-			switches.convertPrefix("-C",  ""  );
-			switches.convertPrefix("-of", "+o");
-			switches.convertPrefix("-od", "+O");
-			switches.convertPrefix("--chatty", "+v");
-			switches.convertPrefix("-c", "+nolink");
-			switches.removePrefix("--");
+			convertPrefix(switches, "-C",  ""  );
+			convertPrefix(switches, "-of", "+o");
+			convertPrefix(switches, "-od", "+O");
+			convertPrefix(switches, "--chatty", "+v");
+			convertPrefix(switches, "-c", "+nolink");
+			removePrefix(switches, "--");
 			break;
 			
 		default:
-			throw new Exception("Internal Error: Unexpected Build Tool #{}".sformat(tool));
+			throw new Exception("Internal Error: Unexpected Build Tool #%s".format(tool));
 		}
 	}
 	
 	private static string switchesToString(Switch[] switches)
 	{
 		return
-			switches
-				.map( (Switch sw) { return sw.toString(); } )
-				.join(" ");
+			std.string.join(
+				switches.map( (Switch sw) { return sw.toString(); } ),
+				" "
+			);
 	}
 	
 	unittest
@@ -220,16 +229,16 @@ class Conf
 		auto re2    = `-od_od -foo -of_o -of_of -C_C -oq_oq -od_O`;
 		
 		switches = ConfParser.splitSwitches(start);
-		switches.convert(BuildTool.rebuild);
-		mixin(deferEnsure!(`switches.switchesToString()`, `_ == re`));
+		convert(switches, BuildTool.rebuild);
+		mixin(deferEnsure!(`switchesToString(switches)`, `_ == re`));
 		
 		switches = ConfParser.splitSwitches(start);
-		switches.convert(BuildTool.xfbuild);
-		mixin(deferEnsure!(`switches.switchesToString()`, `_ == xf`));
+		convert(switches, BuildTool.xfbuild);
+		mixin(deferEnsure!(`switchesToString(switches)`, `_ == xf`));
 		
 		switches = ConfParser.splitSwitches(start2);
-		switches.convert(BuildTool.rebuild);
-		mixin(deferEnsure!(`switches.switchesToString()`, `_ == re2`));
+		convert(switches, BuildTool.rebuild);
+		mixin(deferEnsure!(`switchesToString(switches)`, `_ == re2`));
 	}
 	
 	private static bool addDefault(ref Switch[] switches, string prefix, string defaultVal)
@@ -250,18 +259,18 @@ class Conf
 	{
 		// Keep object and deps files from each target/mode
 		// separate so things don't get screwed up.
-		switches.addDefault("-oq", "obj/{0}/{1}");
-		switches.addDefault("+D", "obj/{0}/{1}/deps");
-		switches.addDefault("--build-only", "");
+		addDefault(switches, "-oq", "obj/{0}/{1}");
+		addDefault(switches, "+D", "obj/{0}/{1}/deps");
+		addDefault(switches, "--build-only", "");
 	}
 	
 	private static string fixSlashes(string str)
 	{
 		version(Windows)
-			str.replace('/', '\\');
+			return std.string.replace(str, "/", "\\");
 		else
-			str.replace('\\', '/');
-		return str;
+			return std.string.replace(str, "\\", "/");
+		//return str;
 	}
 	
 	string getFlags(string target, string mode, BuildTool tool)
@@ -274,14 +283,12 @@ class Conf
 		if(!isModeAll  )               switches ~= getFlagsSafe(target,    modeAll);
 		if(!isTargetAll && !isModeAll) switches ~= getFlagsSafe(targetAll, modeAll);
 
-		switches.addDefaults();
-		switches.convert(tool);
+		addDefaults(switches);
+		convert(switches, tool);
 
 		return
-			switches
-				.switchesToString()
-				.fixSlashes()
-				.sformat(target, mode, enumOSToString(os), "");
+			fixSlashes(switchesToString(switches))
+				.format(target, mode, enumOSToString(os), "");
 	}
 	
 	struct Switch
@@ -319,7 +326,7 @@ class Conf
 			{
 				if(inPlainSwitch)
 				{
-					if(isWhitespace(c))
+					if(iswhite(c))
 						inPlainSwitch = false;
 					else
 						ret[$-1].data ~= to!(string)(c);
@@ -338,7 +345,7 @@ class Conf
 						ret ~= Switch("", true);
 						inQuotedSwitch = true;
 					}
-					else if(!isWhitespace(c))
+					else if(!iswhite(c))
 					{
 						ret ~= Switch(to!(string)(c), false);
 						inPlainSwitch = true;
@@ -350,16 +357,16 @@ class Conf
 		
 		private void doParse(Conf conf, string filename)
 		{
-			mixin(initMember!(conf, filename));
+			mixin(initMember("conf", "filename"));
 
-			if(cmd.dir.folder(filename).exists || !cmd.dir.file(filename).exists)
+			if(!exists(filename) || !isfile(filename))
 				throw new STBuildConfException(
-					"Can't find configuration file '{}'".sformat(filename)
+					"Can't find configuration file '%s'".format(filename)
 				);
 
-			auto input = cast(string)File.get(cmd.dir.file(filename).toString);
+			auto input = cast(string)read(filename);
 			uint lineno = 1;
-			foreach(string line; lines(input))
+			foreach(string line; input.splitlines())
 			{
 				parseLine(line, lineno);
 				lineno++;
@@ -376,19 +383,20 @@ class Conf
 		private void parseLine(string line, uint lineno)
 		{
 			auto commentStart = line.locate('#');
-			auto stmt = line[0..commentStart].trim();
+			//if(commentStart == -1) commentStart = line.length;
+			auto stmt = line[0..commentStart].strip();
 
 			version(verbose)
 			{
-				Stdout.format("{}: ", lineno);
+				writef("%s: ", lineno);
 				
 				if(stmt == "")
-					Stdout.format("BlankLine ");
+					writef("BlankLine ");
 				else
-					Stdout.format("Statement[{}] ", stmt);
+					writef("Statement[%s] ", stmt);
 
 				if(commentStart < line.length)
-					Stdout.format("Comment[{}] ", line[commentStart..$]);
+					writef("Comment[%s] ", line[commentStart..$]);
 				
 				scope(exit) Stdout.newline;
 			}
@@ -407,26 +415,26 @@ class Conf
 					partialStmt = stmt[0..$-1];
 					return;
 				}
-				version(verbose) if(partialStmt !is null) Stdout.formatln("\nFullStmt[{}] ", stmt);
+				version(verbose) if(partialStmt !is null) writefln("\nFullStmt[%s] ", stmt);
 				partialStmt = null;
 				
 				if(stmt[0] == '[' && stmt[$-1] == ']')
 				{
 					stmt = stmt[1..$-1];
-					auto delimIndex = stmt.locate(':');
-					if(delimIndex == stmt.length)
+					auto delimIndex = stmt.indexOf(':');
+					if(delimIndex == -1)
 						error("Rule definition header must be of the form [target(s):mode(s)]");
 					else
 					{
-						currTargets = stmt[0..delimIndex].parseCSV();
-						currModes = stmt[delimIndex+1..$].parseCSV();
+						currTargets = parseCSV(stmt[0..delimIndex]);
+						currModes = parseCSV(stmt[delimIndex+1..$]);
 					}
 				}
 				else
 				{
-					auto stmtParts = stmt.delimit(whitespaceChars!(char));
+					auto stmtParts = stmt.split();
 					auto stmtCmd = stmtParts[0];
-					auto stmtPred = stmt[stmtCmd.length..$].trim();
+					auto stmtPred = stmt[stmtCmd.length..$].strip();
 					switch(stmtCmd)
 					{
 					case "target":
@@ -434,16 +442,16 @@ class Conf
 						break;
 					case "flags":
 						if(currTargets is null)
-							error("'{}' must be in a target definition".sformat(stmtCmd));
+							error("'%s' must be in a target definition".format(stmtCmd));
 						else
 						{
 							foreach(string target; currTargets)
 							foreach(string mode;   currModes)
-								conf.flags[target][mode] ~= stmtPred.splitSwitches();
+								conf.flags[target][mode] ~= splitSwitches(stmtPred);
 						}
 						break;
 					default:
-						error("Unsupported command '{}'".sformat(stmtCmd));
+						error("Unsupported command '%s'".format(stmtCmd));
 						break;
 					}
 				}
@@ -452,15 +460,15 @@ class Conf
 
 		private void error(string msg)
 		{
-			errors ~= "{}({}): {}".sformat(filename, stmtLineNo, msg);
+			errors ~= "%s(%s): %s".format(filename, stmtLineNo, msg);
 		}
 		
 		private string[] parseCSV(string str)
 		{
 			string[] ret;
-			foreach(string name; str.delimit(","))
-				if(name.trim() != "")
-					ret ~= name.trim();
+			foreach(string name; str.split(","))
+				if(name.strip() != "")
+					ret ~= name.strip();
 			return ret;
 		}
 
@@ -468,25 +476,25 @@ class Conf
 		{
 			if(currTargets !is null)
 			{
-				error("Statement '{}' must come before the rule definitions".sformat(command));
+				error("Statement '%s' must come before the rule definitions".format(command));
 				return;
 			}
 				
 			if(set !is null)
 			{
-				error("List '{}' has already been set".sformat(command));
+				error("List '%s' has already been set".format(command));
 				return;
 			}
 
-			set ~= listStr.parseCSV();
+			set ~= parseCSV(listStr);
 			foreach(int i, string elem; set)
 			{
-				if(predefined.contains(elem))
-					error("'{}' is a reserved value for '{}'".sformat(elem, command));
+				if(std.algorithm.find(predefined, elem) != [])
+					error("'%s' is a reserved value for '%s'".format(elem, command));
 				else
 				{
-					if(set[0..i].contains(elem))
-						error("'{}' is defined more than once in list '{}'".sformat(elem, command));
+					if(std.algorithm.find(set[0..i], elem) != [])
+						error("'%s' is defined more than once in list '%s'".format(elem, command));
 				}
 			}
 		}

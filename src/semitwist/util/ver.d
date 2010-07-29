@@ -3,10 +3,12 @@
 
 module semitwist.util.ver;
 
-import tango.io.Stdout;
-import tango.math.Math;
-import tango.text.Util;
-import tango.util.Convert;
+import std.stdio;//tango.io.Stdout;
+import std.math;//tango.math.Math;
+//import tango.text.Util;
+//import tango.util.Convert;
+import std.conv;
+import std.string;
 
 import semitwist.util.all;
 import semitwist.util.compat.all;
@@ -17,9 +19,9 @@ struct Ver
 {
 	uint[] ver;
 	
-	int opCmp(Ver v)
+	const int opCmp(ref const(Ver) v)
 	{
-		for(int i=0; i < min(this.ver.length, v.ver.length); i++)
+		for(int i=0; i < reduce!"a<b?a:b"([this.ver.length, v.ver.length]); i++)
 		{
 			if(this.ver[i] != v.ver[i])
 				return this.ver[i] - v.ver[i];
@@ -31,7 +33,7 @@ struct Ver
 		return 0;
 	}
 	
-	bool opEquals(Ver v)
+	const bool opEquals(ref const(Ver) v)
 	{
 		return this.opCmp(v) == 0;
 	}
@@ -44,7 +46,7 @@ struct Ver
 
 Ver toVer(string str)
 {
-	return Ver( to!(uint[])(str.delimit(".")) );
+	return Ver( to!(uint[])(str.split(".")) );
 }
 
 unittest

@@ -18,10 +18,10 @@ import semitwist.cmd.all;
 // Damn, can't make templated nested func
 void displayNodes(TElem, TColl)(TColl collection, string label)
 {
-	Stdout.formatln("");
-	Stdout.formatln("{}:", label);
+	writefln("");
+	writefln("%s:", label);
 	foreach(TElem elem; collection)
-		Stdout.formatln(" -{}", elem.toString());
+		writefln(" -%s", elem.toString());
 }
 
 void testVfs(string dir)
@@ -74,7 +74,7 @@ void main(string[] args)
 			(string input) {
 				return cast(bool)tango.core.Array.contains(["yes","no"], input);
 			},
-			`'{}' is not valid, must enter "yes" or "no"!`
+			`'%s' is not valid, must enter "yes" or "no"!`
 		)
 	).newline;
 +/
@@ -115,22 +115,22 @@ exit                 Exits
 		
 		"prompt":
 		(string params) {
-			Stdout.formatln(
-				"You entered: {}",
+			writefln(
+				"You entered: %s",
 				cmd.prompt("Enter anything:")
 			);
 		},
 		
 		"promptyn":
 		(string params) {
-			Stdout.formatln(
-				"You entered: {}",
+			writefln(
+				"You entered: %s",
 				cmd.prompt(
 					`Enter "yes" or "no":`,
 					(string input) {
 						return cast(bool)tango.core.Array.contains(["yes","no"], input);
 					},
-					`'{}' is not valid. Please enter "yes" or "no".`
+					`'%s' is not valid. Please enter "yes" or "no".`
 				)
 			);
 		},
@@ -171,10 +171,10 @@ exit                 Exits
 				cmdLookup[command](params);
 			catch(Exception e)
 			{
-				Stdout("ERR: ");
-				//Stdout("ERR: "~e.classinfo.name~": ");
+				write("ERR: ");
+				//write("ERR: "~e.classinfo.name~": ");
 				e.writeOut( (string msg) {Stdout(msg);} );
-				//Stdout.formatln("Exception: {}", e.msg);
+				//writefln("Exception: %s", e.msg);
 			}
 		}
 		else

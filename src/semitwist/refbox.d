@@ -3,11 +3,13 @@
 
 module semitwist.refbox;
 
-import tango.core.Array;
-import tango.io.Stdout;
-import tango.math.Math;
-import tango.text.Util;
-import convInt = tango.text.convert.Integer;
+//import tango.core.Array;
+import std.stdio;//tango.io.Stdout;
+import std.math;//tango.math.Math;
+//import tango.text.Util;
+//import convInt = tango.text.convert.Integer;
+import std.string;
+import std.algorithm : find;
 
 import semitwist.util.all;
 import semitwist.util.compat.all;
@@ -40,12 +42,12 @@ class RefBox(T)
 		*this.val = val;
 	}
 	
-	bool opEquals(RefBox!(T) val)
+	const bool opEquals(ref const(RefBox!(T)) val)
 	{
 		return *this.val == *val.val;
 	}
 	
-	bool opEquals(T val)
+	const bool opEquals(ref const(T) val)
 	{
 		return *this.val == val;
 	}
@@ -66,17 +68,17 @@ string getRefBoxTypeName(Object o)
 	
 	//TODO?: Replace this with a regex search (if possible) and handle nested ()'s
 	
-	auto start = locatePatternPrior(typeName, head);
+	auto start = locatePrior(typeName, head);
 	if(start == typeName.length)
 		return unknown;
 	start += head.length;
 		
-	auto end = locate(typeName, ')', start);
+	auto end = locate(typeName[start..$], ')')+start;
 	if(end == typeName.length)
 		return unknown;
 	
 	// Nested () inside "RefBox!(...)" is not currently supported
-	if(tango.text.Util.contains(typeName[start..end], '('))
+	if(std.algorithm.find(typeName[start..end], '(') != [])
 		return unknown;
 		
 	return typeName[start..end];

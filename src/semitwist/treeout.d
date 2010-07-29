@@ -3,11 +3,14 @@
 
 module semitwist.treeout;
 
-import tango.core.Traits;
-import tango.io.Stdout;
-import tango.text.Unicode;
-import tango.text.Util;
-import tango.util.Convert;
+import std.traits;//tango.core.Traits;
+import std.stdio;//tango.io.Stdout;
+//import tango.text.Unicode;
+//import tango.text.Util;
+//import tango.util.Convert;
+import std.string;
+import std.regex;
+import std.iterator;
 
 import semitwist.util.all;
 import semitwist.util.compat.all;
@@ -39,68 +42,73 @@ class XMLFormatter(bool _strip, string _indent="\t") : TreeFormatter
 {
 	string toValidName(string str)
 	{
-		str = str.map
+		str = replace(str, regex("[^a-zA-Z0-9]"), "_");
+/+		std.algorithm.map!(
+			(char a)
+		    { return inPattern(a, [digits, letters])? a : '_'; }
+		)(str);
++//+		str.map
 		(
 			(char a)
-		    { return isLetterOrDigit(a)? a : '_'; }
-		);
+		    { return inPattern(a, [digits, letters])? a : '_'; }
+		);+/
 
-		if(str.length > 0 && !isLetterOrDigit(str[0]) && str[0] != '_')
+		if(str.length > 0 && !inPattern(str[0], [digits, letters]) && str[0] != '_')
 			str = "_"~str;
 		
 		return str;
 	}
 	
-	string indent()
+	override string indent()
 	{
 		return _indent;
 	}
 	
-	bool strip()
+	override bool strip()
 	{
 		return _strip;
 	}
 	
-	string processData(string content, int nodeDepth)
+	override string processData(string content, int nodeDepth)
 	{
 		return fullIndent(nodeDepth)~"<![CDATA["~content~"]]>"~newline;
 	}
 	
-	string processComment(string content, int nodeDepth)
+	override string processComment(string content, int nodeDepth)
 	{
 		return fullIndent(nodeDepth)~"<!--"~content~"-->"~newline;
 	}
 	
-	string processAttribute(string name, string value, int nodeDepth)
+	override string processAttribute(string name, string value, int nodeDepth)
 	{
-		return ` {}="{}"`.sformat(name.toValidName(), value);
+		return ` %s="%s"`.format(toValidName(name), value);
 	}
 	
-	string processNode(string name, string attributes, string content, int nodeDepth)
+	override string processNode(string name, string attributes, string content, int nodeDepth)
 	{
 		auto formatStr =
 			(content=="")? 
-			"{0}<{2}{3} />{1}"
+			"%1$s<%3$s%4$s />%2$s"
 			:
-			"{0}<{2}{3}>{1}"
-			"{4}"
-			"{0}</{2}>{1}";
+			"%1$s<%3$s%4$s>%2$s"
+			"%5$s"
+			"%1$s</%3$s>%2$s";
 			
-		return formatStr.sformat(fullIndent(nodeDepth), newline(), name.toValidName(), attributes, content);
+		return formatStr.format(fullIndent(nodeDepth), newline(), toValidName(name), attributes, content);
 	}
 	
-	string reduceAttributes(string[] attributes, int nodeDepth)
+	override string reduceAttributes(string[] attributes, int nodeDepth)
 	{
 		return reduce!(`a~b`)(attributes);
 //		return attributes.reduce!(`a~" "~b`)(); // Don't work
 	}
 	
-	string reduceNodes(string[] nodes, int nodeDepth)
+	override string reduceNodes(string[] nodes, int nodeDepth)
 	{
 		return reduce!(`a~b`)(nodes);
 	}
 	
-	string finalize(string content)
+	override string finalize(string content)
 	{
 		return content;
 	}
@@ -113,19 +121,19 @@ class JSONFormatter(bool _strip, string _indent="\t") : TreeFormatter
 		return super.fullIndent(nodeDepth+1);
 	}
 
-	string indent()
+	override string indent()
 	{
 		return _indent;
 	}
 	
-	bool strip()
+	override bool strip()
 	{
 		return _strip;
 	}
 	
 	string processString(string content)
 	{
-		return `"` ~ content.substitute(`\`, `\\`).substitute(`"`, `\"`) ~ `"`;
+		return `"` ~ content.replace(`\`, `\\`).replace(`"`, `\"`) ~ `"`;
 	}
 	
 	string processList(string[] elements, int nodeDepth)
@@ -143,25 +151,25 @@ class JSONFormatter(bool _strip, string _indent="\t") : TreeFormatter
 	
 	string processPair(string name, string content)
 	{
-		return "{}: {}".sformat(name.processString(), content);
+		return "%s: %s".format(processString(name), content);
 	}
 	
-	string processComment(string content, int nodeDepth)
+	override string processComment(string content, int nodeDepth)
 	{
 		return "";
 	}
 
-	string processData(string content, int nodeDepth)
+	override string processData(string content, int nodeDepth)
 	{
-		return content.processString();
+		return processString(content);
 	}
 	
-	string processAttribute(string name, string value, int nodeDepth)
+	override string processAttribute(string name, string value, int nodeDepth)
 	{
-		return processPair(name, value.processString());
+		return processPair(name, processString(value));
 	}
 	
-	string processNode(string name, string attributes, string content, int nodeDepth)
+	override string processNode(string name, string attributes, string content, int nodeDepth)
 	{
 		return processNode(name, attributes, content, nodeDepth, false);
 	}
@@ -174,30 +182,30 @@ class JSONFormatter(bool _strip, string _indent="\t") : TreeFormatter
 			(attributes == "" && content != "")? fullIndent(nodeDepth+1)~content~newline :
 				fullIndent(nodeDepth+1)~attributes~", "~newline~fullIndent(nodeDepth+1)~content~newline;
 		
-		name = nameless? "" : name.processString()~": ";
+		name = nameless? "" : processString(name)~": ";
 			
 		return
-			"{2}{{{1}"
-			"{3}"
-			"{0}}"
-			.sformat
+			"%3$s{%2$s"
+			"%4$s"
+			"%1$s}"
+			.format
 			(
 				fullIndent(nodeDepth), newline,
 				name, attrAndContent
 			);
 	}
 	
-	string reduceAttributes(string[] attributes, int nodeDepth)
+	override string reduceAttributes(string[] attributes, int nodeDepth)
 	{
-		return attributes.processList(nodeDepth+1);
+		return processList(attributes, nodeDepth+1);
 	}
 	
-	string reduceNodes(string[] nodes, int nodeDepth)
+	override string reduceNodes(string[] nodes, int nodeDepth)
 	{
-		return nodes.processList(nodeDepth+1);
+		return processList(nodes, nodeDepth+1);
 	}
 	
-	string finalize(string content)
+	override string finalize(string content)
 	{
 		return processNode("", "", content, -1, true);
 	}
@@ -235,7 +243,7 @@ class TreeNodeData : TreeNodeBase
 		static if(is(T:string))
 			dataStr = data;
 		else
-			dataStr = sformat("{}", data);
+			dataStr = format("%s", data);
 		
 		this.data = dataStr;
 	}
@@ -245,7 +253,7 @@ class TreeNodeData : TreeNodeBase
 		this.data = data;
 	}
 
-	string toString(TreeFormatter formatter, string content, int nodeDepth)
+	override string toString(TreeFormatter formatter, string content, int nodeDepth)
 	{
 		return formatter.processData(content, nodeDepth);
 	}
@@ -259,7 +267,7 @@ class TreeNodeComment : TreeNodeData
 		super(data);
 	}
 
-	string toString(TreeFormatter formatter, string content, int nodeDepth)
+	override string toString(TreeFormatter formatter, string content, int nodeDepth)
 	{
 		return formatter.processComment(content, nodeDepth);
 	}
@@ -288,7 +296,7 @@ class TreeNode : TreeNodeBase
 	
 	this(string name, TreeNodeBase[] subNodes, string[string] attributes=null)
 	{
-		mixin(initMember!(name, subNodes, attributes));
+		mixin(initMember("name", "subNodes", "attributes"));
 	}
 	
 	TreeNode addAttribute(T, U)(T name, U value)
@@ -337,27 +345,33 @@ class TreeNode : TreeNodeBase
 		return formatter.finalize(this.toString(formatter, "", 0));
 	}
 	
-	string toString(TreeFormatter formatter, string content, int nodeDepth)
+	override string toString(TreeFormatter formatter, string content, int nodeDepth)
 	{
 		auto reduceAttributes = &formatter.reduceAttributes;
 		auto reduceNodes      = &formatter.reduceNodes;
 		
-		alias ValTypeOfAA!(typeof(attributes))      AttributeType;
-		alias ElementTypeOfArray!(typeof(subNodes)) SubNodeType;
+		//alias ElementType!(typeof(attributes)) AttributeType;
+		alias ElementType!(typeof(subNodes))   SubNodeType;
+		alias string       AttributeType;
+		//alias TreeNodeBase SubNodeType;
 		
 		auto attrStr =
-			attributes
-			.mapAAtoA((AttributeType val, AttributeType key) {
-				return formatter.processAttribute(key, val, nodeDepth);
-			})
-			.reduceAttributes(nodeDepth);
+			reduceAttributes(
+				attributes
+				.mapAAtoA((AttributeType val, AttributeType key) {
+					return formatter.processAttribute(key, val, nodeDepth);
+				}),
+				nodeDepth
+			);
 		
 		auto contentStr =
-			subNodes
-			.map((SubNodeType a){
-				return a.toString(formatter, "", nodeDepth+1);
-			})
-			.reduceNodes(nodeDepth);
+			reduceNodes(
+				subNodes
+				.map((SubNodeType a){
+					return a.toString(formatter, "", nodeDepth+1);
+				}),
+				nodeDepth
+			);
 		
 		return formatter.processNode(name, attrStr, contentStr, nodeDepth);
 	}

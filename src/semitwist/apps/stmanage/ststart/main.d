@@ -36,7 +36,7 @@ void main(string[] args)
 {
 	// Prompt stuff
 	const string promptOverwrite = "Delete and overwrite (yes/no)? ";
-	const string msgFailedYesNo = "You must enter 'yes' or 'no', not '{}'.";
+	const string msgFailedYesNo = "You must enter 'yes' or 'no', not '%s'.";
 	bool acceptYesNo(string input)
 	{
 		return input=="yes" || input=="no";
@@ -98,11 +98,11 @@ void main(string[] args)
 //	cmd.dir.file("main.d").output.copy("hello").close;
 	
 //	cmd.dir = originalDir.toString~"/"~projectName;
-//	cmd.dir = "{}/{}".sformat(originalDir, projectName);
+//	cmd.dir = "%s/%s".format(originalDir, projectName);
 //	auto allCreated = cmd.dir.tree;
 	cmd.dir = originalDir;
 	auto allCreated = cmd.dir.folder(projectName).open.tree;
-	Stdout.formatln("Created {} bytes in {} folder(s) and {} file(s)",
+	writefln("Created %s bytes in %s folder(s) and %s file(s)",
 		allCreated.bytes, allCreated.folders, allCreated.files);
 	
 //	cmd.dir = originalDir;

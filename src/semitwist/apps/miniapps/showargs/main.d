@@ -18,7 +18,7 @@ import semitwist.util.compat.all;
 
 void main(string[] args)
 {
-	Stdout.formatln("args.length: {}", args.length);
+	writefln("args.length: %s", args.length);
 	foreach(int i, string arg; args)
-		Stdout.formatln("args[{}]: {}", i, arg);
+		writefln("args[%s}]: %s", i, arg);
 }

@@ -57,7 +57,7 @@ import semitwist.apps.stmanage.stbuild.cmdArgs;
 import semitwist.apps.stmanage.stbuild.conf;
 
 const string appName = "STBuild";
-const string appVerStr = "0.02";
+const string appVerStr = "0.02.1";
 Ver appVer;
 static this()
 {
@@ -69,8 +69,15 @@ Conf conf;
 
 void moveMapFiles(string subDir=".")
 {
-	foreach(VfsFile mapFile; cmd.dir.self.catalog("*.map"))
-		cmd.dir.folder("obj/"~subDir).open.file(mapFile.name).move(mapFile);
+//TODO***
+//	foreach(VfsFile mapFile; cmd.dir.self.catalog("*.map"))
+//		cmd.dir.folder("obj/"~subDir).open.file(mapFile.name).move(mapFile);
+
+	foreach(string name; dirEntries(".", SpanMode.shallow))
+	{
+		if(name.fnmatch("*.map"))
+			rename(name, "obj/"~subDir~name.basename());
+	}
 }
 
 int process(string target, string mode, bool verbose)
@@ -98,9 +105,9 @@ int build(string target, string mode, bool verbose)
 	mixin(deferAssert!(`mode != conf.modeAll`, "mode 'all' passed to build()"));
 
 	if(verbose)
-		cmd.echo("Building {} {}...".sformat(target, mode));
+		cmd.echo("Building %s %s...".format(target, mode));
 
-	cmd.dir.folder("obj/"~target~"/"~mode).create();
+	mkdir("obj/"~target~"/"~mode);
 	
 	int ret;
 	auto cmdLine =
@@ -109,11 +116,12 @@ int build(string target, string mode, bool verbose)
 		cmdArgs.extraArgs;
 	
 	if(cmdArgs.showCmd) cmd.echo(cmdLine);
-	version(Windows)
-		cmd.exec(cmdLine, ret);
-	else
-	{
-		// On Tango 0.99.9, tango.sys.Process, and therefore cmd.exec, hangs
+	//TODO***
+	//version(Windows)
+		ret = system(cmdLine);
+	//else
+	//{
+/+		// On Tango 0.99.9, tango.sys.Process, and therefore cmd.exec, hangs
 		// on non-Windows due to Tango Bug #1859, so this is a quick-n-dirty
 		// workaround.
 		
@@ -121,7 +129,7 @@ int build(string target, string mode, bool verbose)
 		//mixin(traceVal!("cmdLine"));
 		foreach(string arg; quotes(cmdLine, " "))
 		{
-			//Stdout.formatln(":{}", arg);
+			//writefln(":%s", arg);
 			
 			if(arg == "")
 				continue;
@@ -186,9 +194,9 @@ int build(string target, string mode, bool verbose)
             }
 			
 			throw new ProcessException("Program '"~execFile~"' not found");
-		}
+		}+/
 		
-	}
+	//}
 	moveMapFiles(target~"/"~mode);
 	
 	return ret;
@@ -200,9 +208,10 @@ int clean(string target, string mode, bool verbose)
 	mixin(deferAssert!(`mode != conf.modeAll`, "mode 'all' passed to clean()"));
 
 	if(verbose)
-		cmd.echo("Cleaning {} {}...".sformat(target, mode));
+		cmd.echo("Cleaning %s %s...".format(target, mode));
 
-	VfsFolders objDir;
+//TODO***
+/+	VfsFolders objDir;
 	try
 		objDir = cmd.dir.folder("obj/"~target~"/"~mode).open.tree;
 	catch(Exception e) // No directory to clean
@@ -215,7 +224,13 @@ int clean(string target, string mode, bool verbose)
 		file.remove();
 	
 	foreach(VfsFile file; objDir.catalog("*"~objExt))
-		file.remove();
+		file.remove();+/
+
+	foreach(string name; dirEntries("obj/"~target~"/"~mode, SpanMode.depth))
+	{
+		if(name.fnmatch("*.map") || name.fnmatch("deps") || name.fnmatch("*"~objExt))
+			remove(name);
+	}
 		
 	return 0;
 }

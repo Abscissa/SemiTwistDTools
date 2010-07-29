@@ -51,7 +51,7 @@ void main(string[] args)
 	}
 	cmd.echo(new Foo(), "See?");
 	Stdout("Of course, ");
-	Stdout.formatln("ordinary Stdout {} available too.", "is");
+	writefln("ordinary Stdout %s available too.", "is");
 
 	cmd.pause();
 
@@ -62,9 +62,9 @@ void main(string[] args)
 	//   (But I like using it.)
 	showSectionHeader("semitwist.util.text: sformat/sformatln");
 
-	auto myStr8 = "Hello {}".sformat("Joe");
+	auto myStr8 = "Hello %s".format("Joe");
 	cmd.echo(myStr8);
-	auto myStr16 = "This {} wstr ends in a newline, {}"w.sformatln("happy", "whee");
+	auto myStr16 = "This %s wstr ends in a newline, %s"w.formatln("happy", "whee");
 	cmd.echo(myStr16);
 	cmd.echo("See? There was an extra newline up there.");
 	
@@ -89,7 +89,7 @@ void main(string[] args)
 	double myDouble = 5.55;
 	int myInt = 7;
 	mixin(traceVal!("myDouble", "myInt   ", "   myInt", "4*7"));
-	mixin(traceVal!(`"Any expression {}".sformat("is ok")`));
+	mixin(traceVal!(`"Any expression %s".format("is ok")`));
 	
 	cmd.pause();
 
@@ -234,10 +234,10 @@ void main(string[] args)
 	auto entireParentTree = cmd.dir.folder("..").open.tree;
 	auto entireParentDir = cmd.dir.folder("..").open.self;
 	
-	cmd.echo("Total bytes in '..' dir: {}".sformat(entireParentDir.bytes));
-	cmd.echo("Total bytes in entire '..' tree: {}".sformat(entireParentTree.bytes));
+	cmd.echo("Total bytes in '..' dir: %s".format(entireParentDir.bytes));
+	cmd.echo("Total bytes in entire '..' tree: %s".format(entireParentTree.bytes));
 	
-	cmd.echo("Total num folders in '..' dir: {}".sformat(entireParentDir.folders));
+	cmd.echo("Total num folders in '..' dir: %s".format(entireParentDir.folders));
 	foreach(VfsFolder folder; cmd.dir.folder("..").open)
 	{
 		cmd.echo(" -", folder);
@@ -245,19 +245,19 @@ void main(string[] args)
 		cmd.echo();
 	}
 	
-	cmd.echo("Total num folders in entire '..' tree: {}".sformat(entireParentTree.folders));
+	cmd.echo("Total num folders in entire '..' tree: %s".format(entireParentTree.folders));
 	foreach(VfsFolder folder; cmd.dir)
 		cmd.echo(" -"~folder.toString);
 	
-	cmd.echo("Total num files in '..' dir: {}".sformat(entireParentDir.files));
+	cmd.echo("Total num files in '..' dir: %s".format(entireParentDir.files));
 	foreach(VfsFile file; entireParentDir.catalog)
 		cmd.echo(" -"~file.toString);
 	
-	cmd.echo("Total num files in entire '..' tree: {}".sformat(entireParentTree.files));
+	cmd.echo("Total num files in entire '..' tree: %s".format(entireParentTree.files));
 	foreach(VfsFile file; entireParentTree.catalog)
 		cmd.echo(" -"~file.toString);
 	
-	cmd.echo("Total num *.txt files in entire '..' tree: {}".sformat(entireParentTree.catalog("*.txt").files));
+	cmd.echo("Total num *.txt files in entire '..' tree: %s".format(entireParentTree.catalog("*.txt").files));
 	foreach(VfsFile file; entireParentTree.catalog("*.txt"))
 		cmd.echo(" -"~file.toString);
 		

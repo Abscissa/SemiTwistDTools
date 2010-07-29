@@ -20,7 +20,7 @@ class CmdArgs
 	string header;
 	public this(string[] args, string header)
 	{
-		mixin(initMember!(header));
+		mixin(initMember("header"));
 		init();
 		shouldExit = !parse(args);
 	}
@@ -110,7 +110,7 @@ class CmdArgs
 
 	void showHelpHowTo()
 	{
-		cmd.echo("For help and usage information, use '{} --help'".sformat(getExecName()));
+		cmd.echo("For help and usage information, use '%s --help'".format(getExecName()));
 	}
 	
 	// Returns: Should processing proceed? If false, the program should exit.
@@ -122,6 +122,7 @@ class CmdArgs
 		{
 			showHeader();
 			cmd.echo(cmdLine.errorMsg);
+			stdout.flush();
 			try
 				conf = new Conf(confFile);
 			catch(STBuildConfException e)
@@ -207,17 +208,17 @@ class CmdArgs
 		extraArgs = extraArgList.join(" ");
 		
 		// Move to CmdLine
-		if(!conf.targets.contains(target))
+		if(find(conf.targets, target) == [])
 		{
-			cmd.echo("Target '{}' not defined".sformat(target));
+			cmd.echo("Target '%s' not defined".format(target));
 			cmd.echo;
 			showTargets();
 			showHelpHowTo();
 			return false;
 		}
-		if(!conf.modes.contains(mode))
+		if(find(conf.modes, mode) == [])
 		{
-			cmd.echo("Mode '{}' not supported".sformat(mode));
+			cmd.echo("Mode '%s' not supported".format(mode));
 			cmd.echo;
 			showModes();
 			showHelpHowTo();

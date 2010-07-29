@@ -3,24 +3,25 @@
 
 module semitwist.util.io;
 
-import tango.core.Traits;
-import tango.io.FilePath;
-import tango.io.device.File;
-import tango.io.stream.Data;
-import tango.stdc.stringz;
-import tango.text.Util;
-import tango.text.convert.UnicodeBom;
-import tango.util.Convert;
+import std.traits;//tango.core.Traits;
+import std.path;//tango.io.FilePath;
+//import tango.io.device.File;
+//import tango.io.stream.Data;
+//import tango.stdc.stringz;
+//import tango.text.Util;
+//import tango.text.convert.UnicodeBom;
+//import tango.util.Convert;
+import std.conv;
 
 import semitwist.util.all;
 import semitwist.util.compat.all;
 
 version(Win32)
-	import tango.sys.win32.UserGdi;
+	import std.c.windows.windows;
 else version(OSX)
 	private extern(C) int _NSGetExecutablePath(char* buf, uint* bufsize);
 else
-	import tango.stdc.posix.unistd;
+	import std.c.linux.linux;
 
 /++
 Reads any type of Unicode/UTF text file (UTF-8, UTF-16, UTF-32, big or little
@@ -78,7 +79,7 @@ T[] readStringz(T)(DataInput reader)
 /// Gets the full path to the currently running executable,
 /// regardless of working directory or PATH env var or anything else.
 /// Note that this is far more accurate and reliable than using args[0].
-FilePath getExecFilePath()
+/+FilePath getExecFilePath()
 {
 	string file = new char[4*1024];
 	int filenameLength;
@@ -95,21 +96,37 @@ FilePath getExecFilePath()
 	auto fp = new FilePath(file[0..filenameLength]);
 	fp.native();
 	return fp;
-}
+}+/
 /// ditto
 string getExec()
 {
-	return getExecFilePath().toString().trim();
+	auto file = new char[4*1024];
+	int filenameLength;
+	version (Win32)
+		filenameLength = GetModuleFileNameA(null, file.ptr, file.length-1);
+	else version(OSX)
+	{
+		filenameLength = file.length-1;
+		_NSGetExecutablePath(file.ptr, &filenameLength);
+	}
+	else
+        filenameLength = readlink(toStringz(selfExeLink), file.ptr, file.length-1);
+
+	//auto fp = new FilePath(file[0..filenameLength]);
+	return to!string(file[0..filenameLength]);
+//	return getExecFilePath().toString().trim();
 }
 
 /// Like getExec, but doesn't include the path.
 string getExecName()
 {
-	return getExecFilePath().file().trim();
+	return getExec().basename();
+//	return getExecFilePath().file().trim();
 }
 
 /// Like getExec, but only returns the path (including trailing path separator).
 string getExecPath()
 {
-	return getExecFilePath().path().trim();
+	return getExec().dirname();
+	//return getExecFilePath().path().trim();
 }

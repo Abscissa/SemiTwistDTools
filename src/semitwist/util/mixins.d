@@ -3,8 +3,9 @@
 
 module semitwist.util.mixins;
 
-import tango.core.Traits;
-import tango.io.Stdout;
+import std.traits;//tango.core.Traits;
+import std.stdio;//tango.io.Stdout;
+import std.conv;
 
 import semitwist.util.all;
 import semitwist.util.compat.all;
@@ -14,8 +15,8 @@ Useful in constructors for DRY.
 
 Usage:
 ----
-mixin(initMember!(someVar));
-mixin(initMember!(a, b, c));
+mixin(initMember("someVar"));
+mixin(initMember("a", "b", "c"));
 ----
 
 Turns Into:
@@ -26,9 +27,9 @@ this.b = b;
 this.c = c;
 ----
 +/
-template initMember(vars...)
+string initMember(string[] vars...)
 {
-	const string initMember = initMemberX!("this.{} = {}", vars);
+	return initMemberX("this.%s = %s", vars);
 }
 
 /++
@@ -36,8 +37,8 @@ Generic version of initMember.
 
 Usage:
 ----
-mixin(initMemberX!("foo1.{} = foo2.{}", someVar));
-mixin(initMemberX!("this._{} = foo.{}", a, b, c));
+mixin(initMemberX("foo1.%s = foo2.%s", "someVar"));
+mixin(initMemberX("this._%s = foo.%s", "a", "b", "c"));
 ----
 
 Turns Into:
@@ -48,9 +49,10 @@ this._b = foo.b;
 this._c = foo.c;
 ----
 +/
-template initMemberX(string str, vars...)
+string initMemberX(string str, string[] vars...)
 {
-	const string initMemberX = ctfe_subMapJoin(str~";\n", "{}", templateArgsToStrings!(vars));
+	//enum string initMemberX = ctfe_subMapJoin!string(str~";\n", "%s", /+templateArgsToStrings!(+/vars/+)+/);
+	return ctfe_subMapJoin!string(str~";\n", "%s", vars);
 }
 
 /++
@@ -63,8 +65,8 @@ class myClass
 	// Declarations of 'someVar', 'a1', 'b', and 'c' here.
 	this(myClass copyOf)
 	{
-		mixin(initMemberFrom!(copyOf, someVar));
-		mixin(initMemberFrom!(copyOf, a1, b, c));
+		mixin(initMemberFrom("copyOf", "someVar"));
+		mixin(initMemberFrom("copyOf", "a1", "b", "c"));
 	}
 }
 ----
@@ -84,19 +86,19 @@ class myClass
 }
 ----
 +/
-template initMemberFrom(alias from, vars...)
+string initMemberFrom(string from, string[] vars...)
 {
-	const string initMemberFrom = initMemberX!("this.{} = "~from.stringof~".{}", vars);
+	return initMemberX("this.%s = "~from~".%s", vars);
 }
 
-template initMemberTo(alias to, vars...)
+string initMemberTo(string to, string[] vars...)
 {
-	const string initMemberTo = initMemberX!(to.stringof~".{} = {}", vars);
+	return initMemberX(to~".%s = %s", vars);
 }
 
-template initFrom(alias from, vars...)
+string initFrom(string from, string[] vars...)
 {
-	const string initFrom = initMemberX!("{} = "~from.stringof~".{}", vars);
+	return initMemberX("%s = "~from~".%s", vars);
 }
 
 /++
@@ -115,10 +117,10 @@ Turns Into:
 
 ----
 int myVar=100;
-Stdout.formatln("{}: {}", "myVar", myVar);
-Stdout.formatln("{}: {}", "   myVar-1 ",   myVar-1 );
-Stdout.formatln("{}: {}", "min(4,7)", min(4,7));
-Stdout.formatln("{}: {}", "max(4,7)", max(4,7));
+writefln("%s: %s", "myVar", myVar);
+writefln("%s: %s", "   myVar-1 ",   myVar-1 );
+writefln("%s: %s", "min(4,7)", min(4,7));
+writefln("%s: %s", "max(4,7)", max(4,7));
 ----
 
 Outputs:
@@ -148,7 +150,7 @@ template traceVal(bool useNewline, values...)
 	else
 	{
 		const string traceVal =
-			"Stdout.formatln(\"{}:"~(useNewline?"\\n":" ")~"{}\", "~values[0].stringof~", "~unescapeDDQS(values[0].stringof)~");"
+			"writefln(\"%s:"~(useNewline?"\\n":" ")~"%s\", "~values[0].stringof~", "~unescapeDDQS(values[0].stringof)~");"
 			~ traceVal!(useNewline, values[1..$]);
 	}
 }
@@ -169,11 +171,11 @@ mixin(trace!());
 Turns Into:
 
 ----
-Stdout.formatln("{}({}): trace", __FILE__, __LINE__); Stdout.flush();
+writefln("%s(%s): trace", __FILE__, __LINE__); Stdout.flush();
 funcSuspectedOfCrashing1_notTheRealCause()
-Stdout.formatln("{}{}({}): trace", "--EASY TO VISUALLY GREP--", __FILE__, __LINE__); Stdout.flush();
+writefln("%s%s(%s): trace", "--EASY TO VISUALLY GREP--", __FILE__, __LINE__); Stdout.flush();
 funcSuspectedOfCrashing2_isTheRealCause()
-Stdout.formatln("{}({}): trace", __FILE__, __LINE__); Stdout.flush();
+writefln("%s(%s): trace", __FILE__, __LINE__); Stdout.flush();
 ----
 
 Example Output:
@@ -188,10 +190,10 @@ template trace(string prefix="")
 {
 	static if(prefix=="")
 		const string trace =
-			`Stdout.formatln("{}({}): trace", __FILE__, __LINE__); Stdout.flush();`;
+			`writefln("%s(%s): trace", __FILE__, __LINE__); Stdout.flush();`;
 	else
 		const string trace =
-			`Stdout.formatln("{}: {}({}): trace", `~prefix.stringof~`, __FILE__, __LINE__); Stdout.flush();`;
+			`writefln("%s: %s(%s): trace", `~prefix.stringof~`, __FILE__, __LINE__); Stdout.flush();`;
 }
 
 /++
@@ -367,26 +369,26 @@ public string str()
 template getter(varType, string name, varType initialValue=varType.init)
 {
 	static if(is(varType.init))
-		const string getter = getter!("private", varType, name, initialValue);
+		enum string getter = getter!("private", varType, name, initialValue);
 	else
-		const string getter = getter!("private", varType, name);
+		enum string getter = getter!("private", varType, name);
 }
 
 template getter(string writeAccess, varType, string name, varType initialValue=varType.init)
 {
 	static if(is(varType.init))
 	{
-		const string getter =
+		enum string getter =
 			writeAccess~" "~varType.stringof~" _"~name~(initialValue.stringof == varType.init.stringof ? "" : "=" ~ initialValue.stringof)~";\n"~
 			writeAccess~" "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
-			"public "~varType.stringof~" "~name~"() {return _"~name~(isAnyArrayType!(varType)?".dup":"")~";}\n";
+			"public "~varType.stringof~" "~name~"() {return _"~name~";}\n";
 	}
 	else
 	{
-		const string getter =
+		enum string getter =
 			writeAccess~" "~varType.stringof~" _"~name~";\n"~
 			writeAccess~" "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
-			"public "~varType.stringof~" "~name~"() {return _"~name~(isAnyArrayType!(varType)?".dup":"")~";}\n";
+			"public "~varType.stringof~" "~name~"() {return _"~name~";}\n";
 	}
 }
 
@@ -523,6 +525,8 @@ template getterLazy(string writeAccess, varType, string name, string genFunc="")
 }
 
 /++
+OBSOLETE IN D2
+
 Inserts a compile-time check that ensures a given type is a character type.
 (ie, char, wchar, or dchar)
 
@@ -563,21 +567,21 @@ Error: static assert  "From 'funcForStringsOnly': 'T' must be char, wchar or dch
 ----
 +/
 
-template ensureCharType(string nameOfT, string nameOfCaller="")
+/+template ensureCharType(string nameOfT, string nameOfCaller="")
 {
 	const string ensureCharType = 
 		`static assert(`~"\n"~
 		`	is(`~nameOfT~`==char) || is(`~nameOfT~`==wchar) || is(`~nameOfT~`==dchar),`~"\n"~
 		`	"`~(nameOfCaller==""?"":"From '"~nameOfCaller~"': ")~`'`~nameOfT~`' must be char, wchar or dchar, not '"~`~nameOfT~`.stringof~"'"`~"\n"~
 		`);`;
-}
+}+/
 
 //TODO: Document genEnum
 public string genEnum(string name, string[] values)
 {
 	return
 		"enum "~name~" {"~values.ctfe_join(", ")~"}\n"~
-		"const uint "~name~"_length = "~ctfe_i2a(values.length)~";\n"~
+		"const uint "~name~"_length = "~to!string(values.length)~";\n"~
 		_genEnumToString(name, values)~
 		_genStringToEnum(name, values);
 }

@@ -3,11 +3,13 @@
 
 module semitwist.cmdlineparser;
 
-import tango.core.Array;
-import tango.math.Math;
-import tango.text.Unicode;
-import tango.text.Util;
-import convInt = tango.text.convert.Integer;
+//import tango.core.Array;
+import std.math;//tango.math.Math;
+//import tango.text.Unicode;
+//import tango.text.Util;
+//import convInt = tango.text.convert.Integer;
+import std.string;
+import std.conv;
 
 public import semitwist.refbox;
 import semitwist.util.all;
@@ -148,7 +150,7 @@ class Arg
 	
 	this(Object value, string name, string desc="")
 	{
-		mixin(initMember!(value, name, desc));
+		mixin(initMember("value", "name", "desc"));
 		ensureValid();
 	}
 	
@@ -187,7 +189,7 @@ class Arg
 		void ensureValidName(string name)
 		{
 			if(!CmdLineParser.isValidArgName(name))
-				throw new Exception(`Tried to define an invalid arg name: "{}". Arg names must be "[a-zA-Z0-9_?]*"`.sformat(name));
+				throw new Exception(`Tried to define an invalid arg name: "%s". Arg names must be "[a-zA-Z0-9_?]*"`.format(name));
 		}
 		ensureValidName(name);
 		ensureValidName(altName);
@@ -219,7 +221,7 @@ class CmdLineParser
 	{
 		foreach(char c; name)
 		{
-			if(!isLetterOrDigit(c) && c != '_' && c != '?')
+			if(!inPattern(c, "a-zA-Z0-9") && c != '_' && c != '?')
 				return false;
 		}
 		return true;
@@ -261,7 +263,7 @@ class CmdLineParser
 		bool toLower      = ((flags & ArgFlag.ToLower)    != 0);
 		bool isAdvanced   = ((flags & ArgFlag.Advanced)   != 0);
 		
-		mixin(initMemberTo!(arg, isRequired, toLower, isAdvanced));
+		mixin(initMemberTo("arg", "isRequired", "toLower", "isAdvanced"));
 		
 		if(isSwitchless)
 		{
@@ -277,7 +279,7 @@ class CmdLineParser
 	private void addToArgLookup(string name, Arg argDef)
 	{
 		if(name in argLookup)
-			throw new Exception(`Argument name "{}" defined more than once.`.sformat(name));
+			throw new Exception(`Argument name "%s" defined more than once.`.format(name));
 
 		argLookup[name] = argDef;
 	}
@@ -308,9 +310,11 @@ class CmdLineParser
 		}
 		
 		// Get suffix and arg name
-		auto suffixIndex = min( tango.core.Array.find(argNoPrefix, ':'),
-								tango.core.Array.find(argNoPrefix, '+'),
-								tango.core.Array.find(argNoPrefix, '-') );
+		auto suffixIndex = reduce!"a<b?a:b"( [
+			locate(argNoPrefix, ':'),
+			locate(argNoPrefix, '+'),
+			locate(argNoPrefix, '-')
+		] );
 		name = argNoPrefix[0..suffixIndex];
 		suffix = suffixIndex < argNoPrefix.length ?
 				 argNoPrefix[suffixIndex..$] : "";
@@ -323,7 +327,7 @@ class CmdLineParser
 
 		void HandleMalformedArgument()
 		{
-			_errorMsg ~= `Invalid value: "{}"`.sformatln(cmdArg);
+			_errorMsg ~= `Invalid value: "%s"`.formatln(cmdArg);
 			ret = ParseArgResult.Error;
 		}
 		
@@ -372,10 +376,10 @@ class CmdLineParser
 				string val;
 				if(suffix.length > 1 && suffix[0] == ':')
 				{
-					val = trim(suffix[1..$]);
+					val = strip(suffix[1..$]);
 
 					if(argDef.toLower)
-						val = val.toLower();
+						val = val.tolower();
 					
 					//TODO: DRY this
 					if(argDef.allowableValues.length > 0)
@@ -408,8 +412,11 @@ class CmdLineParser
 				uint parseAte;
 				if(suffix.length > 1 && suffix[0] == ':')
 				{
-					string trimmedSuffix = trim(suffix[1..$]);
-					val = cast(int)convInt.parse(trimmedSuffix, 0, &parseAte);
+					string trimmedSuffix = strip(suffix[1..$]);
+					auto copyTrimmedSuffix = trimmedSuffix;
+					val = std.conv.parse!int(copyTrimmedSuffix);
+					parseAte = trimmedSuffix.length - copyTrimmedSuffix.length;
+					//val = cast(int)convInt.parse(trimmedSuffix, 0, &parseAte);
 					if(parseAte == trimmedSuffix.length)
 					{
 						//TODO: DRY this
@@ -447,7 +454,7 @@ class CmdLineParser
 		}
 		else
 		{
-			_errorMsg ~= `Unknown switch: "{}"`.sformatln(cmdArg);
+			_errorMsg ~= `Unknown switch: "%s"`.formatln(cmdArg);
 			ret = ParseArgResult.NotFound;
 		}
 		
@@ -480,7 +487,7 @@ class CmdLineParser
 				}
 				else
 				{
-					_errorMsg ~= `Unexpected value: "{}"`.sformatln(argStr);
+					_errorMsg ~= `Unexpected value: "%s"`.formatln(argStr);
 					error = true;
 					continue;
 				}
@@ -499,7 +506,7 @@ class CmdLineParser
 				break;
 				
 			default:
-				throw new Exception("Unexpected ParseArgResult: ({})".sformat(result));
+				throw new Exception("Unexpected ParseArgResult: (%s)".format(result));
 			}
 		}
 		
@@ -519,8 +526,8 @@ class CmdLineParser
 			if(arg.isRequired && !arg.isSet)
 			{
 				_errorMsg ~=
-					`Missing switch: {} ({})`
-						.sformatln(
+					`Missing switch: %s (%s)`
+						.formatln(
 							arg.name=="" ? "<"~getArgTypeName(arg)~">" : arg.name,
 							arg.desc
 						);
@@ -593,14 +600,14 @@ class CmdLineParser
 
 			string defaultVal;
 			if(valAsInt)
-				defaultVal = "{}".sformat(valAsInt());
+				defaultVal = "%s".format(valAsInt());
 			else if(valAsBool)
 				defaultVal = valAsBool() ? "true" : "";
 			else if(valAsStr)
-				defaultVal = valAsStr() == "" ? "" : `"{}"`.sformat(valAsStr());
+				defaultVal = valAsStr() == "" ? "" : `"%s"`.format(valAsStr());
 			
 			string defaultValStr = defaultVal == "" ?
-				"" : " (default: {})".sformat(defaultVal);
+				"" : " (default: %s)".format(defaultVal);
 				
 			string requiredStr = arg.isRequired ?
 				"(Required) " : "";
@@ -616,9 +623,9 @@ class CmdLineParser
 			if(arg.altName != "")
 				argName ~= ", /"~arg.altName~argSuffix;
 	
-			string nameColumnWidthStr = "{}".sformat(nameColumnWidth);
-			*argStr ~= sformat("{}{,-"~nameColumnWidthStr~"}{}{}\n",
-			                    indent, argName~" ", requiredStr~arg.desc, defaultValStr);
+			string nameColumnWidthStr = "%s".format(nameColumnWidth);
+			*argStr ~= format("%s%-"~nameColumnWidthStr~"s%s%s\n",
+			                  indent, argName~" ", requiredStr~arg.desc, defaultValStr);
 		}
 		if(basicArgStr != "" && advancedArgStr != "")
 		{
@@ -657,17 +664,17 @@ class CmdLineParser
 			string advancedStr;
 
 			if(valAsInt)
-				defaultVal = "{}".sformat(valAsInt());
+				defaultVal = "%s".format(valAsInt());
 			else if(valAsInts)
-				defaultVal = "{}".sformat(valAsInts());
+				defaultVal = "%s".format(valAsInts());
 			else if(valAsBool)
-				defaultVal = "{}".sformat(valAsBool());
+				defaultVal = "%s".format(valAsBool());
 			else if(valAsBools)
-				defaultVal = "{}".sformat(valAsBools());
+				defaultVal = "%s".format(valAsBools());
 			else if(valAsStr)
-				defaultVal = `"{}"`.sformat(valAsStr());
+				defaultVal = `"%s"`.format(valAsStr());
 			else if(valAsStrs)  //TODO: Change this one from [ blah ] to [ "blah" ]
-				defaultVal = "{}".sformat(valAsStrs());
+				defaultVal = "%s".format(valAsStrs());
 
 			defaultVal    = arg.isRequired   ? "" : ", Default: "~defaultVal;
 			requiredStr   = arg.isRequired   ? "Required" : "Optional";
@@ -676,10 +683,10 @@ class CmdLineParser
 			advancedStr   = arg.isAdvanced   ? ", Advanced" : ", Basic";
 			
 			*argStr ~= "\n";
-			*argStr ~= sformat("{}({}), {}{}{}{}\n",
-			                   argName, getArgTypeName(arg),
-							   requiredStr, switchlessStr, toLowerStr, advancedStr, defaultVal);
-			*argStr ~= sformat("{}\n", arg.desc);
+			*argStr ~= format("%s(%s), %s%s%s%s\n",
+			                  argName, getArgTypeName(arg),
+			                  requiredStr, switchlessStr, toLowerStr, advancedStr, defaultVal);
+			*argStr ~= format("%s\n", arg.desc);
 		}
 		ret ~= basicArgStr;
 		ret ~= advancedArgStr;

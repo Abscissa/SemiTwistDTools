@@ -4,16 +4,19 @@
 module semitwist.cmd.plain;
 
 //import tango.stdc.stdio;
-import tango.io.Console;
-import tango.io.FilePath;
-import tango.io.FileSystem;
-import tango.io.Path;
-import tango.io.Stdout;
-import tango.io.vfs.FileFolder;
-import tango.sys.Environment;
-import tango.sys.Process;
-import tango.text.Util;
-import tango.text.convert.Layout;
+//import tango.io.Console;
+//import tango.io.FilePath;
+//import tango.io.FileSystem;
+//import tango.io.Path;
+import std.stdio;//tango.io.Stdout;
+//import tango.io.vfs.FileFolder;
+//import tango.sys.Environment;
+//import tango.sys.Process;
+//import tango.text.Util;
+//import tango.text.convert.Layout;
+import std.file;
+import std.path;
+import std.string;
 
 import semitwist.util.all;
 import semitwist.util.compat.all;
@@ -38,10 +41,10 @@ static this()
 //TODO? Make "cmd.dir" (but not copies) affect Environment.cwd
 class Cmd
 {
-	private FilePath _dir; // Working directory
-	private static Layout!(char) layout; // Used by echo
+	private string _dir; // Working directory
+	//private static Layout!(char) layout; // Used by echo
 
-	invariant
+	invariant()
 	{
 /*
 		//Shit, can't seem to do this stuff in here
@@ -55,28 +58,28 @@ class Cmd
 		flushAsserts();
 */
 		assert(_dir.exists());
-		assert(_dir.isFolder());
-		assert(_dir.isAbsolute());
+		assert(_dir.isdir());
+		assert(_dir.isabs());
 
-		scope _dirStandard = _dir.dup.standard();
-		assert(_dir.toString() == _dirStandard.toString(), "_dir is not in standard form");
+		//scope _dirStandard = _dir.dup.standard();
+		//assert(_dir.toString() == _dirStandard.toString(), "_dir is not in standard form");
 	}
 
 	this()
 	{
-		_dir = new FilePath(Environment.cwd);
-		_dir.standard();
+		_dir = getcwd();
+		//_dir.standard();
 	}
 	
-	static this()
+/+	static this()
 	{
 		layout = new Layout!(char)();
 	}
-
++/
 	bool echoing = true;
 
 	// Property
-	FileFolder dir()
+/+	FileFolder dir()
 	{
 		//TODO: Don't create a new instance if dir hasn't changed
 		return new FileFolder(_dir.toString());
@@ -96,11 +99,12 @@ class Cmd
 		if(newDir.isFolder() && newDir.exists())
 			_dir.set( normalize(newDir.toString()), true );
 		return dir();
-	}
+	}+/
 	
 	//TODO: Abstract the interface so that the same exec calls work on both win and lin.
 	// Plain Versions
-	void exec(string cmd)
+//TODO***
+/+	void exec(string cmd)
 	{
 		int errLevel;
 		exec(cmd, errLevel);
@@ -109,10 +113,11 @@ class Cmd
 	{
 		int errLevel;
 		exec(app, params, errLevel);
-	}
+	}+/
 	
 	// With errLevel
-	void exec(string cmd, out int errLevel)
+//TODO***
+/+	void exec(string cmd, out int errLevel)
 	{
 		auto p = new Process(cmd);
 		execProcess(p, errLevel);
@@ -121,10 +126,10 @@ class Cmd
 	{
 		auto p = new Process(app ~ params);
 		execProcess(p, errLevel);
-	}
+	}+/
 	
 	// Implementation
-	private void execProcess(Process p, out int errLevel)
+/+	private void execProcess(Process p, out int errLevel)
 	{
 		//TODO: Find out what happens if wait() is called after the process finishes
 		p.workDir = _dir.toString();
@@ -134,21 +139,20 @@ class Cmd
 		auto r = p.wait();
 		errLevel = (r.reason==Process.Result.Exit)? r.status : -1;
 	}
-	
-	void echo(...)
++/	
+	void echo(T...)(T args)
 	{
-		foreach(int i, TypeInfo type; _arguments)
+		foreach(int i, T arg; args)
 		{
-			if(i > 0) Stdout(" ");
+			if(i > 0) write(" ");
 
 			// Tango's Layout already handles all this
 			// converting-varargs-to-strings crap,
 			// so let it do all the dirty work:
-			Stdout(layout.convert([type], _argptr, "{}"));
-			_argptr += type.tsize;
+			write(arg);
 		}
-		Stdout.newline;
-		Stdout.flush();
+		writeln();
+		stdout.flush();
 	}
 	
 	private T _prompt(T, TChar)(TChar[] promptMsg, bool delegate(T) accept,
@@ -178,18 +182,19 @@ class Cmd
 	}
 
 	// Input is Utf8-only for now because Cin is used which is Utf8-only
-	string prompt(T)(T[] promptMsg, bool delegate(string) accept=null, T[] rejectedMsg="")
+//TODO***
+/+	string prompt(T)(T[] promptMsg, bool delegate(string) accept=null, T[] rejectedMsg="")
 	{
 		string reader()
 		{
 			string input;
 			Cin.readln(input);
-			return trim(input);
+			return strip(input);
 		}
 		
 		return _prompt!(string,T)(promptMsg, accept, rejectedMsg, &reader);
 	}
-
++/
 /+
 // Doesn't work right now because I need to find a way to wait for and capture
 // exactly one keypress. Cin.readln and getchar both wait for a newline.
@@ -211,7 +216,9 @@ class Cmd
 		return _prompt!(T,T)(promptMsg, accept, rejectedMsg, &reader);
 	}
 +/
-	void pause()
+
+//TODO***
+/+	void pause()
 	{
 /+
 // Can't do it this way until I get promptChar working
@@ -220,6 +227,8 @@ class Cmd
 +/
 		prompt("Press Enter to continue...");
 	}
++/
+
 /+
 	string prompt(string msg, bool delegate(string) accept=null, string msgRejected="")
 	{

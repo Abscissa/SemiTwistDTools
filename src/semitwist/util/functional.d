@@ -3,8 +3,8 @@
 
 module semitwist.util.functional;
 
-import tango.core.Array;
-/+version(Unittest)+/ import tango.io.Stdout;
+//import tango.core.Array;
+/+version(Unittest)+/ import std.stdio;//tango.io.Stdout;
 
 import semitwist.util.all;
 import semitwist.util.compat.all;
@@ -147,7 +147,7 @@ TOut[] mapAAtoATo(TOut, string dgstr, TIn, TKey)(TIn[TKey] list)
 	return mapAAtoATo(list, mixin(makeDg2To1!(dgstr, TIn, TKey)));
 }
 
-T[] filter(T)(T[] list, bool delegate(T a) dg)
+/+T[] filter(T)(T[] list, bool delegate(T a) dg)
 {
 	T[] result = list.dup;
 	auto numRemaining = result.removeIf((T a){return !dg(a);});
@@ -157,7 +157,7 @@ T[] filter(T)(T[] list, bool delegate(T a) dg)
 T[] filter(string dgstr, T)(T[] list)
 {
 	return filter(list, mixin(makeDg1To1!(dgstr, T)));
-}
+}+/
 
 //TODO: Make foreachWhile
 //TODO: Make variant that also provides an index to the delegate
@@ -227,9 +227,9 @@ unittest
 	//TODO: Reduce assoc array
 	
 	// Filter
-	mixin(deferEnsure!(`filter(array, (int a){return (a%2)==0;})`, `_ == [2,4]`));
+/+	mixin(deferEnsure!(`filter(array, (int a){return (a%2)==0;})`, `_ == [2,4]`));
 	mixin(deferEnsure!(`filter!("(a%2)==0")(array)`, `_ == [2,4]`));
-
++/
 	//TODO: Filter assoc array
 	
 }

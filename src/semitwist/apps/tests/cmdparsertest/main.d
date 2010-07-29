@@ -56,14 +56,14 @@ void main(string[] args)
 	cmd.parse(args);
 	if(detailHelp)
 	{
-		Stdout.formatln("{}", cmd.errorMsg);
-		Stdout.format("{}", cmd.getDetailedUsage());
+		writeln(cmd.errorMsg);
+		write(cmd.getDetailedUsage());
 		return;
 	}
 	if(!cmd.success || help)
 	{
-		Stdout.formatln("{}", cmd.errorMsg);
-		Stdout.format("{}", cmd.getUsage(18));
+		writeln(cmd.errorMsg);
+		write(cmd.getUsage(18));
 		return;
 	}
 	Stdout.formatln("");

@@ -17,10 +17,10 @@ module semitwist.util.compat.phobos;
 import semitwist.util.compat.d2;
 
 version(Tango) {}
-else
+else version(none)
 {
 	import std.format;
-	import std.regexp;
+//	import std.regexp;
 	import std.stdio;
 	import std.utf;
 	import cstdio = std.c.stdio;
@@ -37,7 +37,7 @@ else
 
 	class FormatOutput(T)
 	{
-		alias print opCall;
+		//alias print opCall;
 		
 		this()
 		{
@@ -46,7 +46,7 @@ else
 		
 		typeof(this) newline()
 		{
-			writefln();
+			writeln();
 			return this;
 		}
 		
@@ -92,7 +92,7 @@ else
 	
 	string toPhobosFormat(string str)
 	{
-		string convertSequence(RegExp m)
+/+		string convertSequence(RegExp m)
 		{
 			auto str = m.match(1);
 			if(str != "")
@@ -100,6 +100,7 @@ else
 			return "%s";
 		}
 		str.sub(`\{([^\}]*)\}`, &convertSequence, "g");
+		return str;+/
 		return str;
 	}
 	
