@@ -199,7 +199,7 @@ T unescapeDDQS(T)(T str) if(isSomeString!T)
 	if(str.length < 2)
 		throw new Exception(errStr);
 		
-	T ret = str.dup;
+	T ret = str;//.dup;
 	
 	//TODO: Do this better
 	ret = ctfe_substitute!(T)(ret, `\\`, `\`);

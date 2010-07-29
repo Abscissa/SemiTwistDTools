@@ -7,8 +7,7 @@ Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
 This has been tested to work with:
-  - DMD 1.056 / Tango 0.99.9 / Rebuild 0.76
-  - DMD 1.056 / Tango 0.99.9 / xfBuild 0.4
+  - DMD 2.046 / xfBuild 0.4
 +/
 
 //TODO: Clean all if stbuild.conf has changed
@@ -28,7 +27,7 @@ module semitwist.apps.stmanage.stbuild.main;
 import semitwist.cmd.all;
 
 // Needed for tango.sys.Process workaround in build() below
-version(Windows) {}
+/+version(Windows) {}
 else
 {
 	import tango.stdc.posix.unistd;
@@ -51,7 +50,7 @@ else
     }
     extern (C) extern char** environ;
     import tango.stdc.posix.stdlib;
-}
+}+/
 
 import semitwist.apps.stmanage.stbuild.cmdArgs;
 import semitwist.apps.stmanage.stbuild.conf;
@@ -76,7 +75,7 @@ void moveMapFiles(string subDir=".")
 	foreach(string name; dirEntries(".", SpanMode.shallow))
 	{
 		if(name.fnmatch("*.map"))
-			rename(name, "obj/"~subDir~name.basename());
+			rename(name, "obj/"~subDir~"/"~name.basename());
 	}
 }
 
@@ -107,7 +106,9 @@ int build(string target, string mode, bool verbose)
 	if(verbose)
 		cmd.echo("Building %s %s...".format(target, mode));
 
-	mkdir("obj/"~target~"/"~mode);
+	auto objDir = "obj/"~target~"/"~mode;
+	if(!exists(objDir))
+		mkdirRecurse(objDir);
 	
 	int ret;
 	auto cmdLine =
@@ -228,7 +229,7 @@ int clean(string target, string mode, bool verbose)
 
 	foreach(string name; dirEntries("obj/"~target~"/"~mode, SpanMode.depth))
 	{
-		if(name.fnmatch("*.map") || name.fnmatch("deps") || name.fnmatch("*"~objExt))
+		if(name.fnmatch("*.map") || name.basename().fnmatch("deps") || name.fnmatch("*"~objExt))
 			remove(name);
 	}
 		

@@ -259,8 +259,8 @@ class Conf
 	{
 		// Keep object and deps files from each target/mode
 		// separate so things don't get screwed up.
-		addDefault(switches, "-oq", "obj/{0}/{1}");
-		addDefault(switches, "+D", "obj/{0}/{1}/deps");
+		addDefault(switches, "-oq", "obj/$(TARGET)/$(MODE)");
+		addDefault(switches, "+D", "obj/$(TARGET)/$(MODE)/deps");
 		addDefault(switches, "--build-only", "");
 	}
 	
@@ -285,10 +285,21 @@ class Conf
 
 		addDefaults(switches);
 		convert(switches, tool);
-
-		return
-			fixSlashes(switchesToString(switches))
-				.format(target, mode, enumOSToString(os), "");
+		auto flags = fixSlashes(switchesToString(switches));
+		//mixin(traceVal!("flags"));
+		flags = std.string.replace(flags, "$(TARGET)", target);
+		flags = std.string.replace(flags, "$(MODE)",   mode);
+		flags = std.string.replace(flags, "$(OS)",     enumOSToString(os));
+		flags = std.string.replace(flags, "$()",       "");
+		return flags;
+/+		return
+			//fixSlashes(switchesToString(switches))
+			x
+				.replace("$(TARGET)", target)
+				.replace("$(MODE)",   mode)
+				.replace("$(OS)",     enumOSToString(os))
+				.replace("$()",       "");
+				//.format(target, mode, enumOSToString(os), "");+/
 	}
 	
 	struct Switch

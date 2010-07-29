@@ -135,7 +135,7 @@ max(4,7): 7
 
 //TODO: Add ability to specify format (binary, hex, etc)
 //TODO: Make nameLength work by using Layout.format (at runtime)
-//      on data passed to Stdout.formatln
+//      on data passed to writefln
 //      (ie, align name/value)
 //TODO: Messes up on "ctfe_repeat_test_日本語3"
 template traceVal(values...)
@@ -171,11 +171,11 @@ mixin(trace!());
 Turns Into:
 
 ----
-writefln("%s(%s): trace", __FILE__, __LINE__); Stdout.flush();
+writefln("%s(%s): trace", __FILE__, __LINE__); stdout.flush();
 funcSuspectedOfCrashing1_notTheRealCause()
-writefln("%s%s(%s): trace", "--EASY TO VISUALLY GREP--", __FILE__, __LINE__); Stdout.flush();
+writefln("%s%s(%s): trace", "--EASY TO VISUALLY GREP--", __FILE__, __LINE__); stdout.flush();
 funcSuspectedOfCrashing2_isTheRealCause()
-writefln("%s(%s): trace", __FILE__, __LINE__); Stdout.flush();
+writefln("%s(%s): trace", __FILE__, __LINE__); stdout.flush();
 ----
 
 Example Output:
@@ -190,10 +190,10 @@ template trace(string prefix="")
 {
 	static if(prefix=="")
 		const string trace =
-			`writefln("%s(%s): trace", __FILE__, __LINE__); Stdout.flush();`;
+			`writefln("%s(%s): trace", __FILE__, __LINE__); stdout.flush();`;
 	else
 		const string trace =
-			`writefln("%s: %s(%s): trace", `~prefix.stringof~`, __FILE__, __LINE__); Stdout.flush();`;
+			`writefln("%s: %s(%s): trace", `~prefix.stringof~`, __FILE__, __LINE__); stdout.flush();`;
 }
 
 /++
