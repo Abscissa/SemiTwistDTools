@@ -68,12 +68,12 @@ void main(string[] args)
 			val = val[1..$-1];
 		
 		if(needAmp)
-			Stdout("&");
+			write("&");
 		else
 			needAmp = true;
 		
 		outputEncoded(name);
-		Stdout("=");
+		write("=");
 		outputEncoded(val);
 	}
 }
@@ -87,7 +87,7 @@ void outputEncoded(string str)
 			(c >= '0' && c <= '9') ||
 			"-_.~".contains(c) )
 		{
-			Stdout(c);
+			write(c);
 		}
 		else
 		{

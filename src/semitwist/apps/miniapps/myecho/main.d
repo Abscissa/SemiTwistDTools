@@ -8,21 +8,18 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 
 This was created to help test the "exec" part of semitwist.cmd.CommandLine
 from semitwistlib. Windows "echo" is built into the commandline and isn't
-an actual executable, so tango.sys.Process, and therefore
+an actual executable, so std.process, and therefore
 semitwist.cmd.CommandLine, can't launch it.
 
-This has been tested to work with:
-  - DMD 1.056 / Tango 0.99.9 / Rebuild 0.76
-  - DMD 1.056 / Tango 0.99.9 / xfBuild 0.4
+This has been tested to work with DMD 2.048
 +/
 
 module semitwist.apps.miniapps.myecho.main;
 
-import tango.io.Stdout;
-import tango.text.Util;
-import semitwist.util.compat.all;
+import std.stdio;
+import std.string;
 
 void main(string[] args)
 {
-	Stdout( args[1..$].join(" ") ).newline;
+	writeln( args[1..$].join(" ") );
 }

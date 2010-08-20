@@ -6,8 +6,7 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-This has been tested to work with:
-  - DMD 2.046 / xfBuild 0.4
+This has been tested to work with DMD 2.048
 +/
 
 //TODO: Clean all if stbuild.conf has changed
@@ -22,6 +21,7 @@ This has been tested to work with:
 //TODO: Translate extraArgs between rebuild/xfbuild
 //TODO: When using xfbuild, make sure root filenames end in ".d" (ie "src/main.d" instead of "src/main")
 //TODO: Fix: 'stbuild.conf' errors get displayed before header message.
+//TODO: Fix: Exception when copying .map if old .map already exists at new location.
 
 module semitwist.apps.stmanage.stbuild.main;
 
@@ -76,7 +76,12 @@ void moveMapFiles(string subDir=".")
 	foreach(string name; dirEntries(".", SpanMode.shallow))
 	{
 		if(name.fnmatch("*.map"))
-			rename(name, "obj/"~subDir~"/"~name.basename());
+		{
+			auto newName = "obj/"~subDir~"/"~name.basename();
+			if(exists(newName))
+				remove(newName);
+			rename(name, newName);
+		}
 	}
 }
 

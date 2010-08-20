@@ -192,6 +192,8 @@ unittest
 	//mixin(deferEnsure!(`result`, `_ == ['a':10,'b':20,'c':30]`));
 	mixin(deferEnsure!(`result.length`, `_ == 3`));
 	mixin(deferEnsure!(`result.keys`,   `_ == ['a','b','c']`));
+	//mixin(traceVal!("result.keys", "result.keys.length"));
+	//mixin(traceVal!("result.keys[0]", "result.keys[1]", `result.keys[2]~""`));
 	mixin(deferEnsure!(`result.values`, `_ == [10,20,30]`));
 
 	// Map assoc array using dg string

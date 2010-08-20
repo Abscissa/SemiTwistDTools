@@ -22,7 +22,8 @@ string buildToolExecName(BuildTool tool)
 	switch(tool)
 	{
 	case BuildTool.rdmd:
-		return "rdmd";
+		// rdmd-alt.d is needed to work around DMD Issue #4672
+		return "rdmd "~quoteArg(getExecPath()~".."~pathSep~"rdmdAlt.d");
 	case BuildTool.rebuild:
 		return "rebuild";
 	case BuildTool.xfbuild:
@@ -38,6 +39,14 @@ class STBuildConfException : Exception
 	{
 		super(msg);
 	}
+}
+
+string quoteArg(string str)
+{
+	version(Windows)
+		return '"' ~ str ~ '"';
+	else
+		return '\'' ~ str ~ '\'';
 }
 
 class Conf
@@ -259,7 +268,7 @@ class Conf
 	{
 		// Keep object and deps files from each target/mode
 		// separate so things don't get screwed up.
-		addDefault(switches, "-oq", "obj/$(TARGET)/$(MODE)");
+		addDefault(switches, "-oq", "obj/$(TARGET)/$(MODE)/");
 		addDefault(switches, "+D", "obj/$(TARGET)/$(MODE)/deps");
 		addDefault(switches, "--build-only", "");
 	}
@@ -308,7 +317,7 @@ class Conf
 		bool quoted;
 		string toString()
 		{
-			return quoted? `"`~data~`"` : data;
+			return quoted? quoteArg(data) : data;
 		}
 	}
 	

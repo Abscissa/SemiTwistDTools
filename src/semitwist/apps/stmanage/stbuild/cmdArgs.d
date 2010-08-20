@@ -37,7 +37,7 @@ class CmdArgs
 	bool cleanOnly = false;
 	bool quiet = false;
 	bool showCmd = false;
-	string buildToolStr = "xf";
+	string buildToolStr = "rdmd";
 	string[] extraArgList;
 	
 	// Indirectly determined by cmd line params

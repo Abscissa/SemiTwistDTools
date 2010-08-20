@@ -127,6 +127,6 @@ string getExecName()
 /// Like getExec, but only returns the path (including trailing path separator).
 string getExecPath()
 {
-	return getExec().dirname();
+	return getExec().dirname() ~ pathSep;
 	//return getExecFilePath().path().trim();
 }

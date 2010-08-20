@@ -6,14 +6,12 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-This has been tested to work with:
-  - DMD 1.056 / Tango 0.99.9 / Rebuild 0.76
-  - DMD 1.056 / Tango 0.99.9 / xfBuild 0.4
+This has been tested to work with DMD 2.048
 +/
 
 module semitwist.apps.tests.cmdparsertest.main;
 
-import tango.io.Stdout;
+import std.stdio;
 
 import semitwist.util.all;
 import semitwist.cmdlineparser;
@@ -66,7 +64,7 @@ void main(string[] args)
 		write(cmd.getUsage(18));
 		return;
 	}
-	Stdout.formatln("");
+	writeln();
 	
 	mixin(traceVal!(
 		"myBool ",
