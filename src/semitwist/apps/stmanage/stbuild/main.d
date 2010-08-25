@@ -259,7 +259,9 @@ int clean(string target, string mode, bool verbose)
 	foreach(VfsFile file; objDir.catalog("*"~objExt))
 		file.remove();+/
 
-	foreach(string name; dirEntries("obj/"~target~"/"~mode, SpanMode.depth))
+	auto objDir = "obj/"~target~"/"~mode; 
+	if(exists(objDir))
+	foreach(string name; dirEntries(objDir, SpanMode.depth))
 	{
 		if(name.fnmatch("*.map") || name.basename().fnmatch("deps") || name.fnmatch("*"~objExt))
 			remove(name);
