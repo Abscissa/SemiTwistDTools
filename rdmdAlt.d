@@ -360,13 +360,14 @@ private string[string] getDependencies(string rootModule, string objDir,
     // This may have to change under windows
     version (Windows) enum quotechar = '"';
     else enum quotechar = '\'';
-	version (Windows)
-	{
-		// Escape trailing backslash, so it doesn't escape the ending quote.
-		// Backslashes elsewhere should NOT be escaped.
+    version (Windows)
+    {
+        // Escape trailing backslash, so it doesn't escape the ending quote.
+        // Backslashes elsewhere should NOT be escaped.
         if(arg.length > 0 && arg[$-1] == '\\')
             arg ~= '\\';
-	}
+        arg = arg.replace(`"`, `\"`);
+    }
     return quotechar ~ arg ~ quotechar;
 }
 
