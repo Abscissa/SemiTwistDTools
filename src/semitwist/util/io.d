@@ -12,6 +12,7 @@ import std.path;//tango.io.FilePath;
 //import tango.text.convert.UnicodeBom;
 //import tango.util.Convert;
 import std.conv;
+import std.string;
 
 import semitwist.util.all;
 import semitwist.util.compat.all;
