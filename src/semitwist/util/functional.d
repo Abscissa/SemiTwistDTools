@@ -177,9 +177,11 @@ TRet foreachWhileVal(TRet, TElem)(TElem[] coll, TRet whileVal, TRet delegate(TEl
 
 unittest
 {
-	int[char] aa = ['a':1, 'b':2, 'c':3];
-	int[char] expected;
-	int[char] result;
+	int[string] aa = ["a":1, "b":2, "c":3];
+	int[string] expected;
+	int[string] result;
+
+	mixin(deferEnsure!(`aa.keys`,   `_ == ["a","b","c"]`));
 
 	// Map
 	int[] array = [1, 2, 3, 4, 5];
@@ -187,11 +189,11 @@ unittest
 	mixin(deferEnsure!(`map!("a*10")(array)`, `_ == [10,20,30,40,50]`));
 
 	// Map assoc array using dg literal
-	result = map(aa, (int a, char b){return a*10;});
+	result = map(aa, (int a, string b){return a*10;});
 	// Workaround for DMD Bug #1671
 	//mixin(deferEnsure!(`result`, `_ == ['a':10,'b':20,'c':30]`));
 	mixin(deferEnsure!(`result.length`, `_ == 3`));
-	mixin(deferEnsure!(`result.keys`,   `_ == ['a','b','c']`));
+	mixin(deferEnsure!(`result.keys`,   `_ == ["a","b","c"]`));
 	//mixin(traceVal!("result.keys", "result.keys.length"));
 	//mixin(traceVal!("result.keys[0]", "result.keys[1]", `result.keys[2]~""`));
 	mixin(deferEnsure!(`result.values`, `_ == [10,20,30]`));
@@ -199,15 +201,15 @@ unittest
 	// Map assoc array using dg string
 	result = map!(`a*10`)(aa);
 	mixin(deferEnsure!(`result.length`, `_ == 3`));
-	mixin(deferEnsure!(`result.keys`,   `_ == ['a','b','c']`));
+	mixin(deferEnsure!(`result.keys`,   `_ == ["a","b","c"]`));
 	mixin(deferEnsure!(`result.values`, `_ == [10,20,30]`));
 
 	// mapAAtoA
-	mixin(deferEnsure!(`mapAAtoA(aa, (int a, char b){return a*10;})`, `_ == [10,20,30]`));
+	mixin(deferEnsure!(`mapAAtoA(aa, (int a, string b){return a*10;})`, `_ == [10,20,30]`));
 	mixin(deferEnsure!(`mapAAtoA!("a*10")(aa)`, `_ == [10,20,30]`));
 
 	// mapAAtoA To
-	mixin(deferEnsure!(`mapAAtoATo(aa, (int a, char b){return a*10+0.5;})`, `_ == [10.5,20.5,30.5]`));
+	mixin(deferEnsure!(`mapAAtoATo(aa, (int a, string b){return a*10+0.5;})`, `_ == [10.5,20.5,30.5]`));
 	mixin(deferEnsure!(`mapAAtoATo!(double, "a*10+0.5")(aa)`, `_ == [10.5,20.5,30.5]`));
 		
 	// Reduce
