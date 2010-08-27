@@ -61,7 +61,7 @@ void _deferAssertException(long line, string file, string condStr, string msg=""
 	       msg=="" ? "" : ": " ~ msg);
 	Exception e = cast(Exception)thrown;
 	if(e)
-		write(thrown);
+		writeln(thrown);
 	else
 		writefln("Object: type '%s': %s", thrown.classinfo.name, thrown);
 }
@@ -111,7 +111,7 @@ void _deferEnsureException(long line, string file, string valueStr, string condS
 	       valueStr, condStr);
 	Exception e = cast(Exception)thrown;
 	if(e)
-		write(thrown);
+		writeln(thrown);
 	else
 		writefln("Object: type '%s': %s", thrown.classinfo.name, thrown);
 }
@@ -143,9 +143,9 @@ void _deferEnsureThrows(long line, string file, string stmtStr, TExpected, strin
 		       "Actual:   ",
 		       file, line, msg=="" ? "" : ": " ~ msg,
 		       stmtStr, TExpected.classinfo.name, actualType);
-		Exception e = cast(Exception)thrown;
+		Throwable e = cast(Exception)thrown;
 		if(e)
-			e.writeOut( (string msg) {Stdout(msg);} );
+			writeln(e); //e.writeOut( (string msg) {Stdout(msg);} );
 		else
 			writefln("%s: %s", actualType, thrown);
 	}

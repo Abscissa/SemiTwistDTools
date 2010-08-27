@@ -53,34 +53,34 @@ unittest
 /++
 Program output:
 
-src\semitwist\apps\tests\deferAssertTest\main.d(37): Assert Failed (foo == 3 || foo > 5): foo is bad
-src\semitwist\apps\tests\deferAssertTest\main.d(39): Assert Failed (false)
-src\semitwist\apps\tests\deferAssertTest\main.d(40): Assert Threw (throwsException()): Exceptions are handled:
+src\semitwist\apps\tests\deferAssertTest\main.d(36): Assert Failed (foo == 3 || foo > 5): foo is bad
+src\semitwist\apps\tests\deferAssertTest\main.d(38): Assert Failed (false)
+src\semitwist\apps\tests\deferAssertTest\main.d(39): Assert Threw (throwsException()): Exceptions are handled:
 Threw: object.Exception: Some exception
-src\semitwist\apps\tests\deferAssertTest\main.d(42): Ensure Failed: ensure foo failed
+src\semitwist\apps\tests\deferAssertTest\main.d(41): Ensure Failed: ensure foo failed
 Expression 'foo':
 Expected: _ == 3 || _ > 5
 Actual: 2
-src\semitwist\apps\tests\deferAssertTest\main.d(44): Ensure Failed
+src\semitwist\apps\tests\deferAssertTest\main.d(43): Ensure Failed
 Expression 'bar':
 Expected: _ == "hola"
 Actual: hello
-src\semitwist\apps\tests\deferAssertTest\main.d(46): Ensure Threw: Exceptions are handled:
+src\semitwist\apps\tests\deferAssertTest\main.d(45): Ensure Threw: Exceptions are handled:
 Expression 'throwsException()':
 Expected: !_
 Threw: object.Exception: Some exception
-src\semitwist\apps\tests\deferAssertTest\main.d(47): Ensure Threw: Exceptions are handled:
+src\semitwist\apps\tests\deferAssertTest\main.d(46): Ensure Threw: Exceptions are handled:
 Expression 'false':
 Expected: _ == throwsException()
 Threw: object.Exception: Some exception
-src\semitwist\apps\tests\deferAssertTest\main.d(50): Ensure Throw Failed: Wrong type thrown!
+src\semitwist\apps\tests\deferAssertTest\main.d(49): Ensure Throw Failed: Wrong type thrown!
 Statement 'throw new Object();':
 Expected: object.Exception
 Actual:   object.Object: object.Object
-src\semitwist\apps\tests\deferAssertTest\main.d(51): Ensure Throw Failed: Wrong type thrown!
+src\semitwist\apps\tests\deferAssertTest\main.d(50): Ensure Throw Failed: Wrong type thrown!
 Statement 'throw new Exception("Hello");':
 Expected: object.Object
 Actual:   object.Exception: Hello
-tango.core.Exception.AssertException@src\semitwist\util\deferAssert.d(170): 9 Assert Failures
+core.exception.AssertError@src\semitwist\util\deferAssert.d(171): 9 Assert Failures
 
 +/
