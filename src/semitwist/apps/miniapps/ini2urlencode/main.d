@@ -49,12 +49,12 @@ void main(string[] args)
 		return;
 	}
 	
-	string iniData = cast(string)File.get(args[1]);
+	string iniData = cast(string)read(args[1]);
 	auto iniLines = iniData.split("\n");
 	bool needAmp = false;
 	foreach(string line; iniLines)
 	{
-		line = line.trim();
+		line = line.strip();
 		if(line == "")
 			continue;
 		
@@ -62,8 +62,8 @@ void main(string[] args)
 		if(indexEq == line.length)
 			continue;
 			
-		auto name = line[ 0         .. indexEq ].trim();
-		auto val  = line[ indexEq+1 .. $       ].trim();
+		auto name = line[ 0         .. indexEq ].strip();
+		auto val  = line[ indexEq+1 .. $       ].strip();
 		if(val.length > 1 && val[0] == '"' && val[$-1] == '"')
 			val = val[1..$-1];
 		
@@ -85,14 +85,14 @@ void outputEncoded(string str)
 		if( (c >= 'a' && c <= 'z') ||
 			(c >= 'A' && c <= 'Z') ||
 			(c >= '0' && c <= '9') ||
-			"-_.~".contains(c) )
+			!"-_.~".find(c).empty )
 		{
 			write(c);
 		}
 		else
 		{
-			auto hex = "{:X}".sformat(cast(ubyte)c);
-			Stdout.format("%{}{:X}", hex.length==1? "0":"", hex);
+			write("%");
+			writef("%.2X", c);
 		}
 	}
 }
