@@ -1,7 +1,6 @@
--------------------------------------------
-The SemiTwist Library (semitwistlib) is
-licensed under The zlib/libpng License:
--------------------------------------------
+-----------------------------------------------------------------
+SemiTwist D Tools is licensed under The zlib/libpng License:
+-----------------------------------------------------------------
 
 Copyright (c) 2009-2010 Nick Sabalausky
 
