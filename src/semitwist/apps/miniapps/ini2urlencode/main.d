@@ -16,9 +16,7 @@ This is very basic:
 - Whitespace that's not inside a name or a value is trimmed.
 - There is no way to embed a newline in the name or value.
 
-This has been tested to work with:
-  - DMD 1.056 / Tango 0.99.9 / Rebuild 0.76
-  - DMD 1.056 / Tango 0.99.9 / xfBuild 0.4
+This has been tested to work with DMD 2.048
 +/
 
 module semitwist.apps.miniapps.ini2urlencode.main;
