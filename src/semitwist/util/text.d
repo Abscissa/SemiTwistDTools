@@ -3,6 +3,8 @@
 
 module semitwist.util.text;
 
+import std.algorithm;
+import std.array;
 //import tango.core.Array;
 import std.stdio;//tango.io.Stdout;
 //import tango.text.Unicode;
@@ -371,4 +373,70 @@ uint nextCodePointSize(T)(T str) if(is(T==string) || is(T==wstring))
 	uint ret;
 	str.decode(ret);
 	return ret;
+}
+
+T indent(T)(T str, T indentStr="\t") if(isSomeString!T)
+{
+	return
+		indentStr ~
+		str[0..$-1].replace("\n", "\n"~indentStr) ~
+		str[$-1];
+}
+
+T unindent(T)(T str) if(isSomeString!T)
+{
+	auto lines = str.split("\n");
+	
+	auto isNonWhite     = (dchar ch){ return !iswhite(ch); };
+	auto leadingWhiteOf = (T str)   { return str[ 0 .. $-find!(isNonWhite)(str).length ]; };
+	
+	//auto indents = lines.map!(&leadingWhiteOf)();
+
+	// Like 'indents', but with originally-whitespace-only lines changed to null
+	auto bakedIndents = array( std.algorithm.map!( (T str){ return str.strip()==""? null : leadingWhiteOf(str); } )(lines) );
+	
+	auto shorterAndNonNull = (T a, T b) {
+		if(a is null) return b;
+		if(b is null) return a;
+		
+		return (a.length < b.length)? a : b;
+	};
+	auto shortestIndent = std.algorithm.reduce!(shorterAndNonNull)(bakedIndents);
+	
+	if(shortestIndent is null || shortestIndent == "")
+		return str;
+		
+	foreach(i; 0..lines.length)
+	{
+		if(bakedIndents[i] is null)
+			lines[i] = "";
+		else if(bakedIndents.startsWith(shortestIndent))
+			lines[i] = lines[i][shortestIndent.length..$];
+		else
+			throw new Exception("Inconsistent indentation");
+	}
+	
+	return lines.join("\n");
+}
+
+unittest
+{
+	// escapeDDQS, unescapeDDQS
+	mixin(deferEnsure!(q{ `hello`.escapeDDQS()     }, q{ _ == `"hello"` }));
+	mixin(deferEnsure!(q{ `"hello"`.unescapeDDQS() }, q{ _ == "hello"   }));
+	mixin(deferEnsure!(q{ `"I"`.unescapeDDQS()     }, q{ _ == "I"       }));
+	
+	mixin(deferEnsure!(q{ (`And...`~"\n"~`sam\nick said "Hi!".`).escapeDDQS()  }, q{ _ == `"And...\nsam\\nick said \"Hi!\"."`  }));
+	//TODO: Make this one pass
+	//mixin(deferEnsure!(q{ `"And...\nsam\\nick said \"Hi!\"."`.unescapeDDQS() }, q{ _ == `And...`~"\n"~`sam\nick said "Hi!".` }));
+	mixin(deferEnsureThrows!(q{ "hello".unescapeDDQS(); }, Exception));
+
+	// indent
+	mixin(deferEnsure!(q{ "A\n\tB\n\nC".indent("  ") }, q{ _ == "  A\n  \tB\n  \n  C" }));
+	mixin(deferEnsure!(q{ "A\nB\n".indent("\t")      }, q{ _ == "\tA\n\tB\n"          }));
+
+	// unindent
+	mixin(deferEnsure!(q{ " \t A\n \t \tB\n \t C\n  \t\n \t D".unindent() }, q{ _ == "A\n\tB\nC\n\nD" }));
+	mixin(deferEnsure!(q{ " D\n".unindent() }, q{ _ == "D\n" }));
+	mixin(deferEnsureThrows!(q{ " \tA\n\t B".unescapeDDQS(); }, Exception));
 }
