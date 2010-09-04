@@ -48,6 +48,7 @@ bool _deferAssert(long line, string file, string condStr, string msg="")(bool co
 		writefln("%s(%s): Assert Failed (%s)%s",
 		         file, line, condStr,
 		         msg=="" ? "" : ": " ~ msg);
+		writeln();
 	}
 	
 	return condResult;
@@ -64,6 +65,7 @@ void _deferAssertException(long line, string file, string condStr, string msg=""
 		writeln(thrown);
 	else
 		writefln("Object: type '%s': %s", thrown.classinfo.name, thrown);
+	writeln();
 }
 
 //TODO: Something like: mixin(blah!(`_1 == (_2 ~ _3)`, `"Hello"`, `"He"`, `"llo"`));
@@ -95,6 +97,7 @@ bool _deferEnsure(long line, string file, string valueStr, string condStr, T, st
 		         "Actual: %s",
 		         file, line, msg=="" ? "" : ": " ~ msg,
 		         valueStr, condStr, valueResult);
+		writeln();
 	}
 	
 	return condResult;
@@ -114,6 +117,7 @@ void _deferEnsureException(long line, string file, string valueStr, string condS
 		writeln(thrown);
 	else
 		writefln("Object: type '%s': %s", thrown.classinfo.name, thrown);
+	writeln();
 }
 
 template deferEnsureThrows(string stmtStr, TExpected, string msg="")
@@ -148,6 +152,7 @@ void _deferEnsureThrows(long line, string file, string stmtStr, TExpected, strin
 			writeln(e); //e.writeOut( (string msg) {Stdout(msg);} );
 		else
 			writefln("%s: %s", actualType, thrown);
+		writeln();
 	}
 }
 

@@ -385,6 +385,50 @@ T indent(T)(T str, T indentStr="\t") if(isSomeString!T)
 
 T unindent(T)(T str) if(isSomeString!T)
 {
+	if(__ctfe)
+		return ctfe_unindent(str);
+	else
+		return rt_unindent(str);
+}
+
+private T ctfe_unindent(T)(T str) if(isSomeString!T)
+{
+	auto lines = str.ctfe_split("\n");
+	
+	auto isNonWhite     = (dchar ch){ return !iswhite(ch); };
+	auto leadingWhiteOf = (T str)   { return str[ 0 .. $-find!(isNonWhite)(str).length ]; };
+	
+	//auto indents = lines.map!(&leadingWhiteOf)();
+
+	// Like 'indents', but with originally-whitespace-only lines changed to null
+	auto bakedIndents = semitwist.util.functional.map(lines, (T str){ return str.strip()==""? null : leadingWhiteOf(str); } );
+	
+	auto shorterAndNonNull = (T a, T b) {
+		if(a is null) return b;
+		if(b is null) return a;
+		
+		return (a.length < b.length)? a : b;
+	};
+	auto shortestIndent = std.algorithm.reduce!(shorterAndNonNull)(bakedIndents);
+	
+	if(shortestIndent is null || shortestIndent == "")
+		return str;
+		
+	foreach(i; 0..lines.length)
+	{
+		if(bakedIndents[i] is null)
+			lines[i] = "";
+		else if(bakedIndents.startsWith(shortestIndent))
+			lines[i] = lines[i][shortestIndent.length..$];
+		else
+			assert(false, "Inconsistent indentation");
+	}
+	
+	return lines.join("\n");
+}
+
+private T rt_unindent(T)(T str) if(isSomeString!T)
+{
 	auto lines = str.split("\n");
 	
 	auto isNonWhite     = (dchar ch){ return !iswhite(ch); };
@@ -434,9 +478,18 @@ unittest
 	// indent
 	mixin(deferEnsure!(q{ "A\n\tB\n\nC".indent("  ") }, q{ _ == "  A\n  \tB\n  \n  C" }));
 	mixin(deferEnsure!(q{ "A\nB\n".indent("\t")      }, q{ _ == "\tA\n\tB\n"          }));
+	mixin(deferEnsure!(q{ "".indent("\t")            }, q{ _ == "\t"                  }));
+	mixin(deferEnsure!(q{ "A\n\tB\n\nC".indent("")   }, q{ _ == "A\n\tB\n\nC"         }));
 
 	// unindent
 	mixin(deferEnsure!(q{ " \t A\n \t \tB\n \t C\n  \t\n \t D".unindent() }, q{ _ == "A\n\tB\nC\n\nD" }));
 	mixin(deferEnsure!(q{ " D\n".unindent() }, q{ _ == "D\n" }));
-	mixin(deferEnsureThrows!(q{ " \tA\n\t B".unescapeDDQS(); }, Exception));
+	mixin(deferEnsure!(q{ "D".unindent()    }, q{ _ == "D"   }));
+	mixin(deferEnsure!(q{ "".unindent()     }, q{ _ == ""    }));
+	mixin(deferEnsureThrows!(q{ " \tA\n\t B".unindent(); }, Exception));
+
+	// ctfe_unindent
+	//enum ctfe_unindent_dummy = "  a".ctfe_unindent();
+	mixin(deferEnsure!(q{ " \t A\n \t \tB\n \t C\n  \t\n \t D".ctfe_unindent() }, q{ _ == "A\n\tB\nC\n\nD" }));
+	mixin(deferEnsure!(q{ " D\n".ctfe_unindent() }, q{ _ == "D\n" }));
 }

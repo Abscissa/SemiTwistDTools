@@ -43,8 +43,8 @@ T[] ctfe_repeat(T)(T[] str, int count)
 	return ret;
 }
 
-/// tango.text.Util.locate() and tango.core.Array.find() don't work at compile-time.
-size_t ctfe_find(T)(T[] collection, T elem, size_t start=0)
+//size_t ctfe_find(T, TElem)(T collection, TElem elem, size_t start=0) if(isSomeString!T && is(unqual!T:TElem[]))
+size_t ctfe_find(T)(const(T)[] collection, const(T) elem, size_t start=0)
 {
 	for(size_t i=start; i<collection.length; i++)
 	{
@@ -52,6 +52,16 @@ size_t ctfe_find(T)(T[] collection, T elem, size_t start=0)
 			return i;
 	}
 	return collection.length;
+}
+
+size_t ctfe_find(T)(const(T)[] haystack, const(T)[] needle, size_t start=0) //if(isSomeString!T)
+{
+	for(size_t i=start; i<haystack.length-needle.length; i++)
+	{
+		if(haystack[i..i+needle.length] == needle)
+			return i;
+	}
+	return haystack.length;
 }
 
 //TODO: Test on wchar/dchar
@@ -87,6 +97,21 @@ T ctfe_substitute(T)(T str, T match, T replace) if(isSomeString!T)
 	return value;
 }
 
+T[] ctfe_split(T)(T str, T delim) if(isSomeString!T)
+{
+	T[] arr;
+	auto currStr = str;
+	int index;
+	while((index=ctfe_find(currStr, delim)) != currStr.length-delim.length)
+	{
+		arr ~= currStr[0..index];
+		currStr = currStr[index+delim.length..$];
+	}
+	arr ~= currStr;
+	return arr;
+}
+
+
 /// ctfe_subMapJoin("Hi WHO. ", "WHO", ["Joey", "Q", "Sue"])
 /// --> "Hi Joey. Hi Q. Hi Sue. "
 T ctfe_subMapJoin(T)(T str, T match, T[] replacements) if(isSomeString!T)
@@ -100,6 +125,24 @@ T ctfe_subMapJoin(T)(T str, T match, T[] replacements) if(isSomeString!T)
 
 unittest
 {
+	// ctfe_find ---------------------------
+	mixin(deferEnsure!(q{ ctfe_find("abcde", 'd' ) }, q{ _==3 }));
+	mixin(deferEnsure!(q{ ctfe_find("abcde", 'X' ) }, q{ _==5 }));
+	mixin(deferEnsure!(q{ ctfe_find("abcde", "d" ) }, q{ _==3 }));
+	mixin(deferEnsure!(q{ ctfe_find("abcde", "cd") }, q{ _==2 }));
+	mixin(deferEnsure!(q{ ctfe_find("abcde", "cX") }, q{ _==5 }));
+
+	mixin(deferEnsure!(q{ ctfe_find("cdbcde", 'd' , 2) }, q{ _==4 }));
+	mixin(deferEnsure!(q{ ctfe_find("cdbcde", "d" , 2) }, q{ _==4 }));
+	mixin(deferEnsure!(q{ ctfe_find("cdbcde", "cd", 1) }, q{ _==3 }));
+	mixin(deferEnsure!(q{ ctfe_find("cXbcde", "cX", 1) }, q{ _==6 }));
+
+	mixin(deferEnsure!(q{ ctfe_find("abc", "abcde") }, q{ _==3 }));
+	
+	// ctfe_split ---------------------------
+	mixin(deferEnsure!(q{ ctfe_split("a--b-b--ccc---d----e--", "--") }, q{ _==["a","b-b","ccc","-d","","e",""] }));
+	mixin(deferEnsure!(q{ ctfe_split("-Xa", "-X") }, q{ _==["","a"] }));
+
 	// ctfe_pad ---------------------------
 	
 	const string ctfe_pad_test_1 = ctfe_pad("Hi", 5);
