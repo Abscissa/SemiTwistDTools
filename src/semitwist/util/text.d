@@ -337,6 +337,7 @@ uint nextCodePointSize(T)(T str) if(is(T==string) || is(T==wstring))
 	return ret;
 }
 
+/// Indents every line with indentStr
 T indent(T)(T str, T indentStr="\t") if(isSomeString!T)
 {
 	if(str == "")
@@ -348,6 +349,21 @@ T indent(T)(T str, T indentStr="\t") if(isSomeString!T)
 		str[$-1];
 }
 
+/// ditto
+T[] indent(T)(T[] lines, T indentStr="\t") if(isSomeString!T)
+{
+	// foreach(ref) doesn't work right at compile time: DMD Issue #3835
+	foreach(i, line; lines)
+		lines[i] = indentStr ~ line;
+		
+	return lines;
+}
+
+/// Unindents the lines of text as much as possible while preserving
+/// all relative indentation.
+///
+/// Inconsistent indentation throws an exception at runtime, and
+/// asserts at compile-time.
 T unindent(T)(T str) if(isSomeString!T)
 {
 	if(str == "")
@@ -359,6 +375,25 @@ T unindent(T)(T str) if(isSomeString!T)
 	else
 		lines = str.split("\n");
 	
+	lines = unindentImpl(lines, str);
+	
+	if(__ctfe)
+		return lines.ctfe_join("\n");
+	else
+		return lines.join("\n");
+}
+
+/// ditto
+T[] unindent(T)(T[] lines) if(isSomeString!T)
+{
+	return unindentImpl(lines);
+}
+
+private T[] unindentImpl(T)(T[] lines, T origStr=null) if(isSomeString!T)
+{
+	if(lines == [])
+		return [];
+		
 	bool isNonWhite(dchar ch)
 	{
 		if(__ctfe)
@@ -389,7 +424,12 @@ T unindent(T)(T str) if(isSomeString!T)
 	auto shortestIndent = std.algorithm.reduce!(shorterAndNonNull)(indents);
 	
 	if(shortestIndent is null || shortestIndent == "")
-		return str.stripl();
+	{
+		if(origStr == null)
+			return stripLinesLeft(lines);
+		else
+			return [origStr.stripl()];
+	}
 		
 	foreach(i; 0..lines.length)
 	{
@@ -406,10 +446,7 @@ T unindent(T)(T str) if(isSomeString!T)
 		}
 	}
 	
-	if(__ctfe)
-		return lines.ctfe_join("\n");
-	else
-		return lines.join("\n");
+	return lines;
 }
 
 T stripLinesTop(T)(T str) if(isSomeString!T)
@@ -553,6 +590,77 @@ T[] stripLinesLeftRight(T)(T[] lines) if(isSomeString!T)
 	return lines;
 }
 
+/++
+Unindents, strips whitespace-only lines from top and bottom,
+and strips trailing whitespace from eash line.
+(Also converts Windows "\r\n" line endings to Unix "\n" line endings.)
+
+See also the documentation for unindent().
+
+Good for making easily-readable multi-line string literals without
+leaving extra indents and whitespace in the resulting string:
+
+Do this:
+--------------------
+void foo()
+{
+	enum codeStr = q{
+		// Written in the D Programming Langauge
+		// by John Doe
+
+		int main()
+		{
+			return 0;
+		}
+	}.normalize();
+}
+--------------------
+
+Instead of this:
+--------------------
+void foo()
+{
+	enum codeStr = 
+q{// Written in the D Programming Langauge
+// by John Doe
+
+int main()
+{
+	return 0;
+}};
+}
+--------------------
+
+The resulting string is exactly the same.
++/
+T normalize(T)(T str) if(isSomeString!T)
+{
+	if(str == "")
+		return "";
+		
+	T[] lines;
+	if(__ctfe)
+		lines = str.ctfe_split("\n");
+	else
+		lines = str.split("\n");
+
+	lines = normalize(lines);
+	
+	if(__ctfe)
+		return lines.ctfe_join("\n");
+	else
+		return lines.join("\n");
+}
+
+/// ditto
+T[] normalize(T)(T[] lines) if(isSomeString!T)
+{
+	lines = stripLinesTopBottom(lines);
+	lines = unindent(lines);
+	lines = stripLinesRight(lines);
+	return lines;
+}
+
 unittest
 {
 	// escapeDDQS, unescapeDDQS
@@ -642,4 +750,22 @@ unittest
 	mixin(deferEnsure!(q{ ctfe_stripLinesBox_dummy1 }, q{ _ == "ABC\n\nDEF" }));
 	mixin(deferEnsure!(q{ ctfe_stripLinesBox_dummy2 }, q{ _ == "\n\nABC\n\nDEF\n\n\n" }));
 	mixin(deferEnsure!(q{ ctfe_stripLinesBox_dummy3 }, q{ _ == "" }));
+
+	// normalize
+	mixin(deferEnsure!(q{
+				q{
+			// test 
+			void foo() {  
+				int x = 2;
+			}
+	}.normalize()
+	}, q{ _ == "// test\nvoid foo() {\n\tint x = 2;\n}" }));
+
+	enum ctfe_normalize_dummy1 = q{
+			// test 
+			void foo() {  
+				int x = 2;
+			}
+	}.normalize();
+	mixin(deferEnsure!(q{ ctfe_normalize_dummy1 }, q{ _ == "// test\nvoid foo() {\n\tint x = 2;\n}" }));
 }
