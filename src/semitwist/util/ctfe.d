@@ -68,13 +68,12 @@ size_t ctfe_find(T)(const(T)[] haystack, const(T)[] needle, size_t start=0) //if
 	return haystack.length;
 }
 
-//TODO: Test on wchar/dchar
 T ctfe_join(T)(T[] strs, T delim) if(isSomeString!T)
 {
 	T value = "";
 	
-	foreach(T str; strs)
-		value ~= (value.length==0?"":delim) ~ str;
+	foreach(i, str; strs)
+		value ~= (i==0?"":delim) ~ str;
 	
 	return value;
 }
@@ -170,8 +169,11 @@ unittest
 	mixin(deferEnsure!(q{ ctfe_iswhite('\n') }, q{ _==true  }));
 	mixin(deferEnsure!(q{ ctfe_iswhite('X')  }, q{ _==false }));
 	
+	// ctfe_join ---------------------------
+	mixin(deferEnsure!(q{ ctfe_join([""," ","","A","","BC","","D"," ",""], "\n") }, q{ _=="\n \n\nA\n\nBC\n\nD\n \n" }));
+	//mixin(traceVal!(q{ "\n"~ctfe_join([""," ","","A","","BC","","D"," ",""], "\n").escapeDDQS() }));
+
 	// ctfe_pad ---------------------------
-	
 	const string ctfe_pad_test_1 = ctfe_pad("Hi", 5);
 	mixin(deferEnsure!(`ctfe_pad_test_1`, `_ == "   Hi"`));
 
@@ -203,7 +205,6 @@ unittest
 +/
 
 	// ctfe_repeat ---------------------------
-	
 	const string ctfe_repeat_test_aneg1 = ctfe_repeat("a", -1);
 	mixin(deferEnsure!(`ctfe_repeat_test_aneg1`, `_ == ""`));
 
@@ -226,7 +227,6 @@ unittest
 	mixin(deferEnsure!(`ctfe_repeat_test_日本語3`, `_ == "日本語日本語日本語"`));
 	
 	// ctfe_subMapJoin ---------------------------
-	
 	const string ctfe_subMapJoin_test_c = ctfe_subMapJoin("Hi WHO. ", "WHO", ["Joey"[], "Q", "Sue"]);
 	mixin(deferEnsure!(`ctfe_subMapJoin_test_c`, `_ == "Hi Joey. Hi Q. Hi Sue. "`));
 	

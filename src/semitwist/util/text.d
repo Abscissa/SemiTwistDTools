@@ -412,6 +412,147 @@ T unindent(T)(T str) if(isSomeString!T)
 		return lines.join("\n");
 }
 
+T stripLinesTop(T)(T str) if(isSomeString!T)
+{
+	return stripLinesBox_StrImpl!(T, true, false, false, false)(str);
+}
+T stripLinesBottom(T)(T str) if(isSomeString!T)
+{
+	return stripLinesBox_StrImpl!(T, false, true, false, false)(str);
+}
+T stripLinesTopBottom(T)(T str) if(isSomeString!T)
+{
+	return stripLinesBox_StrImpl!(T, true, true, false, false)(str);
+}
+
+T stripLinesLeft(T)(T str) if(isSomeString!T)
+{
+	return stripLinesBox_StrImpl!(T, false, false, true, false)(str);
+}
+T stripLinesRight(T)(T str) if(isSomeString!T)
+{
+	return stripLinesBox_StrImpl!(T, false, false, false, true)(str);
+}
+T stripLinesLeftRight(T)(T str) if(isSomeString!T)
+{
+	return stripLinesBox_StrImpl!(T, false, false, true, true)(str);
+}
+
+T stripLinesBox(T)(T str) if(isSomeString!T)
+{
+	return stripLinesBox_StrImpl!(T, true, true, true, true)(str);
+}
+
+private T stripLinesBox_StrImpl
+	(T, bool stripTop, bool stripBottom, bool stripLeft, bool stripRight)
+	(T str)
+	if(isSomeString!T)
+{
+	if(str == "")
+		return "";
+		
+	T[] lines;
+	if(__ctfe)
+		lines = str.ctfe_split("\n");
+	else
+		lines = str.split("\n");
+
+	lines = stripLinesBox_LineImpl!(T, stripTop, stripBottom, stripLeft, stripRight)(lines);
+	
+	if(__ctfe)
+		return lines.ctfe_join("\n");
+	else
+		return lines.join("\n");
+}
+
+private T[] stripLinesBox_LineImpl
+	(T, bool stripTop, bool stripBottom, bool stripLeft, bool stripRight)
+	(T[] lines)
+	if(isSomeString!T)
+{
+	static if(stripTop)    lines = stripLinesTop(lines);
+	static if(stripBottom) lines = stripLinesBottom(lines);
+	
+	static if(stripLeft && stripRight)
+	{
+		lines = stripLinesLeftRight(lines);
+	}
+	else
+	{
+		static if(stripLeft)  lines = stripLinesLeft(lines);
+		static if(stripRight) lines = stripLinesRight(lines);
+	}
+	
+	return lines;
+}
+
+T[] stripLinesBox(T)(T[] str) if(isSomeString!T)
+{
+	return stripLinesBox_LineImpl!(T, true, true, true, true)(str);
+}
+
+T[] stripLinesTop(T)(T[] lines) if(isSomeString!T)
+{
+	int firstLine = lines.length-1;
+
+	foreach(i, line; lines)
+	if(line.strip() != "")
+	{
+		firstLine = i;
+		break;
+	}
+
+	return lines[firstLine..$];
+}
+
+T[] stripLinesBottom(T)(T[] lines) if(isSomeString!T)
+{
+	int lastLine = 0;
+
+	foreach_reverse(i, line; lines)
+	if(line.strip() != "")
+	{
+		lastLine = i;
+		break;
+	}
+
+	return lines[0..lastLine+1];
+}
+
+T[] stripLinesTopBottom(T)(T[] lines) if(isSomeString!T)
+{
+	lines = stripLinesTop(lines);
+	lines = stripLinesBottom(lines);
+	return lines;
+}
+
+T[] stripLinesLeft(T)(T[] lines) if(isSomeString!T)
+{
+	// foreach(ref) doesn't work right at compile time: DMD Issue #3835
+	foreach(i, line; lines)
+		lines[i] = line.stripl();
+		
+	return lines;
+}
+
+T[] stripLinesRight(T)(T[] lines) if(isSomeString!T)
+{
+	// foreach(ref) doesn't work right at compile time: DMD Issue #3835
+	foreach(i, line; lines)
+		lines[i] = line.stripr();
+		
+	return lines;
+}
+
+T[] stripLinesLeftRight(T)(T[] lines) if(isSomeString!T)
+{
+	// foreach(ref) doesn't work right at compile time: DMD Issue #3835
+	foreach(i, line; lines)
+		lines[i] = line.strip();
+	
+	return lines;
+}
+
 unittest
 {
 	// escapeDDQS, unescapeDDQS
@@ -453,4 +594,52 @@ unittest
 	mixin(deferEnsure!(q{ ctfe_unindent_dummy4 }, q{ _ == ""    }));
 	
 	//enum ctfe_unindent_dummy5 = "  a\n \tb".unindent(); // Should fail to compile
+	
+	// stripLines: Top and Bottom
+	mixin(deferEnsure!(q{ " \t \n\t \n ABC \n \n DEF \n \t \n\t \n".stripLinesTop()       }, q{ _ == " ABC \n \n DEF \n \t \n\t \n" }));
+	mixin(deferEnsure!(q{ " \t \n\t \n ABC \n \n DEF \n \t \n\t \n".stripLinesBottom()    }, q{ _ == " \t \n\t \n ABC \n \n DEF "   }));
+	mixin(deferEnsure!(q{ " \t \n\t \n ABC \n \n DEF \n \t \n\t \n".stripLinesTopBottom() }, q{ _ == " ABC \n \n DEF "              }));
+
+	mixin(deferEnsure!(q{ "\nABC\n ".stripLinesTop()       }, q{ _ == "ABC\n " }));
+	mixin(deferEnsure!(q{ "\nABC\n ".stripLinesBottom()    }, q{ _ == "\nABC"  }));
+	mixin(deferEnsure!(q{ "\nABC\n ".stripLinesTopBottom() }, q{ _ == "ABC"    }));
+
+	mixin(deferEnsure!(q{ "\n".stripLinesTop()       }, q{ _ == "" }));
+	mixin(deferEnsure!(q{ "\n".stripLinesBottom()    }, q{ _ == "" }));
+	mixin(deferEnsure!(q{ "\n".stripLinesTopBottom() }, q{ _ == "" }));
+
+	mixin(deferEnsure!(q{ "ABC".stripLinesTopBottom()      }, q{ _ == "ABC" }));
+	mixin(deferEnsure!(q{ "".stripLinesTopBottom()         }, q{ _ == ""    }));
+
+	// stripLines: Left and Right
+	mixin(deferEnsure!(q{ " \t \n\t \n ABC \n \n DEF \n \t \n\t \n".stripLinesLeft()      }, q{ _ == "\n\nABC \n\nDEF \n\n\n" }));
+	mixin(deferEnsure!(q{ " \t \n\t \n ABC \n \n DEF \n \t \n\t \n".stripLinesRight()     }, q{ _ == "\n\n ABC\n\n DEF\n\n\n" }));
+	mixin(deferEnsure!(q{ " \t \n\t \n ABC \n \n DEF \n \t \n\t \n".stripLinesLeftRight() }, q{ _ == "\n\nABC\n\nDEF\n\n\n"   }));
+
+	mixin(deferEnsure!(q{ "\nABC\n ".stripLinesLeft()      }, q{ _ == "\nABC\n" }));
+	mixin(deferEnsure!(q{ "\nABC\n ".stripLinesRight()     }, q{ _ == "\nABC\n" }));
+	mixin(deferEnsure!(q{ "\nABC\n ".stripLinesLeftRight() }, q{ _ == "\nABC\n" }));
+
+	mixin(deferEnsure!(q{ "\n".stripLinesLeft()      }, q{ _ == "\n" }));
+	mixin(deferEnsure!(q{ "\n".stripLinesRight()     }, q{ _ == "\n" }));
+	mixin(deferEnsure!(q{ "\n".stripLinesLeftRight() }, q{ _ == "\n" }));
+
+	mixin(deferEnsure!(q{ "ABC".stripLinesLeftRight() }, q{ _ == "ABC" }));
+	mixin(deferEnsure!(q{ "".stripLinesLeftRight()    }, q{ _ == ""    }));
+
+	// stripLinesBox
+	mixin(deferEnsure!(q{ " \t \n\t \n ABC \n \n DEF \n \t \n\t \n".stripLinesBox() }, q{ _ == "ABC\n\nDEF" }));
+	mixin(deferEnsure!(q{ "\nABC\n ".stripLinesBox() }, q{ _ == "ABC" }));
+	mixin(deferEnsure!(q{ "\n".stripLinesBox()       }, q{ _ == ""    }));
+	mixin(deferEnsure!(q{ "ABC".stripLinesBox()      }, q{ _ == "ABC" }));
+	mixin(deferEnsure!(q{ "".stripLinesBox()         }, q{ _ == ""    }));
+	
+	// stripLines at compile-time
+	enum ctfe_stripLinesBox_dummy1 = " \t \n\t \n ABC \n \n DEF \n \t \n\t \n".stripLinesBox();
+	enum ctfe_stripLinesBox_dummy2 = " \t \n\t \n ABC \n \n DEF \n \t \n\t \n".stripLinesLeftRight();
+	enum ctfe_stripLinesBox_dummy3 = "".stripLinesBox();
+
+	mixin(deferEnsure!(q{ ctfe_stripLinesBox_dummy1 }, q{ _ == "ABC\n\nDEF" }));
+	mixin(deferEnsure!(q{ ctfe_stripLinesBox_dummy2 }, q{ _ == "\n\nABC\n\nDEF\n\n\n" }));
+	mixin(deferEnsure!(q{ ctfe_stripLinesBox_dummy3 }, q{ _ == "" }));
 }
