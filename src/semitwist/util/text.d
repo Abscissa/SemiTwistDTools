@@ -315,41 +315,8 @@ int locatePrior(in char[] s, in char[] sub, CaseSensitive cs = CaseSensitive.yes
 	return result == -1? s.length : result;
 }
 
-
-/+private Layout!(char)  _sformatc;
-private Layout!(wchar) _sformatw;
-private Layout!(dchar) _sformatd;
-static this()
-{
-	_sformatc = new Layout!( char)();
-	_sformatw = new Layout!(wchar)();
-	_sformatd = new Layout!(dchar)();
-}
-
-private T[] _sformat(T)(TypeInfo[] arguments, ArgList args, T[] formatStr)
-{
-	mixin(ensureCharType!("T"));
-
-	static if(is(T==char))
-		return _sformatc(arguments, args, formatStr);
-	else static if(is(T==wchar))
-		return _sformatw(arguments, args, formatStr);
-	else
-		return _sformatd(arguments, args, formatStr);
-}
-+/
 /// Suggested usage:
-///   "Hello %s!".format("World");
-/+T[] sformat(T)(T[] formatStr, ...)
-{
-	return _sformat!(T)(_arguments, _argptr, formatStr);
-}
-
-T[] sformatln(T)(T[] formatStr, ...)
-{
-	return _sformat!(T)(_arguments, _argptr, formatStr)~"\n";
-}
-+/
+///   "Hello %s!".formatln("World");
 string formatln(T...)(T args)
 {
 	return format(args)~"\n";
@@ -365,11 +332,6 @@ T stripNonPrintable(T)(T str) if(isSomeString!T)
 /// Return value is number of code units
 uint nextCodePointSize(T)(T str) if(is(T==string) || is(T==wstring))
 {
-/+	static assert(
-		is(T==string) || is(T==wstring),
-		"From 'nextCodePointSize': 'T' must be string or wstring, not '"~T.stringof~"'"
-	);
-+/	
 	uint ret;
 	str.decode(ret);
 	return ret;
@@ -384,32 +346,39 @@ T indent(T)(T str, T indentStr="\t") if(isSomeString!T)
 		indentStr ~
 		str[0..$-1].replace("\n", "\n"~indentStr) ~
 		str[$-1];
-		//(str.length==0? "" : ""~str[$-1]);
 }
 
 T unindent(T)(T str) if(isSomeString!T)
 {
+	if(str == "")
+		return "";
+		
+	T[] lines;
 	if(__ctfe)
-		return ctfe_unindent(str);
+		lines = str.ctfe_split("\n");
 	else
-		return rt_unindent(str);
-}
-
-private T ctfe_unindent(T)(T str) if(isSomeString!T)
-{
-	if(str == "")
-		return "";
-		
-	auto lines = str.ctfe_split("\n");
+		lines = str.split("\n");
 	
-	bool isNonWhite(dchar ch) { return !ctfe_iswhite(ch); }
+	bool isNonWhite(dchar ch)
+	{
+		if(__ctfe)
+			return !ctfe_iswhite(ch);
+		else
+			return !iswhite(ch);
+	}
 	T leadingWhiteOf(T str)
 		{ return str[ 0 .. $-find!(isNonWhite)(str).length ]; }
 	
 	// Apply leadingWhiteOf, but emit null instead for whitespace-only lines
-	auto indents = semitwist.util.functional.map( lines,
-		(T str){ return str.strip()==""? null : leadingWhiteOf(str);}
-	);
+	T[] indents;
+	if(__ctfe)
+		indents = semitwist.util.functional.map( lines,
+			(T str){ return str.strip()==""? null : leadingWhiteOf(str);}
+		);
+	else
+		indents = array( std.algorithm.map!(
+			(T str){ return str.strip()==""? null : leadingWhiteOf(str);}
+			)(lines) );
 
 	T shorterAndNonNull(T a, T b) {
 		if(a is null) return b;
@@ -429,50 +398,18 @@ private T ctfe_unindent(T)(T str) if(isSomeString!T)
 		else if(indents.startsWith(shortestIndent))
 			lines[i] = lines[i][shortestIndent.length..$];
 		else
-			assert(false, "Inconsistent indentation");
+		{
+			if(__ctfe)
+				assert(false, "Inconsistent indentation");
+			else
+				throw new Exception("Inconsistent indentation");
+		}
 	}
 	
-	return lines.join("\n");
-}
-
-private T rt_unindent(T)(T str) if(isSomeString!T)
-{
-	if(str == "")
-		return "";
-		
-	auto lines = str.split("\n");
-	
-	bool isNonWhite(dchar ch) { return !iswhite(ch); }
-	T leadingWhiteOf(T str)
-		{ return str[ 0 .. $-find!(isNonWhite)(str).length ]; }
-	
-	// Apply leadingWhiteOf, but emit null instead for whitespace-only lines
-	auto indents = array( std.algorithm.map!(
-		(T str){ return str.strip()==""? null : leadingWhiteOf(str);}
-		)(lines) );
-
-	T shorterAndNonNull(T a, T b) {
-		if(a is null) return b;
-		if(b is null) return a;
-		
-		return (a.length < b.length)? a : b;
-	};
-	auto shortestIndent = std.algorithm.reduce!(shorterAndNonNull)(indents);
-	
-	if(shortestIndent is null || shortestIndent == "")
-		return str.stripl();
-		
-	foreach(i; 0..lines.length)
-	{
-		if(indents[i] is null)
-			lines[i] = "";
-		else if(indents.startsWith(shortestIndent))
-			lines[i] = lines[i][shortestIndent.length..$];
-		else
-			throw new Exception("Inconsistent indentation");
-	}
-	
-	return lines.join("\n");
+	if(__ctfe)
+		return lines.ctfe_join("\n");
+	else
+		return lines.join("\n");
 }
 
 unittest
@@ -496,16 +433,24 @@ unittest
 
 	// unindent
 	mixin(deferEnsure!(q{ " \t A\n \t \tB\n \t C\n  \t\n \t D".unindent() }, q{ _ == "A\n\tB\nC\n\nD" }));
-	mixin(deferEnsure!(q{ " D\n".unindent()  }, q{ _ == "D\n" }));
-	mixin(deferEnsure!(q{ " D\n ".unindent() }, q{ _ == "D\n" }));
-	mixin(deferEnsure!(q{ "D".unindent()     }, q{ _ == "D"   }));
-	mixin(deferEnsure!(q{ "".unindent()      }, q{ _ == ""    }));
-	mixin(deferEnsure!(q{ " ".unindent()     }, q{ _ == ""    }));
+	mixin(deferEnsure!(q{ " D\n".unindent()    }, q{ _ == "D\n" }));
+	mixin(deferEnsure!(q{ " D\n ".unindent()   }, q{ _ == "D\n" }));
+	mixin(deferEnsure!(q{ "D".unindent()       }, q{ _ == "D"   }));
+	mixin(deferEnsure!(q{ "".unindent()        }, q{ _ == ""    }));
+	mixin(deferEnsure!(q{ " ".unindent()       }, q{ _ == ""    }));
 	mixin(deferEnsureThrows!(q{ " \tA\n\t B".unindent(); }, Exception));
-		
-	// ctfe_unindent
-	enum ctfe_unindent_dummy = "  a".unindent(); // Ensure it works at compile-time
-	mixin(deferEnsure!(q{ " \t A\n \t \tB\n \t C\n  \t\n \t D".ctfe_unindent() }, q{ _ == "A\n\tB\nC\n\nD" }));
-	mixin(deferEnsure!(q{ " D\n".ctfe_unindent() }, q{ _ == "D\n" }));
-	mixin(deferEnsure!(q{ "".ctfe_unindent()     }, q{ _ == ""    }));
+	mixin(deferEnsureThrows!(q{ "  a\n \tb".unindent();    }, Exception));
+
+	// unindent at compile-time
+	enum ctfe_unindent_dummy1 = " \t A\n \t \tB\n \t C\n  \t\n \t D".unindent();
+	enum ctfe_unindent_dummy2 = " D".unindent();
+	enum ctfe_unindent_dummy3 = " D\n".unindent();
+	enum ctfe_unindent_dummy4 = "".unindent();
+
+	mixin(deferEnsure!(q{ ctfe_unindent_dummy1 }, q{ _ == "A\n\tB\nC\n\nD" }));
+	mixin(deferEnsure!(q{ ctfe_unindent_dummy2 }, q{ _ == "D"   }));
+	mixin(deferEnsure!(q{ ctfe_unindent_dummy3 }, q{ _ == "D\n" }));
+	mixin(deferEnsure!(q{ ctfe_unindent_dummy4 }, q{ _ == ""    }));
+	
+	//enum ctfe_unindent_dummy5 = "  a\n \tb".unindent(); // Should fail to compile
 }
