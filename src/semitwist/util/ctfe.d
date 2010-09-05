@@ -5,6 +5,7 @@ module semitwist.util.ctfe;
 
 //import tango.core.Version;
 import std.stdio;//tango.io.Stdout;
+import std.string;
 import std.traits;
 
 import semitwist.util.all;
@@ -56,7 +57,10 @@ size_t ctfe_find(T)(const(T)[] collection, const(T) elem, size_t start=0)
 
 size_t ctfe_find(T)(const(T)[] haystack, const(T)[] needle, size_t start=0) //if(isSomeString!T)
 {
-	for(size_t i=start; i<haystack.length-needle.length; i++)
+	if(haystack.length < needle.length)
+		return haystack.length;
+
+	for(size_t i=start; i <= haystack.length-needle.length; i++)
 	{
 		if(haystack[i..i+needle.length] == needle)
 			return i;
@@ -102,7 +106,7 @@ T[] ctfe_split(T)(T str, T delim) if(isSomeString!T)
 	T[] arr;
 	auto currStr = str;
 	int index;
-	while((index=ctfe_find(currStr, delim)) != currStr.length-delim.length)
+	while((index=ctfe_find(currStr, delim)) < currStr.length)
 	{
 		arr ~= currStr[0..index];
 		currStr = currStr[index+delim.length..$];
@@ -123,6 +127,15 @@ T ctfe_subMapJoin(T)(T str, T match, T[] replacements) if(isSomeString!T)
 	return value;
 }
 
+bool ctfe_iswhite(dchar ch)
+{
+	foreach(i; 0..whitespace.length)
+	if(ch == whitespace[i])
+		return true;
+
+	return false;
+}
+
 unittest
 {
 	// ctfe_find ---------------------------
@@ -137,12 +150,26 @@ unittest
 	mixin(deferEnsure!(q{ ctfe_find("cdbcde", "cd", 1) }, q{ _==3 }));
 	mixin(deferEnsure!(q{ ctfe_find("cXbcde", "cX", 1) }, q{ _==6 }));
 
+	mixin(deferEnsure!(q{ ctfe_find("abc", 'a')     }, q{ _==0 }));
+	mixin(deferEnsure!(q{ ctfe_find("abc", 'c')     }, q{ _==2 }));
+	mixin(deferEnsure!(q{ ctfe_find("abc", "a")     }, q{ _==0 }));
+	mixin(deferEnsure!(q{ ctfe_find("abc", "c")     }, q{ _==2 }));
+	mixin(deferEnsure!(q{ ctfe_find("aabbcc", "aa") }, q{ _==0 }));
+	mixin(deferEnsure!(q{ ctfe_find("aabbcc", "cc") }, q{ _==4 }));
+
 	mixin(deferEnsure!(q{ ctfe_find("abc", "abcde") }, q{ _==3 }));
 	
 	// ctfe_split ---------------------------
 	mixin(deferEnsure!(q{ ctfe_split("a--b-b--ccc---d----e--", "--") }, q{ _==["a","b-b","ccc","-d","","e",""] }));
 	mixin(deferEnsure!(q{ ctfe_split("-Xa", "-X") }, q{ _==["","a"] }));
 
+	// ctfe_iswhite ---------------------------
+	mixin(deferEnsure!(q{ ctfe_iswhite(' ')  }, q{ _==true  }));
+	mixin(deferEnsure!(q{ ctfe_iswhite('\t') }, q{ _==true  }));
+	mixin(deferEnsure!(q{ ctfe_iswhite('\r') }, q{ _==true  }));
+	mixin(deferEnsure!(q{ ctfe_iswhite('\n') }, q{ _==true  }));
+	mixin(deferEnsure!(q{ ctfe_iswhite('X')  }, q{ _==false }));
+	
 	// ctfe_pad ---------------------------
 	
 	const string ctfe_pad_test_1 = ctfe_pad("Hi", 5);
