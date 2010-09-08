@@ -1,8 +1,8 @@
 // Written in the D programming language.
 
 // This is a slight modification of RDMD r1400 with patches
-// applied for issues #4672, #4683, and #4684. The first
-// two are necessary for SemiTwist D Tools.
+// applied for issues #4672, #4683, #4684, and #4688.
+// These are necessary for SemiTwist D Tools.
 //
 // This can just be run from whatever RDMD is already
 // included with DMD.

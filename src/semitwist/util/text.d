@@ -6,6 +6,7 @@ module semitwist.util.text;
 import std.algorithm;
 import std.array;
 //import tango.core.Array;
+import std.md5;
 import std.stdio;//tango.io.Stdout;
 //import tango.text.Unicode;
 //import tango.text.Util;
@@ -659,6 +660,17 @@ T[] normalize(T)(T[] lines) if(isSomeString!T)
 	lines = unindent(lines);
 	lines = stripLinesRight(lines);
 	return lines;
+}
+
+string md5(string data)
+{
+	MD5_CTX context;
+	context.start();
+	context.update(data);
+	ubyte digest[16];
+	context.finish(digest);
+	
+	return digestToString(digest);
 }
 
 unittest

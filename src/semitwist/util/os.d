@@ -16,7 +16,7 @@ private string genOSParam(string name, string[] values)
 		string osStr = enumOSToString(cast(OS)i);
 
 		str ~=
-			"const string "~name~"_"~osStr~" = "~escapeDDQS(value)~";\n"~
+			"const string "~name~"_"~osStr~" = "~escapeDDQS!string(value)~";\n"~
 			"static if(os == OS."~osStr~")\n"~
 			"    const string "~name~" = "~name~"_"~osStr~";\n";
 	}
