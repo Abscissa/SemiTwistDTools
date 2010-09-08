@@ -18,6 +18,10 @@ version(Windows)
 		SECURITY_ATTRIBUTES* lpPipeAttributes,
 		uint nSize);
 }
+else
+{
+	import core.sys.posix.unistd;
+}
 
 import semitwist.util.all;
 import semitwist.util.compat.all;
