@@ -50,17 +50,24 @@ TRet eval(TRet)(string code, string imports="", string rdmdOpts="")
 		import std.string;
 		version(Windows) import std.c.windows.windows;
 		%s
+		alias %s TRet;
 		void main(string[] args)
 		{
-			if(args.length < 2 || !std.string.isNumeric(args[1]))
-				throw new Exception("First arg must be file handle for the return value");
-			
-			auto writeHandle = cast(HANDLE)std.conv.to!size_t(args[1]);
-			auto retValWriter = new std.stream.File(writeHandle, FileMode.Out);
-			auto ret = _main();
-			retValWriter.write(ret);
+			static if(is(TRet==void))
+				_main();
+			else
+			{
+				if(args.length < 2 || !std.string.isNumeric(args[1]))
+					throw new Exception("First arg must be file handle for the return value");
+
+				auto writeHandle = cast(HANDLE)std.conv.to!size_t(args[1]);
+				auto retValWriter = new std.stream.File(writeHandle, FileMode.Out);
+
+				auto ret = _main();
+				retValWriter.write(ret);
+			}
 		}
-		%s _main()
+		TRet _main()
 		{
 			%s
 		}
@@ -70,13 +77,16 @@ TRet eval(TRet)(string code, string imports="", string rdmdOpts="")
 	
 	HANDLE retValPipeRead;
 	HANDLE retValPipeWrite;
-	createPipe(retValPipeRead, retValPipeWrite);
-	auto retValReader = new File(retValPipeRead, FileMode.In);
+	static if(!is(TRet==void))
+	{
+		createPipe(retValPipeRead, retValPipeWrite);
+		auto retValReader = new File(retValPipeRead, FileMode.In);
+	}
 	
 	auto tempName = "eval_st_"~md5(code);
 	write(tempName~".d", code);
 
-	//TODO: On Win, create rdmdAlt is it isn't already there
+	//TODO: On Win, create rdmdAlt if it isn't already there
 	auto rdmdName = "rdmd";
 	version(Windows)
 		rdmdName = "rdmdAlt";
@@ -87,9 +97,14 @@ TRet eval(TRet)(string code, string imports="", string rdmdOpts="")
 		//TODO: Include failure text, and what part failed: compile or execution
 		throw new Exception("eval failed");
 	
-	TRet retVal;
-	retValReader.read(retVal);
-	return retVal;
+	static if(is(TRet==void))
+		return;
+	else
+	{
+		TRet retVal;
+		retValReader.read(retVal);
+		return retVal;
+	}
 }
 
 unittest
@@ -102,4 +117,8 @@ unittest
 
 	enum test_eval3 = q{ eval!(char[])(q{ return "Test string".dup; }) };
 	mixin(deferEnsure!(test_eval3, q{ _=="Test string" }));
+
+	enum test_eval4 = q{ eval!void(q{ return; }) };
+	//mixin(deferEnsure!(test_eval4, q{ true })); //TODO: Fix error: "voids have no value"
+	mixin(test_eval4~";");
 }
