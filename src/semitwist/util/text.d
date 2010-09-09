@@ -267,8 +267,7 @@ pragma(msg, "unesc(esc):  "~unescapeDDQS(escapeDDQS(doubleQuoteTestStr)));
 pragma(msg, "unesc:       "~unescape(doubleQuoteTestStr, EscapeSequence.DDQS));
 pragma(msg, "unesc:       "~doubleQuoteTestStr.unescape(EscapeSequence.DDQS));
 
-unittest
-{
+mixin(unittestSemiTwistDLib("Outputting some things", q{
 	const wstring ctEscW = escapeDDQS(`"They said \"10 \\ 5 = 2\""`w);
 	const dstring ctEscD = escapeDDQS(`"They said \"10 \\ 5 = 2\""`d);
 	const wstring ctUnescW = unescapeDDQS(`"They said \"10 \\ 5 = 2\""`w);
@@ -289,7 +288,7 @@ unittest
 	writefln("%s%s", "esc:         ", escapeDDQS(doubleQuoteTestStr));
 	writefln("%s%s", "esc(unesc):  ", escapeDDQS(unescapeDDQS(doubleQuoteTestStr)));
 	writefln("%s%s", "unesc(esc):  ", unescapeDDQS(escapeDDQS(doubleQuoteTestStr)));
-}
+}));
 +/
 
 int locate(Char)(in Char[] s, dchar c, CaseSensitive cs = CaseSensitive.yes)
@@ -673,8 +672,7 @@ string md5(string data)
 	return digestToString(digest);
 }
 
-unittest
-{
+mixin(unittestSemiTwistDLib(q{
 	// escapeDDQS, unescapeDDQS
 	mixin(deferEnsure!(q{ `hello`.escapeDDQS()     }, q{ _ == `"hello"` }));
 	mixin(deferEnsure!(q{ `"hello"`.unescapeDDQS() }, q{ _ == "hello"   }));
@@ -780,4 +778,4 @@ unittest
 			}
 	}.normalize();
 	mixin(deferEnsure!(q{ ctfe_normalize_dummy1 }, q{ _ == "// test\nvoid foo() {\n\tint x = 2;\n}" }));
-}
+}));

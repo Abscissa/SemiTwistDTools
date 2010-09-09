@@ -175,8 +175,7 @@ TRet foreachWhileVal(TRet, TElem)(TElem[] coll, TRet whileVal, TRet delegate(TEl
 	return whileVal;
 }
 
-unittest
-{
+mixin(unittestSemiTwistDLib(q{
 	int[string] aa = ["a":1, "b":2, "c":3];
 	int[string] expected;
 	int[string] result;
@@ -236,4 +235,4 @@ unittest
 +/
 	//TODO: Filter assoc array
 	
-}
+}));

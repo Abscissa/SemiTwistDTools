@@ -135,8 +135,7 @@ bool ctfe_iswhite(dchar ch)
 	return false;
 }
 
-unittest
-{
+mixin(unittestSemiTwistDLib(q{
 	// ctfe_find ---------------------------
 	mixin(deferEnsure!(q{ ctfe_find("abcde", 'd' ) }, q{ _==3 }));
 	mixin(deferEnsure!(q{ ctfe_find("abcde", 'X' ) }, q{ _==5 }));
@@ -238,4 +237,4 @@ unittest
 
 	const string ctfe_subMapJoin_test_cj = ctfe_subMapJoin("こんにちわ、 だれさん。 ", "だれ", ["わたなべ"[], "ニク", "あおい"]);
 	mixin(deferEnsure!(`ctfe_subMapJoin_test_cj`, `_ == "こんにちわ、 わたなべさん。 こんにちわ、 ニクさん。 こんにちわ、 あおいさん。 "`));
-}
+}));

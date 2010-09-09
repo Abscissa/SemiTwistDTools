@@ -84,11 +84,11 @@ TRet eval(TRet)(string code, string imports="", string rdmdOpts="")
 	static if(!is(TRet==void))
 	{
 		createPipe(retValPipeRead, retValPipeWrite);
-		auto retValReader = new File(retValPipeRead, FileMode.In);
+		auto retValReader = new std.stream.File(retValPipeRead, FileMode.In);
 	}
 	
 	auto tempName = "eval_st_"~md5(code);
-	write(tempName~".d", code);
+	std.file.write(tempName~".d", code);
 
 	//TODO: On Win, create rdmdAlt if it isn't already there
 	auto rdmdName = "rdmd";
@@ -111,8 +111,7 @@ TRet eval(TRet)(string code, string imports="", string rdmdOpts="")
 	}
 }
 
-unittest
-{
+mixin(unittestSemiTwistDLib(q{
 	//enum test_eval1 = q{ eval!int(q{ writeln("Hello World!"); return 7; }, q{ import std.stdio; }) };
 	//mixin(deferEnsure!(test_eval1, q{ _==7 }));
 
@@ -125,4 +124,4 @@ unittest
 	enum test_eval4 = q{ eval!void(q{ return; }) };
 	//mixin(deferEnsure!(test_eval4, q{ true })); //TODO: Fix error: "voids have no value"
 	mixin(test_eval4~";");
-}
+}));

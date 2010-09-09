@@ -4,6 +4,7 @@
 module semitwist.util.deferAssert;
 
 // deferEnsure requires this to exist in the calling context
+import std.demangle;
 import std.traits;//tango.core.Traits : _deferAssert_ExprTypeOf = ExprTypeOf;
 public import semitwist.util.reflect : _deferAssert_ExprTypeOf = ExprTypeOf;
 
@@ -180,3 +181,73 @@ void flushAsserts()
 		);
 	}
 }
+
+/++
+To be mixed in.
+
+Note that if DMD Issue #2887 ever gets fixed, the line numbers for errors
+in unittestBody may get messed up.
+
+Suggested usage:
+-------------------
+alias unittestSection!"MyProject_unittest" unittestMyProject;
+mixin(unittestMyProject(q{
+	// put unittests here
+}));
+mixin(unittestMyProject("This is for class Foo", q{
+	// put unittests here
+}));
+-------------------
+
+That will create a named unittest section that will only run
+when -unittest and -debug=MyProject_unittest are passed to DMD.
+When run, the following headings will be displayed:
+
+== unittest: the.module.name
+== unittest: the.module.name: This is for class Foo
++/
+string unittestSection(string debugIdent)(string sectionName, string unittestBody=null)
+{
+	// Allow these two forms (without getting in the way of aliasing):
+	//   unittestSection!debugIdent(unittestBody)
+	//   unittestSection!debugIdent(sectionName, unittestBody)
+	if(unittestBody==null)
+	{
+		unittestBody = sectionName;
+		sectionName = "";
+	}
+	sectionName = ( sectionName==""? "" : ": "~sectionName ).escapeDDQS();
+	
+	return q{
+		debug(_semitwist_unittestSection_debugIdent_)
+		{
+			private int _unittestSection_dummy_;
+			unittest
+			{
+				auto _unittestSection_moduleName_ =
+					unittestSection_demangle( unittestSection_mangledName!_unittestSection_dummy_ )
+						["int ".length .. $-1-_unittestSection_dummy_.stringof.length];
+
+				writeUnittestSection(
+					_unittestSection_moduleName_ ~
+					_semitwist_unittestSection_sectionName_
+				);
+				_semitwist_unittestSection_unittestBody_
+			}
+		}
+	}
+	.ctfe_substitute("\n", " ")
+	.ctfe_substitute("\r", "")
+	.ctfe_substitute("_semitwist_unittestSection_debugIdent_", debugIdent)
+	.ctfe_substitute("_semitwist_unittestSection_sectionName_", sectionName)
+	.ctfe_substitute("_semitwist_unittestSection_unittestBody_", unittestBody);
+}
+alias mangledName unittestSection_mangledName;
+alias demangle unittestSection_demangle;
+
+void writeUnittestSection(string sectionName)
+{
+	writeln("== unittest: ", sectionName);
+}
+
+alias unittestSection!"SemiTwistDLib_unittest" unittestSemiTwistDLib;

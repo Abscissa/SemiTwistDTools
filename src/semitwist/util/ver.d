@@ -49,8 +49,7 @@ Ver toVer(string str)
 	return Ver( to!(uint[])(str.split(".")) );
 }
 
-unittest
-{
+mixin(unittestSemiTwistDLib(q{
 	mixin(deferAssert!(`Ver([5,5,5])  == Ver([5,5,5])`));
 	mixin(deferAssert!(`Ver([5,5,0])  != Ver([5,5,5])`));
 	mixin(deferAssert!(`Ver([5,5])    != Ver([5,5,5])`));
@@ -70,4 +69,4 @@ unittest
 	mixin(deferEnsure!(`"2.10.3".toVer().ver`, `_ == [cast(uint)2,10,3]`));
 	mixin(deferEnsure!(`"2.10.3".toVer()`, `_ == Ver([2,10,3])`));
 	mixin(deferEnsure!(`Ver([2,10,3]).toString()`, `_ == "2.10.3"`));
-}
+}));
