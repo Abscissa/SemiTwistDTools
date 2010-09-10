@@ -54,7 +54,7 @@ TRet eval(TRet)(string code, string imports="", string rdmdOpts="")
 		if(exists(filename))
 			remove(filename);
 	}
-	void cleanup()
+	void cleanup(string tempName)
 	{
 		if(evalCleanup)
 		{
@@ -110,7 +110,7 @@ TRet eval(TRet)(string code, string imports="", string rdmdOpts="")
 	
 	auto tempName = "eval_st_"~md5(code);
 	std.file.write(tempName~".d", code);
-	scope(exit) cleanup();
+	scope(exit) cleanup(tempName);
 
 	//TODO: On Win, create rdmdAlt if it isn't already there
 	auto rdmdName = "rdmd";
