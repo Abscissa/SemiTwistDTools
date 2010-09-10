@@ -44,9 +44,30 @@ void createPipe(out HANDLE readHandle, out HANDLE writeHandle)
 	}
 }
 
+bool evalCleanup = true;
+
 //TODO: Support string/wstring in addition to char[]/wchar[]
 TRet eval(TRet)(string code, string imports="", string rdmdOpts="")
 {
+	void removeIfExists(string filename)
+	{
+		if(exists(filename))
+			remove(filename);
+	}
+	void cleanup()
+	{
+		if(evalCleanup)
+		{
+			removeIfExists(tempName~".d");
+			removeIfExists(tempName~".d.deps");
+			removeIfExists(tempName~".map");
+			version(Windows)
+				removeIfExists(tempName~".exe");
+			else
+				removeIfExists(tempName);
+		}
+	}
+
 	enum boilerplate = q{
 		import std.conv;
 		import std.process;
@@ -89,14 +110,15 @@ TRet eval(TRet)(string code, string imports="", string rdmdOpts="")
 	
 	auto tempName = "eval_st_"~md5(code);
 	std.file.write(tempName~".d", code);
+	scope(exit) cleanup();
 
 	//TODO: On Win, create rdmdAlt if it isn't already there
 	auto rdmdName = "rdmd";
 	version(Windows)
 		rdmdName = "rdmdAlt";
 
-	auto errlvl = system(rdmdName~" "~rdmdOpts~" "~tempName~" "~to!string(cast(size_t)retValPipeWrite));
-	//TODO: Clean temp files
+	auto errlvl = system(rdmdName~" -of"~tempName~" "~rdmdOpts~" "~tempName~" "~to!string(cast(size_t)retValPipeWrite));
+	
 	if(errlvl != 0)
 		//TODO: Include failure text, and what part failed: compile or execution
 		throw new Exception("eval failed");
