@@ -5,6 +5,7 @@ module semitwist.util.text;
 
 import std.algorithm;
 import std.array;
+import std.conv;
 //import tango.core.Array;
 import std.md5;
 import std.stdio;//tango.io.Stdout;
@@ -68,22 +69,22 @@ mixin(multiTypeString!("whitespaceChars", r" \n\r\t\v\f"));
 /// Unix EOL: "\n"
 void toUnixEOL(T)(ref T[] str)
 {
-	str = substitute(str, to!(T[])(nlStr_Windows), to!(T[])(nlStr_Linux)); // Win  -> Unix
-	str = substitute(str, to!(T[])(nlStr_Mac9),    to!(T[])(nlStr_Linux)); // Mac9 -> Unix
+	str = replace(str, to!(T[])(nlStr_Windows), to!(T[])(nlStr_Linux)); // Win  -> Unix
+	str = replace(str, to!(T[])(nlStr_Mac9),    to!(T[])(nlStr_Linux)); // Mac9 -> Unix
 }
 
 /// Mac9 EOL: "\r"
 void toMac9EOL(T)(ref T[] str)
 {
-	str = substitute(str, to!(T[])(nlStr_Windows), to!(T[])(nlStr_Mac9)); // Win  -> Mac9
-	str = substitute(str, to!(T[])(nlStr_Linux),   to!(T[])(nlStr_Mac9)); // Unix -> Mac9
+	str = replace(str, to!(T[])(nlStr_Windows), to!(T[])(nlStr_Mac9)); // Win  -> Mac9
+	str = replace(str, to!(T[])(nlStr_Linux),   to!(T[])(nlStr_Mac9)); // Unix -> Mac9
 }
 
 /// Win EOL: "\r\n"
 void toWinEOL(T)(ref T[] str)
 {
 	toUnixEOL(str); // All -> Unix
-	str = substitute(str, to!(T[])(nlStr_Linux), to!(T[])(nlStr_Windows)); // Unix -> Win
+	str = replace(str, to!(T[])(nlStr_Linux), to!(T[])(nlStr_Windows)); // Unix -> Win
 }
 
 T[] toNativeEOL(T)(T[] str)
