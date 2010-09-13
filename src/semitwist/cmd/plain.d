@@ -145,10 +145,6 @@ class Cmd
 		foreach(int i, T arg; args)
 		{
 			if(i > 0) write(" ");
-
-			// Tango's Layout already handles all this
-			// converting-varargs-to-strings crap,
-			// so let it do all the dirty work:
 			write(arg);
 		}
 		writeln();
@@ -229,15 +225,16 @@ class Cmd
 	}
 +/
 
-/+
+
 	string prompt(string msg, bool delegate(string) accept=null, string msgRejected="")
 	{
 		string input;
 		while(true)
 		{
-			Stdout(msg).flush;
-			Cin.readln(input);
-			input = trim(input);
+			write(msg);
+			stdout.flush();
+			stdin.readln(input);
+			input = strip(input);
 			
 			if(accept is null)
 				break;
@@ -247,15 +244,15 @@ class Cmd
 					break;
 				else
 				{
-					Stdout.newline;
-					Stdout.formatln(msgRejected, input);
+					writeln();
+					writefln(msgRejected, input);
 				}
 			}
 		}
 		
 		return input;
 	}
-+/
+
 /+
 	bool isHelpSwitch(string str)
 	{

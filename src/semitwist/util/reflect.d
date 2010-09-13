@@ -23,7 +23,7 @@ if the class name changes, helping you keep such strings up-to-date.
 +/
 template nameof(alias T)
 {
-	enum string nameof = T.stringof[0..ctfe_find!char(to!(char[])(T.stringof), '(')];
+	enum string nameof = T.stringof[0..ctfe_find(to!(char[])(T.stringof), '(')];
 }
 
 template isAnyArray(T)
@@ -76,7 +76,7 @@ template callableExists(T)
 template ExprTypeOf(T)
 {
     static if(isCallable!(T))
-        alias ReturnTypeOf!(T) ExprTypeOf;
+        alias ReturnType!(T) ExprTypeOf;
     else
         alias T ExprTypeOf;
 }

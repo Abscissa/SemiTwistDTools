@@ -8,6 +8,7 @@ import std.stdio;//tango.io.Stdout;
 //import tango.text.Unicode;
 //import tango.text.Util;
 //import tango.util.Convert;
+import std.conv;
 import std.string;
 import std.regex;
 import std.iterator;

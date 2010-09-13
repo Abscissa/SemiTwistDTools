@@ -134,7 +134,7 @@ max(4,7): 7
 +/
 
 //TODO: Add ability to specify format (binary, hex, etc)
-//TODO: Make nameLength work by using Layout.format (at runtime)
+//TODO: Make nameLength work by using format (at runtime)
 //      on data passed to writefln
 //      (ie, align name/value)
 //TODO: Messes up on "ctfe_repeat_test_日本語3"
@@ -514,7 +514,7 @@ template getterLazy(string writeAccess, varType, string name, string genFunc="")
 		"		_"~name~"_cached = true;\n"~
 		"		_"~name~" = _"~name~"_gen();\n"~
 		"	}\n"~
-		"	return _"~name~(isAnyArrayType!(varType)?".dup":"")~";\n"~
+		"	return _"~name~";\n"~
 		"}\n"~
 		((genFunc=="")?"":
 			"private "~varType.stringof~" _"~name~"_gen()\n"~

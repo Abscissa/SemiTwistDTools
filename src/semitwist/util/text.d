@@ -14,7 +14,12 @@ import std.stdio;//tango.io.Stdout;
 //import tango.text.convert.Utf;
 //import tango.util.Convert;
 import std.traits;
+import std.stream;
 import std.string;
+import std.system;
+import std.utf;
+
+public import std.stream: BOM;
 
 import semitwist.util.all;
 import semitwist.util.compat.all;
@@ -59,20 +64,6 @@ template multiTypeString(string name, string data, string access="public")
 
 /// Warning: This is missing some unicode whitespace chars
 mixin(multiTypeString!("whitespaceChars", r" \n\r\t\v\f"));
-
-/+bool startsWith(T)(T[] source, T[] match)
-{
-	if(source.length == 0)
-		return match.length == 0;
-		
-	return (source.locatePattern(match) == 0);
-}
-
-//TODO: test this
-bool endsWith(T)(T[] source, T[] match)
-{
-	return (source.locatePatternPrior(match) == source.length - match.length);
-}+/
 
 /// Unix EOL: "\n"
 void toUnixEOL(T)(ref T[] str)
@@ -241,8 +232,6 @@ T unescapeDDQS(T)(T str) if(isSomeString!T)
 
 T escapeDDQS(T)(T str) if(isSomeString!T)
 {
-//	mixin(ensureCharType!("T"));
-		
 	T ret = str;
 	
 	ret = ctfe_substitute!(T)(ret, `\`, `\\`);
@@ -291,28 +280,40 @@ mixin(unittestSemiTwistDLib("Outputting some things", q{
 }));
 +/
 
-int locate(Char)(in Char[] s, dchar c, CaseSensitive cs = CaseSensitive.yes)
+/// Like std.string.indexOf, but with an optional 'start' parameter,
+/// and returns s.length when not found (instead of -1).
+//TODO*: Unittest these
+int locate(Char)(in Char[] s, dchar c, int start=0, CaseSensitive cs = CaseSensitive.yes)
 {
-	auto result = indexOf(s, c, cs);
-	return result == -1? s.length : result;
+	auto index = std.string.indexOf(s[start..$], c, cs);
+	return (index == -1)? s.length : index + start;
 }
 
-int locatePrior(in char[] s, dchar c, CaseSensitive cs = CaseSensitive.yes)
+/// ditto
+int locatePrior(in char[] s, dchar c, int start=int.max, CaseSensitive cs = CaseSensitive.yes)
 {
-	auto result = lastIndexOf(s, c, cs);
-	return result == -1? s.length : result;
+	if(start > s.length)
+		start = s.length;
+		
+	auto index = std.string.lastIndexOf(s[0..start], c, cs);
+	return (index == -1)? s.length : index;
 }
 
-int locate(Char1, Char2)(in Char1[] s, in Char2[] sub, CaseSensitive cs = CaseSensitive.yes)
+/// ditto
+int locate(Char1, Char2)(in Char1[] s, in Char2[] sub, int start=0, CaseSensitive cs = CaseSensitive.yes)
 {
-	auto result = indexOf(s, sub, cs);
-	return result == -1? s.length : result;
+	auto index = std.string.indexOf(s[start..$], sub, cs);
+	return (index == -1)? s.length : index + start;
 }
 
-int locatePrior(in char[] s, in char[] sub, CaseSensitive cs = CaseSensitive.yes)
+/// ditto
+int locatePrior(in char[] s, in char[] sub, int start=0, CaseSensitive cs = CaseSensitive.yes)
 {
-	auto result = lastIndexOf(s, sub, cs);
-	return result == -1? s.length : result;
+	if(start > s.length)
+		start = s.length;
+		
+	auto index = std.string.lastIndexOf(s[0..start], sub, cs);
+	return (index == -1)? s.length : index;
 }
 
 /// Suggested usage:
@@ -322,11 +323,13 @@ string formatln(T...)(T args)
 	return format(args)~"\n";
 }
 
+//TODO*: Fix stripNonPrintable
 T stripNonPrintable(T)(T str) if(isSomeString!T)
 {
-	T ret = str.dup;
-	auto numRemaining = ret.removeIf( (T c){return !isPrintable(c);} );
-	return ret[0..numRemaining];
+	//T ret = str.dup;
+	//auto numRemaining = ret.removeIf( (T c){return !isPrintable(c);} );
+	//return ret[0..numRemaining];
+	return str;
 }
 
 /// Return value is number of code units
@@ -590,6 +593,12 @@ T[] stripLinesLeftRight(T)(T[] lines) if(isSomeString!T)
 	return lines;
 }
 
+//TODO*: Unittest this
+bool contains(T)(const(Unqual!T)[] haystack, T needle)
+{
+	return std.algorithm.find(haystack, needle) != [];
+}
+
 /++
 Unindents, strips whitespace-only lines from top and bottom,
 and strips trailing whitespace from eash line.
@@ -672,6 +681,79 @@ string md5(string data)
 	return digestToString(digest);
 }
 
+immutable(ubyte)[] bomCodeOf(BOM bom)
+{
+	final switch(bom)
+	{
+	case BOM.UTF8:    return cast(immutable(ubyte)[])x"EF BB BF";
+	case BOM.UTF16LE: return cast(immutable(ubyte)[])x"FF FE";
+	case BOM.UTF16BE: return cast(immutable(ubyte)[])x"FE FF";
+	case BOM.UTF32LE: return cast(immutable(ubyte)[])x"FF FE 00 00";
+	case BOM.UTF32BE: return cast(immutable(ubyte)[])x"00 00 FE FF";
+	}
+}
+
+BOM bomOf(const(ubyte)[] str)
+{
+	if(str.startsWith(bomCodeOf(BOM.UTF8   ))) return BOM.UTF8;
+	if(str.startsWith(bomCodeOf(BOM.UTF16LE))) return BOM.UTF16LE;
+	if(str.startsWith(bomCodeOf(BOM.UTF16BE))) return BOM.UTF16BE;
+	if(str.startsWith(bomCodeOf(BOM.UTF32LE))) return BOM.UTF32LE;
+	if(str.startsWith(bomCodeOf(BOM.UTF32BE))) return BOM.UTF32BE;
+	
+	return BOM.UTF8;
+}
+
+version(LittleEndian)
+{
+	enum BOM native16BitBOM    = BOM.UTF16LE;
+	enum BOM native32BitBOM    = BOM.UTF32LE;
+	enum BOM nonNative16BitBOM = BOM.UTF16BE;
+	enum BOM nonNative32BitBOM = BOM.UTF32BE;
+}
+else
+{
+	enum BOM native16BitBOM    = BOM.UTF16BE;
+	enum BOM native32BitBOM    = BOM.UTF32BE;
+	enum BOM nonNative16BitBOM = BOM.UTF16LE;
+	enum BOM nonNative32BitBOM = BOM.UTF32LE;
+}
+
+bool isNativeEndian(BOM bom)
+{
+	return bom == native16BitBOM || bom == native32BitBOM || bom == BOM.UTF8;
+}
+
+bool isNonNativeEndian(BOM bom)
+{
+	return !isNativeEndian(bom);
+}
+
+bool is8Bit(BOM bom)
+{
+	return bom == BOM.UTF8;
+}
+
+bool is16Bit(BOM bom)
+{
+	return bom == native16BitBOM || bom == nonNative16BitBOM;
+}
+
+bool is32Bit(BOM bom)
+{
+	return bom == native32BitBOM || bom == nonNative32BitBOM;
+}
+
+Endian endianOf(BOM bom)
+{
+	final switch(bom)
+	{
+	case BOM.UTF8: return endian;
+	case BOM.UTF16LE, BOM.UTF32LE: return Endian.LittleEndian;
+	case BOM.UTF16BE, BOM.UTF32BE: return Endian.BigEndian;
+	}
+}
+
 mixin(unittestSemiTwistDLib(q{
 	// escapeDDQS, unescapeDDQS
 	mixin(deferEnsure!(q{ `hello`.escapeDDQS()     }, q{ _ == `"hello"` }));
@@ -713,6 +795,12 @@ mixin(unittestSemiTwistDLib(q{
 	
 	//enum ctfe_unindent_dummy5 = "  a\n \tb".unindent(); // Should fail to compile
 	
+	// contains
+	mixin(deferEnsure!(q{ contains!char("abcde", 'a') }, q{ _==true  }));
+	mixin(deferEnsure!(q{ contains!char("abcde", 'c') }, q{ _==true  }));
+	mixin(deferEnsure!(q{ contains!char("abcde", 'e') }, q{ _==true  }));
+	mixin(deferEnsure!(q{ contains!char("abcde", 'x') }, q{ _==false }));
+
 	// stripLines: Top and Bottom
 	mixin(deferEnsure!(q{ " \t \n\t \n ABC \n \n DEF \n \t \n\t \n".stripLinesTop()       }, q{ _ == " ABC \n \n DEF \n \t \n\t \n" }));
 	mixin(deferEnsure!(q{ " \t \n\t \n ABC \n \n DEF \n \t \n\t \n".stripLinesBottom()    }, q{ _ == " \t \n\t \n ABC \n \n DEF "   }));
