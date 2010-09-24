@@ -1,11 +1,9 @@
 // Written in the D programming language.
 
 // This is a slight modification of RDMD r1400 with patches
-// applied for issues #4672, #4683, #4684, and #4688.
+// applied for these issues:
+//   #4672, #4683, #4684, #4688, #4928, #4930
 // These are necessary for SemiTwist D Tools.
-//
-// This can just be run from whatever RDMD is already
-// included with DMD.
 
 import std.algorithm, std.c.stdlib, std.exception, std.date,
     std.file, std.getopt,
@@ -89,6 +87,10 @@ int main(string[] args)
         }
     }
 
+	auto programPos = indexOfProgram(args);
+	// Insert "--" to tell getopts when to stop
+	args = args[0..programPos] ~ "--" ~ ( (programPos<args.length)? args[programPos..$] : [] );
+
     bool bailout;    // bailout set by functions called in getopt if
                      // program should exit
     string[] loop;       // set by --loop
@@ -97,7 +99,6 @@ int main(string[] args)
     getopt(args,
             std.getopt.config.caseSensitive,
             std.getopt.config.passThrough,
-            std.getopt.config.stopOnFirstNonOption,
             "build-only", &buildOnly,
             "chatty", &chatty,
             "dry-run", &dryRun,
@@ -126,23 +127,19 @@ int main(string[] args)
     }
     
     // Parse the program line - first find the program to run
-    uint programPos = 1;
-    for (;; ++programPos)
-    {
-        if (programPos == args.length)
-        {
-            write(helpString);
-            return 1;
-        }
-        if (args[programPos].length && args[programPos][0] != '-') break;
-    }
+	programPos = indexOfProgram(args);
+	if(programPos == args.length)
+	{
+	    write(helpString);
+		return 1;
+	}
     const
         root = /*rel2abs*/(chomp(args[programPos], ".d") ~ ".d"),
         exeBasename = basename(root, ".d"),
         exeDirname = dirname(root);
     auto programArgs = args[programPos + 1 .. $];
     args = args[0 .. programPos];
-    const compilerFlags = args[1 .. programPos];
+    const compilerFlags = args[1 .. programPos-1];
 
     // Compute the object directory and ensure it exists
     invariant objDir = getObjPath(root, compilerFlags);
@@ -202,6 +199,31 @@ int main(string[] args)
     }
     else
         return buildOnly ? 0 : execv(exe, [ exe ] ~ programArgs);
+}
+
+size_t indexOfProgram(ref string[] args)
+{
+	foreach(i, arg; args)
+	{
+		if(i == 0)
+			continue;
+			
+		if(arg.length > 0 && arg[0] != '-' && arg[0] != '@')
+		{
+			if(
+				!arg.endsWith(".obj") &&
+				!arg.endsWith(".o") &&
+				!arg.endsWith(".lib") &&
+				!arg.endsWith(".a") &&
+				!arg.endsWith(".def")
+			)
+			{
+				return i;
+			}
+		}
+	}
+	
+	return args.length;
 }
 
 bool inALibrary(in string source, in string object)
@@ -268,7 +290,9 @@ private int rebuild(string root, string fullExe,
         string objDir, in string[string] myModules,
         in string[] compilerFlags, bool addStubMain)
 {
-    auto todo = compiler~" "~join(compilerFlags, " ")
+    //auto todo = `..\SemiTwistDTools\bin\showargs`~" "~join(compilerFlags, " ")
+    //auto todo = "bin\\ddmd"~" "~join(compilerFlags, " ")
+    auto todo = " "~join(compilerFlags, " ")
         ~" -of"~shellQuote(fullExe)
         ~" -od"~shellQuote(objDir)
         ~" -I"~shellQuote(dirname(root))
@@ -285,6 +309,19 @@ private int rebuild(string root, string fullExe,
         todo ~= stubMain;
     }
     
+	// Different shells and OS functions have different limits,
+	// but 1024 seems to be the smallest maximum outside of MS-DOS.
+	enum maxLength = 1024;
+	if(todo.length + compiler.length >= maxLength)
+	{
+		auto rspName = std.path.join(myOwnTmpDir,
+				"rdmd." ~ hash(root, compilerFlags) ~ ".rsp");
+
+		std.file.write(rspName, todo);
+		todo = " " ~ shellQuote("@"~rspName);
+	}
+
+	todo = compiler ~ todo;
     invariant result = run(todo);
     if (result) 
     {
