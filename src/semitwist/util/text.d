@@ -308,7 +308,7 @@ int locate(Char1, Char2)(in Char1[] s, in Char2[] sub, int start=0, CaseSensitiv
 }
 
 /// ditto
-int locatePrior(in char[] s, in char[] sub, int start=0, CaseSensitive cs = CaseSensitive.yes)
+int locatePrior(in char[] s, in char[] sub, int start=int.max, CaseSensitive cs = CaseSensitive.yes)
 {
 	if(start > s.length)
 		start = s.length;

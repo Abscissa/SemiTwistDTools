@@ -10,6 +10,7 @@ import std.math;//tango.math.Math;
 //import convInt = tango.text.convert.Integer;
 import std.string;
 import std.conv;
+import std.stdio;
 
 public import semitwist.refbox;
 import semitwist.util.all;
