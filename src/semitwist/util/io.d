@@ -45,9 +45,11 @@ TOut readUTFFile(TOut, TFilename)(TFilename filename)
 }
 
 /++
-Converts any type of Unicode/UTF string with a BOM (UTF-8, UTF-16, UTF-32,
-big or little endian), strips the BOM, and automatically converts it to native endianness and
-whatever string type is specified in TOut.
+Converts any type of Unicode/UTF string with or without a BOM (UTF-8, UTF-16,
+UTF-32, big or little endian), strips the BOM (if it exists), and automatically
+converts it to native endianness and whatever string type is specified in TOut.
+
+If there is no BOM, then UTF-8 is assumed.
 	
 Examples:
 	string  utf8  = utfConvert!string ( anyUTFDataWithBOM );
@@ -59,7 +61,10 @@ TOut utfConvert(TOut, TInChar)(immutable(TInChar)[] data)
 {
 	auto bom = bomOf(cast(immutable(ubyte)[])data);
 	auto bomCode = bomCodeOf(bom);
-	data = data[bomCode.length..$];
+	
+	// Strip BOM if it exists
+	if(data.length >= bomCode.length && data[0..bomCode.length] == bomCode)
+		data = data[bomCode.length..$];
 	
 	if(isNonNativeEndian(bom))
 	{
@@ -221,6 +226,8 @@ mixin(unittestSemiTwistDLib(q{
 	
 	// utfConvert
 	mixin(deferEnsure!(q{ utfConvert!string(cast(string)bomCodeOf(semitwist.util.text.BOM.UTF8)~("AB\nCD"~"\r"~"\nEF")) }, q{ _== ("AB\nCD"~"\r"~"\nEF") }));
+	mixin(deferEnsure!(q{ utfConvert!string ("ABCDEF") }, q{ _== ("ABCDEF" ) }));
+	mixin(deferEnsure!(q{ utfConvert!dstring("ABCDEF") }, q{ _== ("ABCDEF"d) }));
 	//TODO: Check into the weird disappearing \r:
 	//mixin(traceVal!(q{ ("AB\nCD"~"\r"~"\nEF").escapeDDQS() }));
 	//mixin(traceVal!(q{ ("AB\nCD"~"\r"~"\nEF").length }));
