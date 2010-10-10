@@ -310,6 +310,39 @@ template traceValCT(bool useNewline, values...)
 	}
 }
 
+/// Part of a workaround for DMD Issues #5029 and #5030
+string fixAATypeName(string str)
+{
+	enum prefix = "AssociativeArray!(";
+	if(str.length > prefix.length && str[0..prefix.length] == prefix)
+	{
+		auto strippedStr = str[prefix.length..$-1];
+		int nestLevel=0;
+		size_t i;
+		bool done=false;
+		for(i=0; !done && i < strippedStr.length; i++)
+		{
+			switch(strippedStr[i])
+			{
+			case '(': nestLevel++; break;
+			case ')': nestLevel--; break;
+			case ',':
+				if(nestLevel==0)
+					done=true;
+				break;
+			default: break;
+			}
+		}
+		i--;
+		auto typeKey = strippedStr[0..i];
+		auto typeVal = strippedStr[i+1..$];
+		
+		return typeVal~"["~typeKey~"]";
+	}
+	else
+		return str;
+}
+
 /++
 Useful in class/struct declarations for DRY.
 
@@ -379,16 +412,16 @@ template getter(string writeAccess, varType, string name, varType initialValue=v
 	static if(is(varType.init))
 	{
 		enum string getter =
-			writeAccess~" "~varType.stringof~" _"~name~(initialValue.stringof == varType.init.stringof ? "" : "=" ~ initialValue.stringof)~";\n"~
-			writeAccess~" "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
-			"public "~varType.stringof~" "~name~"() {return _"~name~";}\n";
+			writeAccess~" "~fixAATypeName(varType.stringof)~" _"~name~(initialValue.stringof == varType.init.stringof ? "" : "=" ~ initialValue.stringof)~";\n"~
+			writeAccess~" "~fixAATypeName(varType.stringof)~" "~name~"("~fixAATypeName(varType.stringof)~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
+			"public "~fixAATypeName(varType.stringof)~" "~name~"() {return _"~name~";}\n";
 	}
 	else
 	{
 		enum string getter =
-			writeAccess~" "~varType.stringof~" _"~name~";\n"~
-			writeAccess~" "~varType.stringof~" "~name~"("~varType.stringof~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
-			"public "~varType.stringof~" "~name~"() {return _"~name~";}\n";
+			writeAccess~" "~fixAATypeName(varType.stringof)~" _"~name~";\n"~
+			writeAccess~" "~fixAATypeName(varType.stringof)~" "~name~"("~fixAATypeName(varType.stringof)~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
+			"public "~fixAATypeName(varType.stringof)~" "~name~"() {return _"~name~";}\n";
 	}
 }
 
@@ -496,7 +529,7 @@ template getterLazy(string writeAccess, varType, string name, string genFunc="")
 		"\n"~
 		((genFunc=="")?
 			"static if(!is(typeof(_"~name~"_gen)==function))\n"~
-			`	static assert(false, "'getterLazy!(`~varType.stringof~`, \"`~name~`\")' requires function '`~varType.stringof~` _`~name~`_gen()' to be defined");`~"\n"
+			`	static assert(false, "'getterLazy!(`~fixAATypeName(varType.stringof)~`, \"`~name~`\")' requires function '`~fixAATypeName(varType.stringof)~` _`~name~`_gen()' to be defined");`~"\n"
 
 			// Blocked by DMD Bug #2885
 			//"static if(!is(ReturnTypeOf!(_"~name~"_gen):"~varType.stringof~"))\n"~

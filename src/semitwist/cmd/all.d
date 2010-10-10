@@ -16,6 +16,7 @@ public import std.math;//tango.math.Math;
 //public import tango.sys.Environment;
 //public import tango.text.Unicode;
 //public import tango.util.Convert;
+public import std.conv;
 public import std.string;
 public import std.array;
 public import std.algorithm : find, sort, reduce;

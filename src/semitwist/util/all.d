@@ -18,6 +18,8 @@ In SVN comments:
 //   DMD output capturing for Programmer's Notepad:
 //   ((.)*: )?(warning - )?([ \t]*instantiatied in )?((.)*@)?%f\(%l(:%c)?\):
 
+//TODO*: Make getter/getterLazy return const version when appropriate (ie arrays, other ref-ish types)
+
 module semitwist.util.all;
 
 public import semitwist.util.array;
