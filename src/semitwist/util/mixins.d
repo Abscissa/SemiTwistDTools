@@ -140,16 +140,16 @@ max(4,7): 7
 //TODO: Messes up on "ctfe_repeat_test_日本語3"
 template traceVal(values...)
 {
-	const string traceVal = traceVal!(false, values);
+	enum traceVal = traceVal!(false, values);
 }
 
 template traceVal(bool useNewline, values...)
 {
 	static if(values.length == 0)
-		const string traceVal = "";
+		enum traceVal = "";
 	else
 	{
-		const string traceVal =
+		enum traceVal =
 			"writefln(\"%s:"~(useNewline?"\\n":" ")~"%s\", "~values[0].stringof~", "~unescapeDDQS(values[0].stringof)~");"
 			~ traceVal!(useNewline, values[1..$]);
 	}
@@ -189,10 +189,10 @@ C:\path\file.d(1): trace
 template trace(string prefix="")
 {
 	static if(prefix=="")
-		const string trace =
+		enum trace =
 			`writefln("%s(%s): trace", __FILE__, __LINE__); stdout.flush();`;
 	else
-		const string trace =
+		enum trace =
 			`writefln("%s: %s(%s): trace", `~prefix.stringof~`, __FILE__, __LINE__); stdout.flush();`;
 }
 
@@ -237,7 +237,7 @@ int myInt=5;
 
 template traceMixin(string name, string args)
 {
-	const string traceMixin = 
+	enum traceMixin = 
 		`pragma(msg, "` ~ name ~ `: \n"~`~name~`(`~args~`));`~"\n"~
 		"mixin("~name~"("~args~"));\n";
 }
@@ -291,18 +291,18 @@ Hello World
 
 template traceValCT(values...)
 {
-	const string traceValCT = traceValCT!(false, values);
+	enum traceValCT = traceValCT!(false, values);
 }
 
 template traceValCT(bool useNewline, values...)
 {
 	static if(values.length == 0)
 	{
-		const string traceValCT = "";
+		enum traceValCT = "";
 	}
 	else
 	{
-		const string traceValCT =
+		enum traceValCT =
 			"pragma(msg, "~escapeDDQS(values[0])~"~\":"~(useNewline? "\\n":" ")~"\" ~ ("~values[0]~"));\n"~
 			traceValCT!(useNewline, values[1..$]);
 
@@ -347,12 +347,6 @@ string fixAATypeName(string str)
 Useful in class/struct declarations for DRY.
 
 Generates a public getter, private setter, and a hidden private var.
-If the type is an array, the getter automatically returns a
-shallow ".dup" (for safety).
-
-As with any getter in D1, care should be taken when using this for
-reference types, as there is no general way to prevent a caller from
-changing the data that is being pointed to.
 
 Usage:
 
@@ -366,62 +360,62 @@ Turns Into:
 
 ----
 private int _myVar;
-private int myVar(int _NEW_VAL_)
+@property private int myVar(int _NEW_VAL_)
 {
 	_myVar = _NEW_VAL_;
 	return _myVar;
 }
-public int myVar()
+@property public int myVar()
 {
 	return _myVar;
 }
 
 protected float _someFloat = 2.5;
-protected float someFloat(float _NEW_VAL_)
+@property protected float someFloat(float _NEW_VAL_)
 {
 	_someFloat = _NEW_VAL_;
 	return _someFloat;
 }
-public float someFloat()
+@property public float someFloat()
 {
 	return _someFloat;
 }
 
 private string _str;
-private string str(string _NEW_VAL_)
+@property private string str(string _NEW_VAL_)
 {
 	_str = _NEW_VAL_;
 	return _str;
 }
-public string str()
+@property public string str()
 {
-	return _str.dup;
+	return _str;
 }
 ----
 +/
 template getter(varType, string name, varType initialValue=varType.init)
 {
 	static if(is(varType.init))
-		enum string getter = getter!("private", varType, name, initialValue);
+		enum getter = getter!("private", varType, name, initialValue);
 	else
-		enum string getter = getter!("private", varType, name);
+		enum getter = getter!("private", varType, name);
 }
 
 template getter(string writeAccess, varType, string name, varType initialValue=varType.init)
 {
 	static if(is(varType.init))
 	{
-		enum string getter =
+		enum getter =
 			writeAccess~" "~fixAATypeName(varType.stringof)~" _"~name~(initialValue.stringof == varType.init.stringof ? "" : "=" ~ initialValue.stringof)~";\n"~
-			writeAccess~" "~fixAATypeName(varType.stringof)~" "~name~"("~fixAATypeName(varType.stringof)~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
-			"public "~fixAATypeName(varType.stringof)~" "~name~"() {return _"~name~";}\n";
+			"@property "~writeAccess~" "~fixAATypeName(varType.stringof)~" "~name~"("~fixAATypeName(varType.stringof)~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
+			"@property public "~fixAATypeName(varType.stringof)~" "~name~"() {return _"~name~";}\n";
 	}
 	else
 	{
-		enum string getter =
+		enum getter =
 			writeAccess~" "~fixAATypeName(varType.stringof)~" _"~name~";\n"~
-			writeAccess~" "~fixAATypeName(varType.stringof)~" "~name~"("~fixAATypeName(varType.stringof)~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
-			"public "~fixAATypeName(varType.stringof)~" "~name~"() {return _"~name~";}\n";
+			"@property "~writeAccess~" "~fixAATypeName(varType.stringof)~" "~name~"("~fixAATypeName(varType.stringof)~" _NEW_VAL_) {_"~name~"=_NEW_VAL_;return _"~name~";}\n"~
+			"@property public "~fixAATypeName(varType.stringof)~" "~name~"() {return _"~name~";}\n";
 	}
 }
 
@@ -445,13 +439,6 @@ Additional Info:
 If you don't want the value to ever be cached, just set "_myVarName_cached"
 to false within your provided generator function.
 
-As with "getter", if the type is an array, the getter automatically
-returns a shallow ".dup" (for safety).
-
-As with any getter in D1, care should be taken when using this for
-reference types, as there is no general way to prevent a caller from
-changing the data that is being pointed to.
-
 Usage:
 
 ----
@@ -474,7 +461,7 @@ Turns Into:
 ----
 private int _myVar;
 private bool _myVar_cached = false;
-public int myVar() {
+@property public int myVar() {
 	if(!_myVar_cached) {
 		_myVar_cached = true;
 		_myVar = _myVar_gen();
@@ -489,7 +476,7 @@ private int _myVar_gen()
 
 protected int _myVar2;
 protected bool _myVar2_cached = false;
-public int myVar2() {
+@property public int myVar2() {
 	if(!_myVar2_cached) {
 		_myVar2_cached = true;
 		_myVar2 = _myVar2_gen();
@@ -503,12 +490,12 @@ protected int _myVar2_gen()
 
 private string _str;
 private bool _str_cached = false;
-public string str() {
+@property public string str() {
 	if(!_str_cached) {
 		_str_cached = true;
 		_str = customGenFunc();
 	}
-	return _str.dup;
+	return _str;
 }
 private string customGenFunc()
 {
@@ -520,12 +507,12 @@ private string customGenFunc()
 //TODO? Merge with getter if reasonably possible
 template getterLazy(varType, string name, string genFunc="")
 {
-	const string getterLazy = getterLazy!("private", varType, name, genFunc);
+	enum getterLazy = getterLazy!("private", varType, name, genFunc);
 }
 
 template getterLazy(string writeAccess, varType, string name, string genFunc="")
 {
-	const string getterLazy =
+	enum getterLazy =
 		"\n"~
 		((genFunc=="")?
 			"static if(!is(typeof(_"~name~"_gen)==function))\n"~
@@ -542,7 +529,7 @@ template getterLazy(string writeAccess, varType, string name, string genFunc="")
 
 		writeAccess~" "~varType.stringof~" _"~name~";\n"~
 		writeAccess~" bool _"~name~"_cached = false;\n"~
-		"public "~varType.stringof~" "~name~"() {\n"~
+		"@property public "~varType.stringof~" "~name~"() {\n"~
 		"	if(!_"~name~"_cached) {\n"~
 		"		_"~name~"_cached = true;\n"~
 		"		_"~name~" = _"~name~"_gen();\n"~
