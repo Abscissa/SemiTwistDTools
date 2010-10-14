@@ -16,6 +16,7 @@ import std.file;
 import std.stdio;
 import std.stream;
 import std.string;
+import std.system;
 
 import semitwist.util.all;
 import semitwist.util.compat.all;
@@ -159,6 +160,16 @@ T readStringz(T)(std.stream.File reader) if(isSomeString!T)
 
 	// No references saved, nothing can change it.
 	return cast(T)(str[0..$-1]);
+}
+
+//TODO*: Unittest this
+// This assumes that data is already in native endianness
+T toEndian(T)(T data, Endian en) if(is(T==ushort) || is(T==uint))
+{
+	if(en == endian)
+		return data;
+	else
+		return byteSwap(data);
 }
 
 /// Gets the full path to the currently running executable,
