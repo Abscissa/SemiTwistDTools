@@ -25,7 +25,7 @@ import semitwist.util.compat.all;
 Sounds like a contradiction of terms, but this is just
 intended to allow unittests to output ALL failures instead
 of only outputting the first one and then stopping.
-*/
+*/ 
 template deferAssert(string condStr, string msg="")
 {
 	const string deferAssert =
