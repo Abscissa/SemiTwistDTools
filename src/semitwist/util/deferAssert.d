@@ -33,7 +33,7 @@ template deferAssert(string condStr, string msg="")
 	"{ const long _deferAssert_line = __LINE__;\n"~
 	"    try\n"~
 	"    {\n"~
-	"        bool _deferAssert_condResult = ("~condStr~");\n"~
+	"        bool _deferAssert_condResult = ("~condStr~")?true:false;\n"~
 	"        _deferAssert!(_deferAssert_line, __FILE__, "~condStr.stringof~", "~msg.stringof~")(_deferAssert_condResult);\n"~
 	"    }\n"~
 	"    catch(Object _deferAssert_e)\n"~

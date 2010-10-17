@@ -783,6 +783,17 @@ struct InsensitiveT(T) if(isSomeString!T)
 		return str;
 	}
 	
+	private void updateFoldingCase()
+	{
+		// Phobos doesn't actually have a tofolding() yet
+		foldingCase = tolower(str);
+	}
+	
+	const hash_t toHash()
+	{
+		return typeid(string).getHash(&foldingCase);
+	}
+	
 	void opAssign(T2)(T2 b) if(isInsensitive!T2 || isSomeString!T2)
 	{
 		static if(is(isInsensitive!T == T2))
@@ -814,17 +825,20 @@ struct InsensitiveT(T) if(isSomeString!T)
 		return this;
 	}
 	
-	private void updateFoldingCase()
-	{
-		// Phobos doesn't actually have a tofolding() yet
-		foldingCase = tolower(str);
-	}
-	
 	const bool opEquals(ref const InsensitiveT!T b)
 	{
-		if (str is b.str) return true;
+		/+if (str is b.str) return true;
 		if (str is null || b.str is null) return false;
-		return foldingCase == b.foldingCase;
+		return foldingCase == b.foldingCase;+/
+		return this.opCmp(b) == 0;
+	}
+	
+	const int opCmp(ref const InsensitiveT!T b)
+	{
+		if (str   is b.str) return 0;
+		if (str   is null ) return -1;
+		if (b.str is null ) return 1;
+		return std.string.cmp(foldingCase, b.foldingCase);
 	}
 	
     InsensitiveT!T opSlice()
@@ -848,7 +862,7 @@ alias InsensitiveT!wstring WInsensitive;
 alias InsensitiveT!dstring DInsensitive;
 
 mixin(unittestSemiTwistDLib(q{
-	
+
 	// Insensitive
 	mixin(deferAssert!(q{ Insensitive("TEST") == Insensitive("Test") }));
 	mixin(deferAssert!(q{ Insensitive("TEST") == Insensitive("TEST") }));
@@ -872,6 +886,19 @@ mixin(unittestSemiTwistDLib(q{
 
 	mixin(deferAssert!(q{ ins == Insensitive("AbcD") }));
 	
+	int[Insensitive] ins_aa = [Insensitive("ABC"):1, Insensitive("DEF"):2, Insensitive("Xyz"):3];
+	mixin(deferAssert!(q{ Insensitive("ABC") in ins_aa }));
+	mixin(deferAssert!(q{ Insensitive("DEF") in ins_aa }));
+	mixin(deferAssert!(q{ Insensitive("Xyz") in ins_aa }));
+	mixin(deferAssert!(q{ Insensitive("aBc") in ins_aa }));
+	mixin(deferAssert!(q{ Insensitive("dEf") in ins_aa }));
+	mixin(deferAssert!(q{ Insensitive("xYZ") in ins_aa }));
+	mixin(deferAssert!(q{ Insensitive("HI") !in ins_aa }));
+	
+	mixin(deferAssert!(q{ ins_aa[Insensitive("aBc")] == 1 }));
+	mixin(deferAssert!(q{ ins_aa[Insensitive("dEf")] == 2 }));
+	mixin(deferAssert!(q{ ins_aa[Insensitive("xYZ")] == 3 }));
+
 	// escapeDDQS, unescapeDDQS
 	mixin(deferEnsure!(q{ `hello`.escapeDDQS()     }, q{ _ == `"hello"` }));
 	mixin(deferEnsure!(q{ `"hello"`.unescapeDDQS() }, q{ _ == "hello"   }));
