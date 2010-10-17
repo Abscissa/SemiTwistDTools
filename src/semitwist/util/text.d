@@ -755,7 +755,123 @@ Endian endianOf(BOM bom)
 	}
 }
 
+template isInsensitive(T)
+{
+	enum isInsensitive =
+		is(T==InsensitiveT!string ) ||
+		is(T==InsensitiveT!wstring) ||
+		is(T==InsensitiveT!dstring);
+}
+static assert(isInsensitive!Insensitive);
+static assert(isInsensitive!WInsensitive);
+static assert(isInsensitive!DInsensitive);
+static assert(!isInsensitive!string);
+
+struct InsensitiveT(T) if(isSomeString!T)
+{
+	private T str;
+	private T foldingCase;
+	
+	this(T newStr)
+	{
+		str = newStr;
+		updateFoldingCase();
+	}
+	
+	T toString()
+	{
+		return str;
+	}
+	
+	void opAssign(T2)(T2 b) if(isInsensitive!T2 || isSomeString!T2)
+	{
+		static if(is(isInsensitive!T == T2))
+		{
+			str = b.str;
+			foldingCase = newStr.foldingCase;
+		}
+		else static if(isInsensitive!T2)
+		{
+			str = to!T(b.str);
+			updateFoldingCase();
+		}
+		else
+		{
+			str = b;
+			updateFoldingCase();
+		}
+	}
+	
+	InsensitiveT!T opBinary(string op)(InsensitiveT!T b) if(op=="~")
+	{
+		return InsensitiveT!T(str ~ b.str);
+	}
+	
+	InsensitiveT!T opOpAssign(string op)(ref InsensitiveT!T b) if(op=="~")
+	{
+		str ~= b.str;
+		foldingCase ~= b.foldingCase;
+		return this;
+	}
+	
+	private void updateFoldingCase()
+	{
+		// Phobos doesn't actually have a tofolding() yet
+		foldingCase = tolower(str);
+	}
+	
+	const bool opEquals(ref const InsensitiveT!T b)
+	{
+		if (str is b.str) return true;
+		if (str is null || b.str is null) return false;
+		return foldingCase == b.foldingCase;
+	}
+	
+    InsensitiveT!T opSlice()
+	{
+		return this;
+	}
+
+    auto opSlice(size_t x)
+	{
+		return str[x];
+	}
+
+    InsensitiveT!T opSlice(size_t x, size_t y)
+	{
+		return InsensitiveT!T(str[x..y]);
+	}
+}
+
+alias InsensitiveT!string  Insensitive;
+alias InsensitiveT!wstring WInsensitive;
+alias InsensitiveT!dstring DInsensitive;
+
 mixin(unittestSemiTwistDLib(q{
+	
+	// Insensitive
+	mixin(deferAssert!(q{ Insensitive("TEST") == Insensitive("Test") }));
+	mixin(deferAssert!(q{ Insensitive("TEST") == Insensitive("TEST") }));
+	mixin(deferAssert!(q{ Insensitive("TEST") != Insensitive("ABCD") }));
+	mixin(deferAssert!(q{ Insensitive("TEST") != Insensitive(null)   }));
+	mixin(deferAssert!(q{ Insensitive(null)   == Insensitive(null)   }));
+	mixin(deferAssert!(q{ Insensitive("Test") == Insensitive("TEST") }));
+	mixin(deferAssert!(q{ Insensitive("ABCD") != Insensitive("TEST") }));
+	mixin(deferAssert!(q{ Insensitive(null)   != Insensitive("TEST") }));
+
+	mixin(deferAssert!(q{ Insensitive("TEST")[1..3] == Insensitive("ES") }));
+	mixin(deferAssert!(q{ Insensitive("TEST")[1..3] == Insensitive("es") }));
+	mixin(deferAssert!(q{ Insensitive("TEST")[1..3] != Insensitive("AB") }));
+
+	mixin(deferAssert!(q{ Insensitive("TE")~Insensitive("ST") == Insensitive("TesT") }));
+	
+	Insensitive ins;
+	ins = Insensitive("TEST");
+	ins = "ab";
+	ins ~= Insensitive("cd");
+
+	mixin(deferAssert!(q{ ins == Insensitive("AbcD") }));
+	
 	// escapeDDQS, unescapeDDQS
 	mixin(deferEnsure!(q{ `hello`.escapeDDQS()     }, q{ _ == `"hello"` }));
 	mixin(deferEnsure!(q{ `"hello"`.unescapeDDQS() }, q{ _ == "hello"   }));
