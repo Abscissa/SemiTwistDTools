@@ -6,7 +6,7 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-This has been tested to work with DMD 2.048
+This has been tested to work with DMD 2.049/2.050
 +/
 
 module semitwist.apps.samples.cmdSample.main;
@@ -43,13 +43,13 @@ void main(string[] args)
 	cmd.echo("No worry about forgetting spaces:");
 	cmd.echo(32, 64, 128, 256);
 	class Foo {
-		string toString() {
+		override string toString() {
 			return "Any type that Stdout can handle is ok.";
 		}
 	}
 	cmd.echo(new Foo(), "See?");
-	Stdout("Of course, ");
-	writefln("ordinary Stdout %s available too.", "is");
+	write("Of course, ");
+	writefln("ordinary writeln %s available too.", "is");
 
 	cmd.pause();
 

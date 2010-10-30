@@ -8,7 +8,7 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 
 IGNORE THIS APP FOR NOW, IT IS NOT USABLE YET
 
-This has been tested to work with DMD 2.048
+This has been tested to work with DMD 2.049/2.050
 +/
 
 module semitwist.apps.stmanage.stswitch.main;

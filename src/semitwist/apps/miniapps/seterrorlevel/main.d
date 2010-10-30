@@ -6,7 +6,7 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-This has been tested to work with DMD 2.048
+This has been tested to work with DMD 2.049/2.050
 +/
 
 module semitwist.apps.miniapps.seterrorlevel.main;

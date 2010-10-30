@@ -11,7 +11,7 @@ from semitwistlib. Windows "echo" is built into the commandline and isn't
 an actual executable, so std.process, and therefore
 semitwist.cmd.CommandLine, can't launch it.
 
-This has been tested to work with DMD 2.048
+This has been tested to work with DMD 2.049/2.050
 +/
 
 module semitwist.apps.miniapps.myecho.main;

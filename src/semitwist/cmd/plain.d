@@ -213,8 +213,7 @@ class Cmd
 	}
 +/
 
-//TODO***
-/+	void pause()
+	void pause()
 	{
 /+
 // Can't do it this way until I get promptChar working
@@ -223,7 +222,6 @@ class Cmd
 +/
 		prompt("Press Enter to continue...");
 	}
-+/
 
 
 	string prompt(string msg, bool delegate(string) accept=null, string msgRejected="")
