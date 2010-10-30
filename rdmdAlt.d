@@ -226,7 +226,7 @@ size_t indexOfProgram(ref string[] args)
 	return args.length;
 }
 
-bool inALibrary(in string source, in string object)
+bool inALibrary(string source, in string object)
 {
     // Heuristics: if source starts with "std.", it's in a library
     return std.string.startsWith(source, "std.")
