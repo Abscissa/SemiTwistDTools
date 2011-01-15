@@ -107,6 +107,20 @@ class Conf
 		return [];
 	}
 	
+	private static int convertSwitch(ref Switch[] switches, string fromStr, string toStr)
+	{
+		int numConverted = 0;
+		foreach(ref Switch sw; switches)
+		{
+			if(sw.data == fromStr)
+			{
+				sw.data = toStr;
+				numConverted++;
+			}
+		}
+		return numConverted;
+	}
+	
 	private static int convertPrefix(ref Switch[] switches, string fromPrefix, string toPrefix)
 	{
 		int numConverted = 0;
@@ -184,8 +198,8 @@ class Conf
 			convertPrefix(switches, "+o", "-of");
 			convertPrefix(switches, "+O", "-od");
 			convertPrefix(switches, "-C",  ""  );
-			convertPrefix(switches, "-v", "--chatty");
-			convertPrefix(switches, "+v", "--chatty");
+			convertSwitch(switches, "-v", "--chatty");
+			convertSwitch(switches, "+v", "--chatty");
 			convertPrefix(switches, "+nolink", "-c");
 			removePrefix(switches, "+");
 			
