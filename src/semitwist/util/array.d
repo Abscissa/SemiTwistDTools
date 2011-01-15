@@ -5,6 +5,7 @@ module semitwist.util.array;
 
 import std.algorithm;
 import std.array;
+import std.functional;
 
 import semitwist.util.all;
 import semitwist.util.compat.all;
@@ -93,8 +94,13 @@ T[] allExcept(T)(T[] from, T except)
 /// Only intended for integer types and other ordered types for which "x+1" makes sense.
 /// Input does not have to be sorted.
 /// The resulting pairs are sorted and are inclusive on both ends.
-T[2][] toRangedPairs(T)(T[] arr)
+/// Optionally takes a splitCond predicate so you can customize when the range ends.
+T[2][] toRangedPairs(alias splitCond = "b > a + 1", T)(T[] arr)
 {
+    alias binaryFun!(splitCond) splitCondDg;
+    static if(!is(typeof(splitCondDg(T.init, T.init)) == bool))
+        static assert(false, "Invalid predicate passed to toRangedPairs: "~splitCond);
+
 	if(arr.length == 0)
 		return [];
 	
@@ -108,7 +114,7 @@ T[2][] toRangedPairs(T)(T[] arr)
 	auto startVal = arr[0];
 	foreach(val; arr[1..$])
 	{
-		if(val > prevVal+1)
+		if(splitCondDg(prevVal, val))
 		{
 			ret ~= [ startVal, prevVal ];
 			startVal = val;
@@ -120,16 +126,10 @@ T[2][] toRangedPairs(T)(T[] arr)
 	return ret;
 }
 
-/+T[] foo(T)(T[] arr)
-{
-	arr = array(sort(arr));
-	return arr;
-	
-}+/
 mixin(unittestSemiTwistDLib(q{
 
+	// toRangedPairs
 	mixin(deferEnsure!(q{ [12,3,7,4,10,5,9,12].toRangedPairs() }, q{ _ == [[3,5], [7,7], [9,10], [12,12]] }));
 	mixin(deferEnsure!(q{ [1,20].toRangedPairs() }, q{ _ == [[1,1], [20,20]] }));
-	//mixin(deferEnsure!(q{ [12,3,7,4,10,5,9,12].foo() }, q{ _ == [3,4,5,7,9,10,12,12] }));
 
 }));
