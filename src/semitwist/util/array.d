@@ -3,7 +3,10 @@
 
 module semitwist.util.array;
 
-//import tango.core.Array;
+import std.algorithm;
+import std.array;
+
+import semitwist.util.all;
 import semitwist.util.compat.all;
 
 size_t maxLength(T)(T[][] arrays)
@@ -71,7 +74,7 @@ size_t findPrior(T)(T[] collection, bool delegate(T[], size_t) isFound, size_t s
 	return collection.length;
 }
 
-// Returns everything in 'from' minus the values in 'except'.
+/// Returns everything in 'from' minus the values in 'except'.
 // Note: using ref didn't work when params were (const string[] here).dup
 T allExcept(T)(T from, T except)
 {
@@ -85,3 +88,48 @@ T[] allExcept(T)(T[] from, T except)
 {
 	return allExcept(from, [except]);
 }
+
+/// Ex: toRangedPairs([3,4,5,5,6,6,10,25,26]) == [[3,6], [10,10], [25,26]]
+/// Only intended for integer types and other ordered types for which "x+1" makes sense.
+/// Input does not have to be sorted.
+/// The resulting pairs are sorted and are inclusive on both ends.
+T[2][] toRangedPairs(T)(T[] arr)
+{
+	if(arr.length == 0)
+		return [];
+	
+	if(arr.length == 1)
+		return [ [ arr[0], arr[0] ] ];
+		
+	arr = array(sort(arr));
+	
+	T[2][] ret;
+	auto prevVal  = arr[0];
+	auto startVal = arr[0];
+	foreach(val; arr[1..$])
+	{
+		if(val > prevVal+1)
+		{
+			ret ~= [ startVal, prevVal ];
+			startVal = val;
+		}
+		prevVal = val;
+	}
+	ret ~= [ startVal, arr[$-1] ];
+	
+	return ret;
+}
+
+/+T[] foo(T)(T[] arr)
+{
+	arr = array(sort(arr));
+	return arr;
+	
+}+/
+mixin(unittestSemiTwistDLib(q{
+
+	mixin(deferEnsure!(q{ [12,3,7,4,10,5,9,12].toRangedPairs() }, q{ _ == [[3,5], [7,7], [9,10], [12,12]] }));
+	mixin(deferEnsure!(q{ [1,20].toRangedPairs() }, q{ _ == [[1,1], [20,20]] }));
+	//mixin(deferEnsure!(q{ [12,3,7,4,10,5,9,12].foo() }, q{ _ == [3,4,5,7,9,10,12,12] }));
+
+}));
