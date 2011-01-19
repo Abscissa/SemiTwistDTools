@@ -1,0 +1,3 @@
+<Project name="echo">
+<File path="..\src\semitwist\apps\miniapps\echo\main.d"></File>
+</Project>

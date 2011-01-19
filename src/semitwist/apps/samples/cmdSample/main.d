@@ -99,9 +99,9 @@ void main(string[] args)
 	//   - seterrorlevel: Sets the error level to a desired value
 	showSectionHeader("semitwist.cmd: cmd.exec");
 
-	cmd.exec("showargs Hello from D!"); // Three args
-	cmd.exec(`showargs "Hello from D!"`); // One arg with spaces
-	cmd.exec("showargs", ["arg 1"[], "arg 2"]); // Two args, each with spaces
+	cmd.exec("semitwist-showargs Hello from D!"); // Three args
+	cmd.exec(`semitwist-showargs "Hello from D!"`); // One arg with spaces
+	cmd.exec("semitwist-showargs", ["arg 1"[], "arg 2"]); // Two args, each with spaces
 	int errLevel;
 	mixin(traceVal!("errLevel"));
 	cmd.exec("seterrorlevel 42", errLevel);
@@ -120,11 +120,11 @@ void main(string[] args)
 	//             by the tango.sys.Process used by exec.
 	showSectionHeader("semitwist.cmd: cmd.echoing");
 
-	cmd.exec("myecho You can see this");
+	cmd.exec("semitwist-echo You can see this");
 	cmd.echoing = false;
-	cmd.exec("myecho You cannot see this");
+	cmd.exec("semitwist-echo You cannot see this");
 	cmd.echoing = true;
-	cmd.exec("myecho You can see this again");
+	cmd.exec("semitwist-echo You can see this again");
 	
 	cmd.pause();
 

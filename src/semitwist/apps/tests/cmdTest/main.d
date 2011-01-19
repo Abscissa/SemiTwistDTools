@@ -59,11 +59,11 @@ void main(string[] args)
 	cmd.echo("Whee!");
 	//testVfs(cmd.dir);
 
-	cmd.exec("myecho", ["I'm echoing,", "hello!"]);
-	cmd.exec("myecho I'm echoing, hello!");
+	cmd.exec("semitwist-echo", ["I'm echoing,", "hello!"]);
+	cmd.exec("semitwist-echo I'm echoing, hello!");
 	
 	cmd.echoing = false;
-	cmd.exec("myecho Can't see this because echoing is off");
+	cmd.exec("semitwist-echo Can't see this because echoing is off");
 	cmd.echoing = true;
 
 /+

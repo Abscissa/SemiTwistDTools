@@ -1,5 +1,5 @@
 // SemiTwist D Tools
-// MiniApps: My Echo
+// MiniApps: Echo
 // Written in the D programming language.
 
 /++
@@ -14,7 +14,7 @@ semitwist.cmd.CommandLine, can't launch it.
 This has been tested to work with DMD 2.049/2.050
 +/
 
-module semitwist.apps.miniapps.myecho.main;
+module semitwist.apps.miniapps.echo.main;
 
 import std.stdio;
 import std.string;
