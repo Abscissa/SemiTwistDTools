@@ -1,5 +1,5 @@
 #!/bin/sh
-./scripts/semitwist-bootstrap-stbuild.sh
+./scripts/semitwist-bootstrap-stbuild
 ./bin/semitwist-stbuild-bootstrap all all -clean
 ./bin/semitwist-stbuild-bootstrap all all -tool:rdmd
 
