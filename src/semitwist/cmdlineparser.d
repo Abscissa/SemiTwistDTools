@@ -71,11 +71,11 @@ str:  Hello World
 > myApp.exe /foo
 Unknown switch: "/foo"
 Switches: (prefixes can be '/', '-' or '--')
-  /help               Displays a help summary and exits
-  /detailhelp         Displays a detailed help message and exits
-  /num:<int>          An integer (default: 2)
-  /flag               A flag
-  /str:<string>       A string
+  -help               Displays a help summary and exits
+  -detailhelp         Displays a detailed help message and exits
+  -num:<int>          An integer (default: 2)
+  -flag               A flag
+  -str:<string>       A string
   
 */
 
@@ -544,23 +544,23 @@ class CmdLineParser
 	private string switchTypesMsg =
 `Switch types:
   flag (default):
-    Set s to true: /s /s+ /s:true
-    Set s to false: /s- /s:false
+    Set s to true: -s -s+ -s:true
+    Set s to false: -s- -s:false
     Default value: false (unless otherwise noted)
 
   text:
-    Set s to "Hello": /s:Hello
+    Set s to "Hello": -s:Hello
     Default value: "" (unless otherwise noted)
     Case-sensitive unless otherwise noted.
 
   num:
-    Set s to 3: /s:3
+    Set s to 3: -s:3
     Default value: 0 (unless otherwise noted)
   
   If "[]" appears at the end of the type,
   this means multiple values are accepted.
   Example:
-    /s:<text[]>: /s:file1 /s:file2 /s:anotherfile
+    -s:<text[]>: -s:file1 -s:file2 -s:anotherfile
 `;
 
 	string getArgTypeName(Arg arg)
@@ -620,9 +620,9 @@ class CmdLineParser
 			if(arg.name=="")
 				argName = argType;
 			else
-				argName = "/"~arg.name~argSuffix;
+				argName = "-"~arg.name~argSuffix;
 			if(arg.altName != "")
-				argName ~= ", /"~arg.altName~argSuffix;
+				argName ~= ", -"~arg.altName~argSuffix;
 	
 			string nameColumnWidthStr = "%s".format(nameColumnWidth);
 			*argStr ~= format("%s%-"~nameColumnWidthStr~"s%s%s\n",
@@ -648,9 +648,9 @@ class CmdLineParser
 		{
 			string* argStr = arg.isAdvanced? &advancedArgStr : &basicArgStr;
 
-			string argName = arg.isSwitchless? "" : "/"~arg.name;
+			string argName = arg.isSwitchless? "" : "-"~arg.name;
 			if(arg.altName != "")
-				argName ~= ", /"~arg.altName;
+				argName ~= ", -"~arg.altName;
 			if(!arg.isSwitchless || arg.altName != "")
 				argName ~= " ";
 	
@@ -684,7 +684,7 @@ class CmdLineParser
 			advancedStr   = arg.isAdvanced   ? ", Advanced" : ", Basic";
 			
 			*argStr ~= "\n";
-			*argStr ~= format("%s(%s), %s%s%s%s\n",
+			*argStr ~= format("%s(%s), %s%s%s%s%s\n",
 			                  argName, getArgTypeName(arg),
 			                  requiredStr, switchlessStr, toLowerStr, advancedStr, defaultVal);
 			*argStr ~= format("%s\n", arg.desc);
