@@ -3,18 +3,14 @@
 
 module semitwist.refbox;
 
-//import tango.core.Array;
-import std.stdio;//tango.io.Stdout;
-import std.math;//tango.math.Math;
-//import tango.text.Util;
-//import convInt = tango.text.convert.Integer;
+import std.stdio;
+import std.math;
 import std.string;
 import std.algorithm : find;
 
 import semitwist.util.all;
-import semitwist.util.compat.all;
 
-//TODO: Does tango's Variant make this obsolete?
+//TODO: Does phobos's Variant make this obsolete?
 //TODO? convert to struct
 /// A boxable wrapper useful for variables of primitive types.
 class RefBox(T)

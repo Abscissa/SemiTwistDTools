@@ -3,15 +3,12 @@
 
 module semitwist.util.ver;
 
-import std.stdio;//tango.io.Stdout;
-import std.math;//tango.math.Math;
-//import tango.text.Util;
-//import tango.util.Convert;
+import std.stdio;
+import std.math;
 import std.conv;
 import std.string;
 
 import semitwist.util.all;
-import semitwist.util.compat.all;
 
 //TODO: Support versions that have different semantics
 //TODO: Document ordering semantics of this

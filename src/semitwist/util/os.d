@@ -4,7 +4,6 @@
 module semitwist.util.os;
 
 import semitwist.util.all;
-import semitwist.util.compat.all;
 
 private string genOSParam(string name, string[] values)
 {

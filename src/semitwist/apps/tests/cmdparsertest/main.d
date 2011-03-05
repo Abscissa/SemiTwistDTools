@@ -15,7 +15,6 @@ import std.stdio;
 
 import semitwist.util.all;
 import semitwist.cmdlineparser;
-import semitwist.util.compat.all;
 
 void main(string[] args)
 {

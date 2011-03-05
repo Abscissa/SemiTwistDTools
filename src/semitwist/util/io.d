@@ -3,14 +3,8 @@
 
 module semitwist.util.io;
 
-import std.traits;//tango.core.Traits;
-import std.path;//tango.io.FilePath;
-//import tango.io.device.File;
-//import tango.io.stream.Data;
-//import tango.stdc.stringz;
-//import tango.text.Util;
-//import tango.text.convert.UnicodeBom;
-//import tango.util.Convert;
+import std.traits;
+import std.path;
 import std.conv;
 import std.file;
 import std.stdio;
@@ -19,7 +13,6 @@ import std.string;
 import std.system;
 
 import semitwist.util.all;
-import semitwist.util.compat.all;
 
 version(Win32)
 	import std.c.windows.windows;

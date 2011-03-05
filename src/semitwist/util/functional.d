@@ -3,11 +3,9 @@
 
 module semitwist.util.functional;
 
-//import tango.core.Array;
-/+version(Unittest)+/ import std.stdio;//tango.io.Stdout;
+/+version(Unittest)+/ import std.stdio;
 
 import semitwist.util.all;
-import semitwist.util.compat.all;
 
 
 //TODO: Think about new naming scheme. Take a look at how tango does it.

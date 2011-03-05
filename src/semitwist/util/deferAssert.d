@@ -5,15 +5,16 @@ module semitwist.util.deferAssert;
 
 // deferEnsure requires this to exist in the calling context
 import std.demangle;
-import std.traits;//tango.core.Traits : _deferAssert_ExprTypeOf = ExprTypeOf;
+import std.traits;
 public import semitwist.util.reflect : _deferAssert_ExprTypeOf = ExprTypeOf;
 
-import std.stdio;//tango.io.Stdout;
-//import tango.util.Convert;
+import std.stdio;
 import std.conv;
 
 import semitwist.util.all;
-import semitwist.util.compat.all;
+
+//TODO: This module needs an overhall. Particularly with phobos's
+//      new assert-related routines such as assertPred (hopefully) coming.
 
 //TODO: Properly handle stuff that (for whatever bizarre reason) throws null.
 //TODO: Modify deferEnsureThrows to (optionally?) accept subclasses of TExpected

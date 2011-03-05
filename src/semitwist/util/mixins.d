@@ -3,12 +3,11 @@
 
 module semitwist.util.mixins;
 
-import std.traits;//tango.core.Traits;
-import std.stdio;//tango.io.Stdout;
+import std.traits;
+import std.stdio;
 import std.conv;
 
 import semitwist.util.all;
-import semitwist.util.compat.all;
 
 /++
 Useful in constructors for DRY.

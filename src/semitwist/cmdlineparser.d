@@ -3,18 +3,15 @@
 
 module semitwist.cmdlineparser;
 
-//import tango.core.Array;
-import std.math;//tango.math.Math;
-//import tango.text.Unicode;
-//import tango.text.Util;
-//import convInt = tango.text.convert.Integer;
+import std.math;
 import std.string;
 import std.conv;
 import std.stdio;
 
 public import semitwist.refbox;
 import semitwist.util.all;
-import semitwist.util.compat.all;
+
+//TODO: This module's API needs a serious overhaul.
 
 //TODO: Add "switch A implies switches B and C"
 //TODO: Add in some good ideas from the cmd parser in tango scrapple

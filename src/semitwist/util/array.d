@@ -8,7 +8,6 @@ import std.array;
 import std.functional;
 
 import semitwist.util.all;
-import semitwist.util.compat.all;
 
 size_t maxLength(T)(T[][] arrays)
 {

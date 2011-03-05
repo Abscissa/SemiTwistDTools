@@ -1,20 +1,19 @@
 // SemiTwist Library
 // Written in the D programming language.
 
+//TODO: Seriously Nick, you know better than to do all that concatenating
+//      instead of appending or an array builder.
+
 module semitwist.treeout;
 
-import std.traits;//tango.core.Traits;
-import std.stdio;//tango.io.Stdout;
-//import tango.text.Unicode;
-//import tango.text.Util;
-//import tango.util.Convert;
+import std.traits;
+import std.stdio;
 import std.conv;
 import std.string;
 import std.regex;
 import std.iterator;
 
 import semitwist.util.all;
-import semitwist.util.compat.all;
 
 abstract class TreeFormatter
 {

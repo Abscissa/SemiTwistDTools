@@ -6,14 +6,8 @@ module semitwist.util.text;
 import std.algorithm;
 import std.array;
 import std.conv;
-//import tango.core.Array;
 import std.md5;
-import std.stdio;//tango.io.Stdout;
-//import tango.text.Unicode;
-//import tango.text.Util;
-//import tango.text.convert.Layout;
-//import tango.text.convert.Utf;
-//import tango.util.Convert;
+import std.stdio;
 import std.traits;
 import std.stream;
 import std.string;
@@ -23,7 +17,6 @@ import std.utf;
 public import std.stream: BOM;
 
 import semitwist.util.all;
-import semitwist.util.compat.all;
 
 /**
 Notes:

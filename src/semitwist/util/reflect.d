@@ -3,13 +3,11 @@
 
 module semitwist.util.reflect;
 
-import std.traits;//tango.core.Traits;
-//import tango.core.Version;
+import std.traits;
 import std.conv;
 import std.iterator;
 
 import semitwist.util.all;
-import semitwist.util.compat.all;
 
 /++
 If you have a class MyClass(T), then nameof!(MyClass) will return "MyClass".

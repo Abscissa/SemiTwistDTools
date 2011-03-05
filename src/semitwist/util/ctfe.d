@@ -3,13 +3,11 @@
 
 module semitwist.util.ctfe;
 
-//import tango.core.Version;
-import std.stdio;//tango.io.Stdout;
+import std.stdio;
 import std.string;
 import std.traits;
 
 import semitwist.util.all;
-import semitwist.util.compat.all;
 
 T[] ctfe_pad(T)(T[] str, int length, T[] padChar=" ")
 {

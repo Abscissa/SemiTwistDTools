@@ -12,7 +12,6 @@ This has been tested to work with DMD 2.049/2.050
 module semitwist.apps.tests.deferAssertTest.main;
 
 import semitwist.util.all;
-import semitwist.util.compat.all;
 
 void main()
 {

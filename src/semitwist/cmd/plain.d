@@ -3,23 +3,12 @@
 
 module semitwist.cmd.plain;
 
-//import tango.stdc.stdio;
-//import tango.io.Console;
-//import tango.io.FilePath;
-//import tango.io.FileSystem;
-//import tango.io.Path;
-import std.stdio;//tango.io.Stdout;
-//import tango.io.vfs.FileFolder;
-//import tango.sys.Environment;
-//import tango.sys.Process;
-//import tango.text.Util;
-//import tango.text.convert.Layout;
+import std.stdio;
 import std.file;
 import std.path;
 import std.string;
 
 import semitwist.util.all;
-import semitwist.util.compat.all;
 
 Cmd cmd;
 static this()

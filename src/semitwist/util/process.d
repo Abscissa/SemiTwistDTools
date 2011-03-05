@@ -24,7 +24,6 @@ else
 }
 
 import semitwist.util.all;
-import semitwist.util.compat.all;
 
 void createPipe(out HANDLE readHandle, out HANDLE writeHandle)
 {
