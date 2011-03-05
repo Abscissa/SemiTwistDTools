@@ -7,8 +7,6 @@ Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
 IGNORE THIS APP FOR NOW, IT IS NOT USABLE YET
-
-This has been tested to work with DMD 2.049/2.050
 +/
 
 module semitwist.apps.stmanage.stswitch.main;
@@ -16,6 +14,9 @@ module semitwist.apps.stmanage.stswitch.main;
 import std.stdio;
 import semitwist.cmd.all;
 
+void main(){}
+
+/+
 int main(string[] args)
 {
 	flushAsserts();
@@ -27,3 +28,4 @@ int main(string[] args)
 
 	return 0;
 }
++/

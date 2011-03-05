@@ -6,15 +6,16 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-This has been tested to work with:
-  - DMD 1.056 / Tango 0.99.9 / Rebuild 0.76
-  - DMD 1.056 / Tango 0.99.9 / xfBuild 0.4
+IGNORE THIS APP FOR NOW, IT IS NOT USABLE YET
 +/
 
 module semitwist.apps.tests.cmdTest.main;
 
 import semitwist.cmd.all;
 
+void main(){}
+
+/+
 // Damn, can't make templated nested func
 void displayNodes(TElem, TColl)(TColl collection, string label)
 {
@@ -184,3 +185,4 @@ exit                 Exits
 			Stdout.newline;
 	}
 }
++/

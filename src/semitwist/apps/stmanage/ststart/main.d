@@ -7,16 +7,15 @@ Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
 IGNORE THIS APP FOR NOW, IT IS NOT USABLE YET
-
-This has been tested to work with:
-  - DMD 1.056 / Tango 0.99.9 / Rebuild 0.76
-  - DMD 1.056 / Tango 0.99.9 / xfBuild 0.4
 +/
 
 module semitwist.apps.stmanage.ststart.main;
 
 import semitwist.cmd.all;
 
+void main(){}
+
+/+
 const string main_d_src = 
 `// {0}
 // Written in the D programming language
@@ -107,3 +106,4 @@ void main(string[] args)
 	
 //	cmd.dir = originalDir;
 }
++/
