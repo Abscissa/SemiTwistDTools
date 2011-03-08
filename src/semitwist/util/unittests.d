@@ -4,12 +4,12 @@
 module semitwist.util.unittests;
 
 // deferEnsure requires this to exist in the calling context
-import std.demangle;
-import std.traits;
 public import semitwist.util.reflect : _deferAssert_ExprTypeOf = ExprTypeOf;
 
-import std.stdio;
 import std.conv;
+import std.demangle;
+import std.stdio;
+import std.traits;
 
 import semitwist.util.all;
 
@@ -224,12 +224,15 @@ string unittestSection(string debugIdent)(string sectionName, string unittestBod
 	return q{
 		debug(_semitwist_unittestSection_debugIdent_)
 		{
-			private int _unittestSection_dummy_;
 			unittest
 			{
+				int _unittestSection_dummy_;
 				auto _unittestSection_moduleName_ =
 					unittestSection_demangle( unittestSection_mangledName!_unittestSection_dummy_ )
-						["int ".length .. $-1-_unittestSection_dummy_.stringof.length];
+						[
+							"void ".length ..
+							ctfe_find(unittestSection_demangle( unittestSection_mangledName!_unittestSection_dummy_ ), ".__unittest")
+						];
 
 				writeUnittestSection(
 					_unittestSection_moduleName_ ~
