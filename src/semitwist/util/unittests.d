@@ -13,15 +13,6 @@ import std.traits;
 
 import semitwist.util.all;
 
-//TODO: This module needs an overhall. Particularly with phobos's
-//      new assert-related routines such as assertPred (hopefully) coming.
-
-//TODO: Properly handle stuff that (for whatever bizarre reason) throws null.
-//TODO: Modify deferEnsureThrows to (optionally?) accept subclasses of TExpected
-//TODO? Change deferEnsureThrows to take an expression instead of a statement
-//TODO? Better naming convention
-
-
 /**
 Sounds like a contradiction of terms, but this is just
 intended to allow unittests to output ALL failures instead
@@ -209,7 +200,7 @@ When run, the following headings will be displayed:
 == unittest: the.module.name
 == unittest: the.module.name: This is for class Foo
 +/
-string unittestSection(string debugIdent)(string sectionName, string unittestBody=null)
+string unittestSection(string debugIdent, bool autoThrow=false)(string sectionName, string unittestBody=null)
 {
 	// Allow these two forms (without getting in the way of aliasing):
 	//   unittestSection!debugIdent(unittestBody)
@@ -226,6 +217,10 @@ string unittestSection(string debugIdent)(string sectionName, string unittestBod
 		{
 			unittest
 			{
+				auto saveAutoThrow = semitwist.util.unittests.autoThrow;
+				semitwist.util.unittests.autoThrow = _semitwist_unittestSection_autoThrow_;
+				scope(exit) semitwist.util.unittests.autoThrow = saveAutoThrow;
+				
 				int _unittestSection_dummy_;
 				auto _unittestSection_moduleName_ =
 					unittestSection_demangle( qualifiedName!_unittestSection_dummy_() )
@@ -246,7 +241,8 @@ string unittestSection(string debugIdent)(string sectionName, string unittestBod
 	.ctfe_substitute("\r", "")
 	.ctfe_substitute("_semitwist_unittestSection_debugIdent_", debugIdent)
 	.ctfe_substitute("_semitwist_unittestSection_sectionName_", sectionName)
-	.ctfe_substitute("_semitwist_unittestSection_unittestBody_", unittestBody);
+	.ctfe_substitute("_semitwist_unittestSection_unittestBody_", unittestBody)
+	.ctfe_substitute("_semitwist_unittestSection_autoThrow_", autoThrow);
 }
 alias mangledName unittestSection_mangledName;
 alias demangle unittestSection_demangle;
@@ -281,6 +277,21 @@ import std.range;
 import std.string;
 import std.traits;
 
+/// This does not currently affect the defer* functions above.
+bool autoThrow = true;
+
+private void throwException(Throwable e)
+{
+	if(autoThrow)
+		throw e;
+	else
+	{
+		assertCount++;
+		writeln(e);
+		writeln();
+	}
+}
+
 version(unittest)
 {
     import std.datetime;
@@ -288,6 +299,8 @@ version(unittest)
 
 
 mixin(unittestSemiTwistDLib("assertPred: Overview Examples", q{
+	autoThrow = true;
+
     //Verify Examples.
     assertPred!"=="(5 * 7, 35);
 
@@ -328,13 +341,16 @@ void assertPred(string op, L, R)
     {
         immutable tail = msg.empty ? "." : ": " ~ msg;
 
-        throw new AssertError(format("assertPred!\"%s\" failed:\n[%s] (lhs)\n[%s] (rhs)%s", op, lhs, rhs, tail),
-                              file,
-                              line);
+        throwException( new AssertError(format("assertPred!\"%s\" failed:\n[%s] (lhs)\n[%s] (rhs)%s", op, lhs, rhs, tail),
+                                        file,
+                                        line)
+		);
     }
 }
 
 mixin(unittestSemiTwistDLib("assertPred: Comparison Operators", q{
+	autoThrow = true;
+
     struct IntWrapper
     {
         int value;
@@ -447,12 +463,15 @@ void assertPred(string func, string expected, L, R)
     immutable tail = msg.empty ? "." : ": " ~ msg;
     immutable actual = result < 0 ? "<" : (result == 0 ? "==" : ">");
 
-    throw new AssertError(format("assertPred!(\"opCmp\", \"%s\") failed:\n[%s] %s\n[%s]%s", expected, lhs, actual, rhs, tail),
-                          file,
-                          line);
+    throwException( new AssertError(format("assertPred!(\"opCmp\", \"%s\") failed:\n[%s] %s\n[%s]%s", expected, lhs, actual, rhs, tail),
+                                    file,
+                                    line)
+	);
 }
 
 mixin(unittestSemiTwistDLib("assertPred: opCmp", q{
+	autoThrow = true;
+
     struct IntWrapper
     {
         int value;
@@ -540,6 +559,8 @@ mixin(unittestSemiTwistDLib("assertPred: opCmp", q{
 }));
 
 mixin(unittestSemiTwistDLib("assertPred: opCmp: Examples", q{
+	autoThrow = true;
+
     //Verify Examples
     assertPred!("opCmp", "<")(std.datetime.SysTime(Date(1970, 1, 1)),
                               std.datetime.SysTime(Date(2010, 12, 31)));
@@ -585,28 +606,32 @@ void assertPred(string func, L, R)
     {
         immutable tail = msg.empty ? "." : ": " ~ msg;
 
-        throw new AssertError(format("assertPred!\"opAssign\" failed: lhs was assigned to\n[%s] instead of\n[%s]%s",
-                                     lhs,
-                                     rhs,
-                                     tail),
-                              file,
-                              line);
+        throwException( new AssertError(format("assertPred!\"opAssign\" failed: lhs was assigned to\n[%s] instead of\n[%s]%s",
+                                               lhs,
+                                               rhs,
+                                               tail),
+                                        file,
+                                        line)
+		);
     }
 
     if(result != rhs)
     {
         immutable tail = msg.empty ? "." : ": " ~ msg;
 
-        throw new AssertError(format("assertPred!\"opAssign\" failed:\n[%s] (return value) !=\n[%s] (assigned value)%s",
-                                     result,
-                                     rhs,
-                                     tail),
-                              file,
-                              line);
+        throwException( new AssertError(format("assertPred!\"opAssign\" failed:\n[%s] (return value) !=\n[%s] (assigned value)%s",
+                                               result,
+                                               rhs,
+                                               tail),
+                                        file,
+                                        line)
+		);
     }
 }
 
 mixin(unittestSemiTwistDLib("assertPred: opAssign", q{
+	autoThrow = true;
+
     struct IntWrapper
     {
         int value;
@@ -700,6 +725,8 @@ mixin(unittestSemiTwistDLib("assertPred: opAssign", q{
 }));
 
 mixin(unittestSemiTwistDLib("assertPred: opAssign: Examples", q{
+	autoThrow = true;
+
     //Verify Examples
     assertPred!"opAssign"(std.datetime.SysTime(Date(1970, 1, 1)), std.datetime.SysTime(Date(2000, 12, 12)));
 
@@ -784,20 +811,23 @@ void assertPred(string op, L, R, E)
     {
         immutable tail = msg.empty ? "." : ": " ~ msg;
 
-        throw new AssertError(format("assertPred!\"%s\" failed: [%s] %s [%s]:\n[%s] (actual)\n[%s] (expected)%s",
-                                     op,
-                                     lhs,
-                                     op,
-                                     rhs,
-                                     result,
-                                     expected,
-                                     tail),
-                               file,
-                               line);
+        throwException( new AssertError(format("assertPred!\"%s\" failed: [%s] %s [%s]:\n[%s] (actual)\n[%s] (expected)%s",
+                                               op,
+                                               lhs,
+                                               op,
+                                               rhs,
+                                               result,
+                                               expected,
+                                               tail),
+                                         file,
+                                         line)
+		);
     }
 }
 
 mixin(unittestSemiTwistDLib("assertPred: Operators", q{
+	autoThrow = true;
+
     assertNotThrown!AssertError(assertPred!"+"(7, 5, 12));
     assertNotThrown!AssertError(assertPred!"-"(7, 5, 2));
     assertNotThrown!AssertError(assertPred!"*"(7, 5, 35));
@@ -901,36 +931,40 @@ void assertPred(string op, L, R, E)
     {
         immutable tail = msg.empty ? "." : ": " ~ msg;
 
-        throw new AssertError(format("assertPred!\"%s\" failed: After [%s] %s [%s], lhs was assigned to\n[%s] instead of\n[%s]%s",
-                                     op,
-                                     origLHSStr,
-                                     op,
-                                     rhs,
-                                     lhs,
-                                     expected,
-                                     tail),
-                               file,
-                               line);
+        throwException( new AssertError(format("assertPred!\"%s\" failed: After [%s] %s [%s], lhs was assigned to\n[%s] instead of\n[%s]%s",
+                                               op,
+                                               origLHSStr,
+                                               op,
+                                               rhs,
+                                               lhs,
+                                               expected,
+                                               tail),
+                                         file,
+                                         line)
+		);
     }
 
     if(result != expected)
     {
         immutable tail = msg.empty ? "." : ": " ~ msg;
 
-        throw new AssertError(format("assertPred!\"%s\" failed: Return value of [%s] %s [%s] was\n[%s] instead of\n[%s]%s",
-                                     op,
-                                     origLHSStr,
-                                     op,
-                                     rhs,
-                                     result,
-                                     expected,
-                                     tail),
-                               file,
-                               line);
+        throwException( new AssertError(format("assertPred!\"%s\" failed: Return value of [%s] %s [%s] was\n[%s] instead of\n[%s]%s",
+                                               op,
+                                               origLHSStr,
+                                               op,
+                                               rhs,
+                                               result,
+                                               expected,
+                                               tail),
+                                         file,
+                                         line)
+		);
     }
 }
 
 mixin(unittestSemiTwistDLib("assertPred: Assignment Operators", q{
+	autoThrow = true;
+
     assertNotThrown!AssertError(assertPred!"+="(7, 5, 12));
     assertNotThrown!AssertError(assertPred!"-="(7, 5, 2));
     assertNotThrown!AssertError(assertPred!"*="(7, 5, 35));
@@ -1078,6 +1112,8 @@ mixin(unittestSemiTwistDLib("assertPred: Assignment Operators", q{
 }));
 
 mixin(unittestSemiTwistDLib("assertPred: Assignment Operators: Examples", q{
+	autoThrow = true;
+
     //Verify Examples
     assertPred!"+="(5, 7, 12);
     assertPred!"-="(7, 5, 2);
@@ -1165,13 +1201,16 @@ void assertPred(string pred, string msg = null, string file = __FILE__, size_t l
     {
         immutable tail = msg.empty ? "." : ": " ~ msg;
 
-        throw new AssertError(format(`assertPred!"%s" failed: [%s] (a)%s`, pred, a, tail),
-                              file,
-                              line);
+        throwException( new AssertError(format(`assertPred!"%s" failed: [%s] (a)%s`, pred, a, tail),
+                                        file,
+                                        line)
+		);
     }
 }
 
 mixin(unittestSemiTwistDLib("assertPred: unaryFun", q{
+	autoThrow = true;
+
     assertNotThrown!AssertError(assertPred!"a == 1"(1));
     assertNotThrown!AssertError(assertPred!"a"(true));
     assertNotThrown!AssertError(assertPred!"!a"(false));
@@ -1214,13 +1253,16 @@ void assertPred(string pred, string msg = null, string file = __FILE__, size_t l
     {
         immutable tail = msg.empty ? "." : ": " ~ msg;
 
-        throw new AssertError(format(`assertPred!"%s" failed: [%s] (a), [%s] (b)%s`, pred, a, b, tail),
-                              file,
-                              line);
+        throwException( new AssertError(format(`assertPred!"%s" failed: [%s] (a), [%s] (b)%s`, pred, a, b, tail),
+                                        file,
+                                        line)
+		);
     }
 }
 
 mixin(unittestSemiTwistDLib("assertPred: binaryFun", q{
+	autoThrow = true;
+
     assertNotThrown!AssertError(assertPred!"a == b"(1, 1));
     assertNotThrown!AssertError(assertPred!"a * b == 2.0"(1, 2.0));
 
@@ -1276,11 +1318,13 @@ void assertPred(alias pred, string msg = null, string file = __FILE__, size_t li
 
         immutable tail = msg.empty ? "." : ": " ~ msg;
 
-        throw new AssertError(format("assertPred failed: arguments: %s%s", argsStr, tail), file, line);
+        throwException( new AssertError(format("assertPred failed: arguments: %s%s", argsStr, tail), file, line) );
     }
 }
 
 mixin(unittestSemiTwistDLib("assertPred: Delegates", q{
+	autoThrow = true;
+
     assertNotThrown!AssertError(assertPred!({return true;})());
     assertNotThrown!AssertError(assertPred!((bool a){return a;})(true));
     assertNotThrown!AssertError(assertPred!((int a, int b){return a == b;})(5, 5));
@@ -1332,11 +1376,13 @@ void assertNotThrown(T : Throwable = Exception, F)
     {
         immutable tail = msg.empty ? "." : ": " ~ msg;
 
-        throw new AssertError(format("assertNotThrown failed: %s was thrown%s", T.stringof, tail), file, line, t);
+        throwException( new AssertError(format("assertNotThrown failed: %s was thrown%s", T.stringof, tail), file, line, t) );
     }
 }
 
 mixin(unittestSemiTwistDLib("private assertNotThrown", q{
+	autoThrow = true;
+	
     void throwEx(Throwable t)
     {
         throw t;
@@ -1434,11 +1480,13 @@ void assertThrown(T : Throwable = Exception, F)
     {
         immutable tail = msg.empty ? "." : ": " ~ msg;
 
-        throw new AssertError(format("assertThrown failed: No %s was thrown%s", T.stringof, tail), file, line);
+        throwException( new AssertError(format("assertThrown failed: No %s was thrown%s", T.stringof, tail), file, line) );
     }
 }
 
 mixin(unittestSemiTwistDLib("private assertThrown", q{
+	autoThrow = true;
+	
     void throwEx(Throwable t)
     {
         throw t;
@@ -1536,6 +1584,8 @@ string collectExceptionMsg(T)(lazy T funcCall)
 }
 
 mixin(unittestSemiTwistDLib("private collectExceptionMsg", q{
+	autoThrow = true;
+
     //Verify Example.
     void throwFunc() {throw new Exception("My Message.");}
     assert(collectExceptionMsg(throwFunc()) == "My Message.");

@@ -6,6 +6,8 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
+Make sure to pass "-debug=deferAssertTest_unittest" to DMD.
+
 This has been tested to work with DMD 2.052
 +/
 
@@ -19,8 +21,10 @@ void main()
 	// Main program code here
 }
 
-unittest
-{
+alias unittestSection!"deferAssertTest_unittest" unittestDeferAssertTest;
+
+mixin(unittestDeferAssertTest(q{
+
 	int foo = 2;
 	string bar = "hello";
 
@@ -32,10 +36,20 @@ unittest
     // Improvement to mixin syntax would be nice.
 	// Also, my editor doesn't know that backticks indicate a string,
 	// so it's still properly highlighted as code :)
-	mixin(deferAssert!(`foo == 3 || foo > 5`, "foo is bad"));
-	mixin(deferAssert!(`2 + 2 == 4`, "Basic arithmetic"));
-	mixin(deferAssert!(`false`));
-	mixin(deferAssert!(`throwsException()`, "Exceptions are handled"));
+	//mixin(deferAssert!(`foo == 3 || foo > 5`, "foo is bad"));
+	assertPred!("a == 3 || a > 5", "foo is bad")(foo);
+	
+	//mixin(deferAssert!(`2 + 2 == 4`, "Basic arithmetic"));
+	//assertPred!(q{ 2 + 2 == a }, "Basic arithmetic")(4);
+	assertPred!"+"(2, 2, 4, "Basic arithmetic");
+	assertPred!"+"(2, 2, 5, "Bad arithmetic");
+	
+	//mixin(deferAssert!(`false`));
+	assertPred!"a"(false);
+
+	//mixin(deferAssert!(`throwsException()`, "Exceptions are handled"));
+//	assertPred!q{ throwsException() }(null, "Exceptions are handled");
+	//assertPred!(q{ a }, "Exceptions are handled")(throwsException());
 	
 	mixin(deferEnsure!(`foo`, `_ == 3 || _ > 5`, "ensure foo failed"));
 	mixin(deferEnsure!(`foo`, `_ > 0`));
@@ -47,7 +61,8 @@ unittest
 	mixin(deferEnsureThrows!(`throw new Exception("Hello");`, Exception));
 	//mixin(deferEnsureThrows!(`throw new Object();`, Exception, "Wrong type thrown!"));
 	//mixin(deferEnsureThrows!(`throw new Exception("Hello");`, Object, "Wrong type thrown!"));
-}
+
+}));
 
 /++
 Program output:
