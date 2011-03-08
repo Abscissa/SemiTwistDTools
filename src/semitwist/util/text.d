@@ -933,10 +933,10 @@ mixin(unittestSemiTwistDLib(q{
 	//enum ctfe_unindent_dummy5 = "  a\n \tb".unindent(); // Should fail to compile
 	
 	// contains
-	mixin(deferEnsure!(q{ contains!char("abcde", 'a') }, q{ _==true  }));
-	mixin(deferEnsure!(q{ contains!char("abcde", 'c') }, q{ _==true  }));
-	mixin(deferEnsure!(q{ contains!char("abcde", 'e') }, q{ _==true  }));
-	mixin(deferEnsure!(q{ contains!char("abcde", 'x') }, q{ _==false }));
+	mixin(deferEnsure!(q{ contains("abcde", 'a') }, q{ _==true  }));
+	mixin(deferEnsure!(q{ contains("abcde", 'c') }, q{ _==true  }));
+	mixin(deferEnsure!(q{ contains("abcde", 'e') }, q{ _==true  }));
+	mixin(deferEnsure!(q{ contains("abcde", 'x') }, q{ _==false }));
 
 	// stripLines: Top and Bottom
 	mixin(deferEnsure!(q{ " \t \n\t \n ABC \n \n DEF \n \t \n\t \n".stripLinesTop()       }, q{ _ == " ABC \n \n DEF \n \t \n\t \n" }));
