@@ -79,40 +79,6 @@ template ExprTypeOf(T)
         alias T ExprTypeOf;
 }
 
-/// Borrowed from Phobos 2.047
-template isCallable(T...)
-    if (T.length == 1)
-{
-    static if (is(typeof(& T[0].opCall) == delegate))
-        // T is a object which has a member function opCall().
-        enum bool isCallable = true;
-    else static if (is(typeof(& T[0].opCall) V : V*) && is(V == function))
-        // T is a type which has a static member function opCall().
-        enum bool isCallable = true;
-    else
-        enum bool isCallable = isSomeFunction!(T);
-}
-///ditto
-template isSomeFunction(T...)
-    if (T.length == 1)
-{
-    static if (is(typeof(& T[0]) U : U*) && is(U == function))
-    {
-        // T is a function symbol.
-        enum bool isSomeFunction = true;
-    }
-    else static if (is(T[0] W) || is(typeof(T[0]) W))
-    {
-        // T is an expression or a type.  Take the type of it and examine.
-        static if (is(W F : F*) && is(F == function))
-            enum bool isSomeFunction = true; // function pointer
-        else
-            enum bool isSomeFunction = is(W == function) || is(W == delegate);
-    }
-    else
-        enum bool isSomeFunction = false;
-}
-
 /++
 Calls .stringof on each argument then returns
 the results in an array of strings.

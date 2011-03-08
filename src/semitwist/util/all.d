@@ -22,7 +22,6 @@ module semitwist.util.all;
 
 public import semitwist.util.array;
 public import semitwist.util.ctfe;
-public import semitwist.util.deferAssert;
 public import semitwist.util.functional;
 public import semitwist.util.io;
 public import semitwist.util.process;
@@ -30,4 +29,5 @@ public import semitwist.util.mixins;
 public import semitwist.util.os;
 public import semitwist.util.reflect;
 public import semitwist.util.text;
+public import semitwist.util.unittests;
 public import semitwist.util.ver;

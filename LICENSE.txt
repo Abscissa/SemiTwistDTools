@@ -2,7 +2,7 @@
 SemiTwist D Tools is licensed under The zlib/libpng License:
 -----------------------------------------------------------------
 
-Copyright (c) 2009-2010 Nick Sabalausky
+Copyright (c) 2009-2011 Nick Sabalausky
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages

@@ -1,7 +1,7 @@
 // SemiTwist Library
 // Written in the D programming language.
 
-module semitwist.util.deferAssert;
+module semitwist.util.unittests;
 
 // deferEnsure requires this to exist in the calling context
 import std.demangle;
@@ -189,12 +189,14 @@ To be mixed in.
 Note that if DMD Issue #2887 ever gets fixed, the line numbers for errors
 in unittestBody may get messed up.
 
-Suggested usage:
+Suggested Usage:
 -------------------
 alias unittestSection!"MyProject_unittest" unittestMyProject;
+
 mixin(unittestMyProject(q{
 	// put unittests here
 }));
+
 mixin(unittestMyProject("This is for class Foo", q{
 	// put unittests here
 }));
