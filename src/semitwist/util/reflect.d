@@ -3,9 +3,10 @@
 
 module semitwist.util.reflect;
 
-import std.traits;
 import std.conv;
+import std.demangle;
 import std.iterator;
+import std.traits;
 
 import semitwist.util.all;
 
@@ -77,6 +78,18 @@ template ExprTypeOf(T)
         alias ReturnType!(T) ExprTypeOf;
     else
         alias T ExprTypeOf;
+}
+
+string qualifiedName(alias ident)()
+{
+	string mangled = mangledName!ident;
+	
+	// Work around DMD Issue #5718: Can't demangle symbol defined inside unittest block
+	int startIndex = ctfe_find(mangled, "_D");
+	if(startIndex == mangled.length)
+		startIndex = 0;
+	
+	return demangle(mangled[startIndex..$]);
 }
 
 /++

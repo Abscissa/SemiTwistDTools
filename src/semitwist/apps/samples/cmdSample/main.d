@@ -6,7 +6,7 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-This has been tested to work with DMD 2.049/2.050
+This has been tested to work with DMD 2.052
 +/
 
 module semitwist.apps.samples.cmdSample.main;
@@ -97,7 +97,7 @@ void main(string[] args)
 	// We'll test this with two small sample apps:
 	//   - showargs: Lists the args passed into it
 	//   - seterrorlevel: Sets the error level to a desired value
-	showSectionHeader("semitwist.cmd: cmd.exec");
+	/+showSectionHeader("semitwist.cmd: cmd.exec");
 
 	cmd.exec("semitwist-showargs Hello from D!"); // Three args
 	cmd.exec(`semitwist-showargs "Hello from D!"`); // One arg with spaces
@@ -107,7 +107,7 @@ void main(string[] args)
 	cmd.exec("seterrorlevel 42", errLevel);
 	mixin(traceVal!("errLevel"));
 	
-	cmd.pause();
+	cmd.pause();+/
 
 	// ----- semitwist.cmd: cmd.echoing -----
 	// - Determines whether an exec'd program's stdout/stderr are actually
@@ -118,7 +118,7 @@ void main(string[] args)
 	//   - myecho: Like ordinary echo, but needed on Win because Win's echo
 	//             is not an actual executable and therefore can't be launched
 	//             by the tango.sys.Process used by exec.
-	showSectionHeader("semitwist.cmd: cmd.echoing");
+	/+showSectionHeader("semitwist.cmd: cmd.echoing");
 
 	cmd.exec("semitwist-echo You can see this");
 	cmd.echoing = false;
@@ -126,7 +126,7 @@ void main(string[] args)
 	cmd.echoing = true;
 	cmd.exec("semitwist-echo You can see this again");
 	
-	cmd.pause();
+	cmd.pause();+/
 
 	// ----- semitwist.cmd: cmd.prompt -----
 	// - Easy way to prompt for information interactively
@@ -141,7 +141,7 @@ void main(string[] args)
 	string failureMsg = "Please enter 'coffee' or 'tea', not '{0}'";
 	bool accept(string input)
 	{
-		return ["coffee"[], "tea"].contains(toLower(input));
+		return ["coffee", "tea"].contains(tolower(input));
 	}
 	// This will *not* return until the user enters a valid choice,
 	// so we don't need to do any more validation.
@@ -168,7 +168,7 @@ void main(string[] args)
 	// - Get/Set cmd's working directory
 	// - Note that setting dir does NOT affect the app's working directory,
 	//   just the directory the cmd object operates on.
-	showSectionHeader("semitwist.cmd: cmd.dir");
+/+	showSectionHeader("semitwist.cmd: cmd.dir");
 
 	cmd.echo("cmd is in", cmd.dir);          // Starts in the app's working dir
 	cmd.dir.folder("myNewDir").create;       // dir exposes Tango's VfsFolder
@@ -261,5 +261,6 @@ void main(string[] args)
 		
 	cmd.pause();
 
++/
 	//TODO: Add deferAssert stuff
 }

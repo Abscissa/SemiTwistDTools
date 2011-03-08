@@ -37,7 +37,7 @@ template deferAssert(string condStr, string msg="")
 	"        bool _deferAssert_condResult = ("~condStr~")?true:false;\n"~
 	"        _deferAssert!(_deferAssert_line, __FILE__, "~condStr.stringof~", "~msg.stringof~")(_deferAssert_condResult);\n"~
 	"    }\n"~
-	"    catch(Object _deferAssert_e)\n"~
+	"    catch(Throwable _deferAssert_e)\n"~
 	"        _deferAssertException!(_deferAssert_line, __FILE__, "~condStr.stringof~", "~msg.stringof~")(_deferAssert_e);\n"~
 	"}\n";
 }
@@ -83,7 +83,7 @@ template deferEnsure(string value, string condStr, string msg="")
 	"        bool _deferAssert_condResult = ("~condStr~")?true:false;\n"~
 	"        _deferEnsure!(_deferAssert_line, __FILE__, "~value.stringof~", "~condStr.stringof~", _deferAssert_ExprTypeOf!(typeof("~value~")), "~msg.stringof~")(_, _deferAssert_condResult);\n"~
 	"    }\n"~
-	"    catch(Object _deferAssert_e)\n"~
+	"    catch(Throwable _deferAssert_e)\n"~
 	"        _deferEnsureException!(_deferAssert_line, __FILE__, "~value.stringof~", "~condStr.stringof~", "~msg.stringof~")(_deferAssert_e);\n"~
 	"}\n";
 }
@@ -130,7 +130,7 @@ template deferEnsureThrows(string stmtStr, TExpected, string msg="")
 	"    Object _deferAssert_caught=null;\n"~
 	"    try\n"~
 	"    {"~stmtStr~"}\n"~
-	"    catch(Object _deferAssert_e)\n"~
+	"    catch(Throwable _deferAssert_e)\n"~
 	"        _deferAssert_caught = _deferAssert_e;\n"~
 	"    _deferEnsureThrows!(_deferAssert_line, __FILE__, "~stmtStr.stringof~", "~TExpected.stringof~", "~msg.stringof~")(_deferAssert_caught);\n"~
 	"}\n";
@@ -228,10 +228,10 @@ string unittestSection(string debugIdent)(string sectionName, string unittestBod
 			{
 				int _unittestSection_dummy_;
 				auto _unittestSection_moduleName_ =
-					unittestSection_demangle( unittestSection_mangledName!_unittestSection_dummy_ )
+					unittestSection_demangle( qualifiedName!_unittestSection_dummy_() )
 						[
 							"void ".length ..
-							ctfe_find(unittestSection_demangle( unittestSection_mangledName!_unittestSection_dummy_ ), ".__unittest")
+							ctfe_find(unittestSection_demangle( qualifiedName!_unittestSection_dummy_() ), ".__unittest")
 						];
 
 				writeUnittestSection(

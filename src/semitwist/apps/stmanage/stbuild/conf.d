@@ -293,9 +293,9 @@ class Conf
 	private static string fixSlashes(string str)
 	{
 		version(Windows)
-			return std.string.replace(str, "/", "\\");
+			return std.array.replace(str, "/", "\\");
 		else
-			return std.string.replace(str, "\\", "/");
+			return std.array.replace(str, "\\", "/");
 		//return str;
 	}
 	
@@ -313,10 +313,10 @@ class Conf
 		convert(switches, tool);
 		auto flags = fixSlashes(switchesToString(switches));
 		//mixin(traceVal!("flags"));
-		flags = std.string.replace(flags, "$(TARGET)", target);
-		flags = std.string.replace(flags, "$(MODE)",   mode);
-		flags = std.string.replace(flags, "$(OS)",     enumOSToString(os));
-		flags = std.string.replace(flags, "$()",       "");
+		flags = std.array.replace(flags, "$(TARGET)", target);
+		flags = std.array.replace(flags, "$(MODE)",   mode);
+		flags = std.array.replace(flags, "$(OS)",     enumOSToString(os));
+		flags = std.array.replace(flags, "$()",       "");
 		return flags;
 /+		return
 			//fixSlashes(switchesToString(switches))

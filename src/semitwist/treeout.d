@@ -6,12 +6,13 @@
 
 module semitwist.treeout;
 
-import std.traits;
-import std.stdio;
+import std.array;
 import std.conv;
-import std.string;
-import std.regex;
 import std.iterator;
+import std.regex;
+import std.stdio;
+import std.string;
+import std.traits;
 
 import semitwist.util.all;
 
@@ -19,7 +20,7 @@ abstract class TreeFormatter
 {
 	string fullIndent(int nodeDepth)
 	{
-		return strip()? "" : indent().repeat(nodeDepth);
+		return strip()? "" : indent().replicate(nodeDepth);
 	}
 	
 	string newline()

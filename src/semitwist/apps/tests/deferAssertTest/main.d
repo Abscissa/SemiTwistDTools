@@ -6,7 +6,7 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-This has been tested to work with DMD 2.049/2.050
+This has been tested to work with DMD 2.052
 +/
 
 module semitwist.apps.tests.deferAssertTest.main;
@@ -45,8 +45,8 @@ unittest
 	mixin(deferEnsure!(`false`, `_ == throwsException()`, "Exceptions are handled"));
 	
 	mixin(deferEnsureThrows!(`throw new Exception("Hello");`, Exception));
-	mixin(deferEnsureThrows!(`throw new Object();`, Exception, "Wrong type thrown!"));
-	mixin(deferEnsureThrows!(`throw new Exception("Hello");`, Object, "Wrong type thrown!"));
+	//mixin(deferEnsureThrows!(`throw new Object();`, Exception, "Wrong type thrown!"));
+	//mixin(deferEnsureThrows!(`throw new Exception("Hello");`, Object, "Wrong type thrown!"));
 }
 
 /++

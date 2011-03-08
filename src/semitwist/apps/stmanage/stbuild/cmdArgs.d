@@ -205,7 +205,7 @@ class CmdArgs
 			throw new Exception("Internal Error: Unexpected Build Tool Str: "~buildToolStr);
 		}
 		
-		extraArgs = extraArgList.join(" ");
+		extraArgs = std.string.join(extraArgList, " ");
 		
 		// Move to CmdLine
 		if(find(conf.targets, target) == [])

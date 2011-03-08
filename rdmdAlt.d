@@ -4,11 +4,13 @@
 // applied for these issues:
 //   #4672, #4683, #4684, #4688, #4928, #4930
 // These are necessary for SemiTwist D Tools.
+// Plus this is fixed to compile on DMD 2.052.
 
-import std.algorithm, std.c.stdlib, std.exception, std.date,
+import std.algorithm, std.c.stdlib, std.exception, std.datetime,
     std.file, std.getopt,
     std.md5, std.path, std.process, std.regexp,
     std.stdio, std.string, std.typetuple;
+static import std.array;
 
 version (Posix)
 {
@@ -36,7 +38,7 @@ int main(string[] args)
     {
         // multiple options wrapped in one
         auto a = args[1]["--shebang ".length .. $];
-        args = args[0 .. 1] ~ split(a) ~ args[2 .. $];
+        args = args[0 .. 1] ~ std.string.split(a) ~ args[2 .. $];
     }
     
     // Continue parsing the command line; now get rdmd's own arguments
@@ -117,13 +119,13 @@ int main(string[] args)
     if (loop)
     {
         return .eval(importWorld ~ "void main(char[][] args) { "
-                ~ "foreach (line; stdin.byLine()) {\n" ~ join(loop, "\n")
+                ~ "foreach (line; stdin.byLine()) {\n" ~ std.string.join(loop, "\n")
                 ~ ";\n} }");
     }
     if (eval)
     {
         return .eval(importWorld ~ "void main(char[][] args) {\n"
-                ~ join(eval, "\n") ~ ";\n}");
+                ~ std.string.join(eval, "\n") ~ ";\n}");
     }
     
     // Parse the program line - first find the program to run
@@ -168,10 +170,10 @@ int main(string[] args)
     {
         //exe = exeBasename ~ '.' ~ hash(root, compilerFlags);
         version (Posix)
-            exe = join(myOwnTmpDir, rel2abs(root)[1 .. $])
+            exe = std.path.join(myOwnTmpDir, rel2abs(root)[1 .. $])
                 ~ '.' ~ hash(root, compilerFlags);
         else version (Windows)
-            exe = join(myOwnTmpDir, std.string.replace(root, ".", "-"))
+            exe = std.path.join(myOwnTmpDir, std.array.replace(root.dup, ".", "-"))
                 ~ '-' ~ hash(root, compilerFlags);
         else
             assert(0);
@@ -195,7 +197,7 @@ int main(string[] args)
     {
         foreach(ref arg; programArgs)
             arg = shellQuote(arg);
-        return buildOnly ? 0 : system(([ exe ] ~ programArgs).join(" "));
+        return buildOnly ? 0 : system(std.string.join([ exe ] ~ programArgs, " "));
     }
     else
         return buildOnly ? 0 : execv(exe, [ exe ] ~ programArgs);
@@ -251,7 +253,7 @@ private string myOwnTmpDir()
         {
             tmpRoot = std.process.getenv("TMP");
         }
-        if (!tmpRoot) tmpRoot = join(".", ".rdmd");
+        if (!tmpRoot) tmpRoot = std.path.join(".", ".rdmd");
         else tmpRoot ~= sep ~ ".rdmd";
     }
     exists(tmpRoot) && isdir(tmpRoot) || mkdirRecurse(tmpRoot);
@@ -292,7 +294,7 @@ private int rebuild(string root, string fullExe,
 {
     //auto todo = `..\SemiTwistDTools\bin\showargs`~" "~join(compilerFlags, " ")
     //auto todo = "bin\\ddmd"~" "~join(compilerFlags, " ")
-    auto todo = " "~join(compilerFlags, " ")
+    auto todo = " "~std.string.join(compilerFlags.dup, " ")
         ~" -of"~shellQuote(fullExe)
         ~" -od"~shellQuote(objDir)
         ~" -I"~shellQuote(dirname(root))
@@ -361,7 +363,7 @@ private string[string] getDependencies(string rootModule, string objDir,
     string[string] myModules;// = [ rootModule : d2obj(rootModule) ];
     // Must collect dependencies
     invariant depsGetter = /*"cd "~shellQuote(rootDir)~" && "
-                             ~*/compiler~" "~join(compilerFlags, " ")
+                             ~*/compiler~" "~std.string.join(compilerFlags.dup, " ")
         ~" -v -o- "~shellQuote(rootModule)
         ~" -I"~shellQuote(rootDir)
         ~" >"~depsFilename;
@@ -403,14 +405,14 @@ private string[string] getDependencies(string rootModule, string objDir,
         // Backslashes elsewhere should NOT be escaped.
         if(arg.length > 0 && arg[$-1] == '\\')
             arg ~= '\\';
-        arg = arg.replace(`"`, `\"`);
+        arg = std.array.replace(arg, `"`, `\"`);
     }
     return quotechar ~ arg ~ quotechar;
 }
 
 private bool isNewer(string source, string target)
 {
-    return force || lastModified(source) >= lastModified(target, d_time.min);
+    return force || timeLastModified(source) >= timeLastModified(target, SysTime.min);
 }
 
 private string helpString()
@@ -478,10 +480,10 @@ int eval(string todo)
 
     // Clean pathname
     enum lifetimeInHours = 24;
-    auto cutoff = getUTCtime - 60 * 60 * lifetimeInHours * ticksPerSecond;
+    auto cutoff = Clock.currTime() + dur!"hours"(lifetimeInHours);
     foreach (DirEntry d; dirEntries(pathname, SpanMode.shallow))
     {
-        if (d.lastWriteTime < cutoff)
+        if (d.timeLastModified < cutoff)
         {
             std.file.remove(d.name);
             //break; // only one per call so we don't waste time

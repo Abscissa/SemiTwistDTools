@@ -588,7 +588,7 @@ T[] stripLinesLeftRight(T)(T[] lines) if(isSomeString!T)
 }
 
 //TODO*: Unittest this
-bool contains(T)(const(Unqual!T)[] haystack, T needle)
+bool contains(T1,T2)(T1 haystack, T2 needle)
 {
 	return std.algorithm.find(haystack, needle) != [];
 }
