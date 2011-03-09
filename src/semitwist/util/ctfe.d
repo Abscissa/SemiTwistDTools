@@ -3,6 +3,7 @@
 
 module semitwist.util.ctfe;
 
+import std.array;
 import std.stdio;
 import std.string;
 import std.traits;
@@ -80,21 +81,37 @@ T ctfe_substitute(T)(T str, T match, T replace) if(isSomeString!T)
 {
 	T value = "";
 	
-	if(str.length < match.length)
-		return str;//.dup;
+	static if(is(T == string))
+		alias immutable(ubyte)[] BaseType;
+	else static if(is(T == wstring))
+		alias immutable(ushort)[] BaseType;
+	else static if(is(T == dstring))
+		alias immutable(uint)[] BaseType;
+	else
+		static void BaseType;
 	
-	int i;
-	for(i=0; i<=str.length-match.length; i++)
+	if(str.length < match.length)
+		return str;
+	
+	while(str.length >= match.length)
 	{
-		if(str[i..i+match.length] == match)
+		if(str[0..match.length] == match)
 		{
 			value ~= replace;
-			i += match.length-1;
+			str = str[match.length .. $];
 		}
 		else
-			value ~= str[i];
+		{
+			// Can't do "value ~= str[0];" because of DMD Issue #5722
+			static if(is(BaseType == void))
+				cast(BaseType)value ~= (cast(BaseType)str)[0];
+			else
+				value ~= [ str[0] ];
+
+			str = str[1 .. $];
+		}
 	}
-	value ~= str[i..$];
+	value ~= str;
 	return value;
 }
 
@@ -133,7 +150,22 @@ bool ctfe_iswhite(dchar ch)
 	return false;
 }
 
-mixin(unittestSemiTwistDLib(q{
+
+// 'unittestSection' relies on some of these functions.
+// So don't use unittestSection, and include these unittests
+// in the "preunittest" tests.
+
+debug(SemiTwistDLib_unittest)
+	debug = SemiTwistDLib_ctfe;
+debug(SemiTwistDLib_preunittest)
+	debug = SemiTwistDLib_ctfe;
+
+debug(SemiTwistDLib_ctfe)
+unittest
+{
+	autoThrow = false;
+	writeUnittestSection("semitwist.util.ctfe");
+
 	// ctfe_find ---------------------------
 	mixin(deferEnsure!(q{ ctfe_find("abcde", 'd' ) }, q{ _==3 }));
 	mixin(deferEnsure!(q{ ctfe_find("abcde", 'X' ) }, q{ _==5 }));
@@ -170,6 +202,32 @@ mixin(unittestSemiTwistDLib(q{
 	mixin(deferEnsure!(q{ ctfe_join([""," ","","A","","BC","","D"," ",""], "\n") }, q{ _=="\n \n\nA\n\nBC\n\nD\n \n" }));
 	//mixin(traceVal!(q{ "\n"~ctfe_join([""," ","","A","","BC","","D"," ",""], "\n").escapeDDQS() }));
 
+	// ctfe_substitute ---------------------------
+	enum ctfe_substitute_test_1 = ctfe_substitute("hello", "X", "R");
+	mixin(deferEnsure!(q{ ctfe_substitute_test_1 }, q{ _=="hello" }));
+	
+	enum ctfe_substitute_test_2 = ctfe_substitute("hello", "e", "e");
+	mixin(deferEnsure!(q{ ctfe_substitute_test_2 }, q{ _=="hello" }));
+
+	enum ctfe_substitute_test_3 = ctfe_substitute("hello", "e", "X");
+	mixin(deferEnsure!(q{ ctfe_substitute_test_3 }, q{ _=="hXllo" }));
+	
+	enum ctfe_substitute_test_4 = ctfe_substitute("日本語", "X", "R");
+	mixin(deferEnsure!(q{ ctfe_substitute_test_4 }, q{ _=="日本語" }));
+	
+	enum ctfe_substitute_test_5 = ctfe_substitute("こんにちわ", "X", "R");
+	mixin(deferEnsure!(q{ ctfe_substitute_test_5 }, q{ _=="こんにちわ" }));
+	
+	enum ctfe_substitute_test_6 = ctfe_substitute("こんにちわ", "にち", "ばん");
+	mixin(deferEnsure!(q{ ctfe_substitute_test_6 }, q{ _=="こんばんわ" }));
+	
+	enum wstring ctfe_substitute_test_7 = ctfe_substitute("こんにちわ"w, "にち"w, "ばん"w);
+	mixin(deferEnsure!(q{ ctfe_substitute_test_7 }, q{ _=="こんばんわ"w }));
+	
+	enum dstring ctfe_substitute_test_8 = ctfe_substitute("こんにちわ"d, "にち"d, "ばん"d);
+	mixin(deferEnsure!(q{ ctfe_substitute_test_8 }, q{ _=="こんばんわ"d }));
+	
+	
 	// ctfe_pad ---------------------------
 	const string ctfe_pad_test_1 = ctfe_pad("Hi", 5);
 	mixin(deferEnsure!(`ctfe_pad_test_1`, `_ == "   Hi"`));
@@ -235,4 +293,4 @@ mixin(unittestSemiTwistDLib(q{
 
 	const string ctfe_subMapJoin_test_cj = ctfe_subMapJoin("こんにちわ、 だれさん。 ", "だれ", ["わたなべ"[], "ニク", "あおい"]);
 	mixin(deferEnsure!(`ctfe_subMapJoin_test_cj`, `_ == "こんにちわ、 わたなべさん。 こんにちわ、 ニクさん。 こんにちわ、 あおいさん。 "`));
-}));
+}

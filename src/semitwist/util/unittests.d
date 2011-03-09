@@ -242,7 +242,7 @@ string unittestSection(string debugIdent, bool autoThrow=false)(string sectionNa
 	.ctfe_substitute("_semitwist_unittestSection_debugIdent_", debugIdent)
 	.ctfe_substitute("_semitwist_unittestSection_sectionName_", sectionName)
 	.ctfe_substitute("_semitwist_unittestSection_unittestBody_", unittestBody)
-	.ctfe_substitute("_semitwist_unittestSection_autoThrow_", autoThrow);
+	.ctfe_substitute("_semitwist_unittestSection_autoThrow_", autoThrow? "true" : "false");
 }
 alias mangledName unittestSection_mangledName;
 alias demangle unittestSection_demangle;
