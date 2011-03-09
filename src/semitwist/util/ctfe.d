@@ -79,7 +79,6 @@ T ctfe_join(T)(T[] strs, T delim) if(isSomeString!T)
 
 T ctfe_substitute(T)(T str, T match, T replace) if(isSomeString!T)
 {
-return "FOO!";
 	T value = "";
 	
 	static if(is(T == string))
@@ -152,17 +151,8 @@ bool ctfe_iswhite(dchar ch)
 }
 
 
-// Since 'unittestSection' normally relies on some of these functions,
-// include these in the "meta unittests".
-//
-// Using 'unittestSection' is still ok because it does nothing
-// when SemiTwistDLib_metaunittest is defined.
+mixin(unittestSemiTwistDLib(q{
 
-mixin(metaUnittestSemiTwistDLib(q{
-	
-	debug(SemiTwistDLib_metaunittest)
-		writeln("== meta unittest: semitwist.util.ctfe");
-	
 	// ctfe_find ---------------------------
 	mixin(deferEnsure!(q{ ctfe_find("abcde", 'd' ) }, q{ _==3 }));
 	mixin(deferEnsure!(q{ ctfe_find("abcde", 'X' ) }, q{ _==5 }));

@@ -210,58 +210,39 @@ string unittestSection(string debugIdent, bool autoThrow=false)(string sectionNa
 		unittestBody = sectionName;
 		sectionName = "";
 	}
-
-	debug(SemiTwistDLib_metaunittest)
-	{
-		static if(debugIdent == "SemiTwistDLib_metaunittest")
+	sectionName = ( sectionName==""? "" : ": "~sectionName ).escapeDDQS();
+	
+	return q{
+		debug(_semitwist_unittestSection_debugIdent_)
 		{
-			// Nothing fancy
-			return "unittest { autoThrow=" ~ (autoThrow? "true":"false") ~ "; " ~ unittestBody ~ "}";
-		}
-		else
-			return ""; // Omit entirely, it might not even compile right.
-	}
-	else
-	{
-		static if(debugIdent == "SemiTwistDLib_metaunittest")
-			return unittestSection!("SemiTwistDLib_unittest", autoThrow)(sectionName, unittestBody);
-		else
-		{
-			sectionName = ( sectionName==""? "" : ": "~sectionName ).escapeDDQS();
-			
-			return q{
-				debug(_semitwist_unittestSection_debugIdent_)
-				{
-					unittest
-					{
-						auto saveAutoThrow = semitwist.util.unittests.autoThrow;
-						semitwist.util.unittests.autoThrow = _semitwist_unittestSection_autoThrow_;
-						scope(exit) semitwist.util.unittests.autoThrow = saveAutoThrow;
-						
-						int _unittestSection_dummy_;
-						auto _unittestSection_moduleName_ =
-							unittestSection_demangle( qualifiedName!_unittestSection_dummy_() )
-								[
-									"void ".length ..
-									ctfe_find(unittestSection_demangle( qualifiedName!_unittestSection_dummy_() ), ".__unittest")
-								];
+			unittest
+			{
+				auto saveAutoThrow = semitwist.util.unittests.autoThrow;
+				semitwist.util.unittests.autoThrow = _semitwist_unittestSection_autoThrow_;
+				scope(exit) semitwist.util.unittests.autoThrow = saveAutoThrow;
+				
+				int _unittestSection_dummy_;
+				auto _unittestSection_moduleName_ =
+					unittestSection_demangle( qualifiedName!_unittestSection_dummy_() )
+						[
+							"void ".length ..
+							ctfe_find(unittestSection_demangle( qualifiedName!_unittestSection_dummy_() ), ".__unittest")
+						];
 
-						writeUnittestSection(
-							_unittestSection_moduleName_ ~
-							_semitwist_unittestSection_sectionName_
-						);
-						_semitwist_unittestSection_unittestBody_
-					}
-				}
+				writeUnittestSection(
+					_unittestSection_moduleName_ ~
+					_semitwist_unittestSection_sectionName_
+				);
+				_semitwist_unittestSection_unittestBody_
 			}
-			.ctfe_substitute("\n", " ")
-			.ctfe_substitute("\r", "")
-			.ctfe_substitute("_semitwist_unittestSection_debugIdent_", debugIdent)
-			.ctfe_substitute("_semitwist_unittestSection_sectionName_", sectionName)
-			.ctfe_substitute("_semitwist_unittestSection_autoThrow_", autoThrow? "true" : "false")
-			.ctfe_substitute("_semitwist_unittestSection_unittestBody_", unittestBody);
 		}
 	}
+	.ctfe_substitute("\n", " ")
+	.ctfe_substitute("\r", "")
+	.ctfe_substitute("_semitwist_unittestSection_debugIdent_", debugIdent)
+	.ctfe_substitute("_semitwist_unittestSection_sectionName_", sectionName)
+	.ctfe_substitute("_semitwist_unittestSection_autoThrow_", autoThrow? "true" : "false")
+	.ctfe_substitute("_semitwist_unittestSection_unittestBody_", unittestBody);
 }
 alias mangledName unittestSection_mangledName;
 alias demangle unittestSection_demangle;
@@ -272,7 +253,6 @@ void writeUnittestSection(string sectionName)
 }
 
 alias unittestSection!"SemiTwistDLib_unittest" unittestSemiTwistDLib;
-alias unittestSection!"SemiTwistDLib_metaunittest" metaUnittestSemiTwistDLib;
 
 ///////////////////////////////////////////////////////////////////////////////
 
