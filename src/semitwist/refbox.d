@@ -83,7 +83,7 @@ string getRefBoxTypeName(Object o)
 /// Helpful templates
 template unbox(alias obj, string name)
 {
-	const string unbox =
+	enum unbox =
 		unboxToTypeAndArray!(obj, name~"AsInt",  int   )~
 		unboxToTypeAndArray!(obj, name~"AsBool", bool  )~
 		unboxToTypeAndArray!(obj, name~"AsStr",  string);
@@ -92,20 +92,20 @@ template unbox(alias obj, string name)
 
 private template unboxToTypeAndArray(alias obj, string name, type)
 {
-	const string unboxToTypeAndArray =
+	enum unboxToTypeAndArray =
 		unboxTo!(obj, name,     type.stringof     )~
 		unboxTo!(obj, name~"s", type.stringof~"[]");
 }
 
 private template unboxTo(alias obj, string name, string type)
 {
-	const string unboxTo = "auto "~name~" = cast(RefBox!("~type~"))"~obj.stringof~";\n";
+	enum unboxTo = "auto "~name~" = cast(RefBox!("~type~"))"~obj.stringof~";\n";
 }
 
 
 template dupRefBox(alias from, string tempName, alias to)
 {
-	const string dupRefBox =
+	enum dupRefBox =
 		unbox!(from, tempName)~
 		"if(false) {}\n"~
 		dupRefBoxTypeAndArray!(from, tempName~"AsInt",  int   , to)~
@@ -117,20 +117,20 @@ template dupRefBox(alias from, string tempName, alias to)
 
 private template dupRefBoxTypeAndArray(alias from, string tempName, type, alias to)
 {
-	const string dupRefBoxTypeAndArray =
+	enum dupRefBoxTypeAndArray =
 		dupRefBoxFrom!(from, tempName,     type.stringof     , to)~
 		dupRefBoxFrom!(from, tempName~"s", type.stringof~"[]", to);
 }
 
 private template dupRefBoxFrom(alias from, string tempName, string type, alias to)
 {
-	const string dupRefBoxFrom = "else if("~tempName~") "~to.stringof~" = "~tempName~".dup();\n";
+	enum dupRefBoxFrom = "else if("~tempName~") "~to.stringof~" = "~tempName~".dup();\n";
 }
 
 
 template isKnownRefBox(alias obj)
 {
-	const string isKnownRefBox =
+	enum isKnownRefBox =
 		isKnownRefBoxTypeAndArray!(obj, int   )~
 		isKnownRefBoxTypeAndArray!(obj, bool  )~
 		isKnownRefBoxTypeAndArray!(obj, string)~
@@ -140,12 +140,12 @@ template isKnownRefBox(alias obj)
 
 private template isKnownRefBoxTypeAndArray(alias obj, type)
 {
-	const string isKnownRefBoxTypeAndArray =
+	enum isKnownRefBoxTypeAndArray =
 		isKnownRefBoxOf!(obj, type.stringof     )~
 		isKnownRefBoxOf!(obj, type.stringof~"[]");
 }
 
 private template isKnownRefBoxOf(alias obj, string type)
 {
-	const string isKnownRefBoxOf = "cast(RefBox!("~type~"))"~obj.stringof~" ||\n";
+	enum isKnownRefBoxOf = "cast(RefBox!("~type~"))"~obj.stringof~" ||\n";
 }

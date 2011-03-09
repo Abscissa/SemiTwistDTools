@@ -46,7 +46,7 @@ escape a string at compile-time.)
 */
 template multiTypeString(string name, string data, string access="public")
 {
-	const string multiTypeString = 
+	enum multiTypeString = 
 	access~" T[] "~name~"(T)()"~
 	"{"~
 	"		 static if(is(T ==  char)) { return \""~data~"\"c; }"~
@@ -182,7 +182,7 @@ T unescapeChar(T)(T str, T escapeSequence) if(isSomeString!T)
 T unescapeDDQS(T)(T str) if(isSomeString!T)
 {
 	//mixin(ensureCharType!("T"));
-	const string errStr = "str doesn't contain a valid D Double Quote String";
+	enum errStr = "str doesn't contain a valid D Double Quote String";
 
 	if(str.length < 2)
 		throw new Exception(errStr);
@@ -239,7 +239,7 @@ T escapeDDQS(T)(T str) if(isSomeString!T)
 }
 
 /+
-const string doubleQuoteTestStr = `"They said \"10 \\ 5 = 2\""`;
+enum doubleQuoteTestStr = `"They said \"10 \\ 5 = 2\""`;
 
 pragma(msg, "orig:        "~doubleQuoteTestStr);
 pragma(msg, "unesc:       "~unescapeDDQS(doubleQuoteTestStr));
@@ -251,10 +251,10 @@ pragma(msg, "unesc:       "~unescape(doubleQuoteTestStr, EscapeSequence.DDQS));
 pragma(msg, "unesc:       "~doubleQuoteTestStr.unescape(EscapeSequence.DDQS));
 
 mixin(unittestSemiTwistDLib("Outputting some things", q{
-	const wstring ctEscW = escapeDDQS(`"They said \"10 \\ 5 = 2\""`w);
-	const dstring ctEscD = escapeDDQS(`"They said \"10 \\ 5 = 2\""`d);
-	const wstring ctUnescW = unescapeDDQS(`"They said \"10 \\ 5 = 2\""`w);
-	const dstring ctUnescD = unescapeDDQS(`"They said \"10 \\ 5 = 2\""`d);
+	enum wstring ctEscW = escapeDDQS(`"They said \"10 \\ 5 = 2\""`w);
+	enum dstring ctEscD = escapeDDQS(`"They said \"10 \\ 5 = 2\""`d);
+	enum wstring ctUnescW = unescapeDDQS(`"They said \"10 \\ 5 = 2\""`w);
+	enum dstring ctUnescD = unescapeDDQS(`"They said \"10 \\ 5 = 2\""`d);
 	writefln("%s%s", "ctEscW:      ", ctEscW);
 	writefln("%s%s", "ctEscD:      ", ctEscD);
 	writefln("%s%s", "ctUnescW:    ", ctUnescW);

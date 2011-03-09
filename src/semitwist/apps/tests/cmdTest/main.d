@@ -83,7 +83,7 @@ void main(string[] args)
 	Stdout.newline;
 	bool done = false;
 
-	const string helpMsg = `
+	enum helpMsg = `
 --Supported Commands--
 help                 Displays this message
 echo <text>          Echos <text>

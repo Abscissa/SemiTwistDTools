@@ -28,8 +28,8 @@ import semitwist.cmd.all;
 import semitwist.apps.stmanage.stbuild.cmdArgs;
 import semitwist.apps.stmanage.stbuild.conf;
 
-const string appName = "STBuild";
-const string appVerStr = "0.02.1";
+enum appName = "STBuild";
+enum appVerStr = "0.02.1";
 Ver appVer;
 static this()
 {

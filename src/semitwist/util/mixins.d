@@ -202,7 +202,7 @@ Usage:
 
 ----
 template defineFloat(string name)
-{ const string defineFloat = "float "~name~";"; }
+{ enum defineFloat = "float "~name~";"; }
 string defineInt(string name, string value)
 { return "int "~name~"="~value";"; }
 
@@ -214,7 +214,7 @@ Turns Into:
 
 ----
 template defineFloat(string name)
-{ const string defineFloat = "float "~name~";"; }
+{ enum defineFloat = "float "~name~";"; }
 string defineInt(string name, string value)
 { return "int "~name~"="~value";"; }
 
@@ -249,14 +249,14 @@ Only works for string values right now.
 Usage:
 
 ----
-const string fooStr = "Hi";
-const string fooStr2 = "Hi2";
+enum fooStr = "Hi";
+enum fooStr2 = "Hi2";
 mixin(traceValCT!("fooStr", "fooStr2"));
 mixin(traceValCT!(`fooStr~" Joe"`));
 
 template fooTmpl
 {
-	const string fooTempl = "Hello World";
+	enum fooTempl = "Hello World";
 	mixin(traceValCT!(true, "fooTempl"));
 }
 ----
@@ -264,15 +264,15 @@ template fooTmpl
 Turns Into:
 
 ----
-const string fooStr = "Hi";
-const string fooStr2 = "Hi2";
+enum fooStr = "Hi";
+enum fooStr2 = "Hi2";
 pragma(msg, "fooStr: " ~ (fooStr));
 pragma(msg, "fooStr2: " ~ (fooStr2));
 pragma(msg, "fooStr~\" Joe\""~": " ~ (fooStr~" Joe"));
 
 template fooTmpl
 {
-	const string fooTempl = "Hello World";
+	enum fooTempl = "Hello World";
 	pragma(msg, "fooTempl:\n" ~ (fooTempl));
 }
 ----
@@ -588,7 +588,7 @@ Error: static assert  "From 'funcForStringsOnly': 'T' must be char, wchar or dch
 
 /+template ensureCharType(string nameOfT, string nameOfCaller="")
 {
-	const string ensureCharType = 
+	enum ensureCharType = 
 		`static assert(`~"\n"~
 		`	is(`~nameOfT~`==char) || is(`~nameOfT~`==wchar) || is(`~nameOfT~`==dchar),`~"\n"~
 		`	"`~(nameOfCaller==""?"":"From '"~nameOfCaller~"': ")~`'`~nameOfT~`' must be char, wchar or dchar, not '"~`~nameOfT~`.stringof~"'"`~"\n"~
@@ -600,7 +600,7 @@ public string genEnum(string name, string[] values)
 {
 	return
 		"enum "~name~" {"~values.ctfe_join(", ")~"}\n"~
-		"const uint "~name~"_length = "~to!string(values.length)~";\n"~
+		"enum uint "~name~"_length = "~to!string(values.length)~";\n"~
 		_genEnumToString(name, values)~
 		_genStringToEnum(name, values);
 }

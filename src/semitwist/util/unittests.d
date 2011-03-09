@@ -20,9 +20,9 @@ of only outputting the first one and then stopping.
 */
 template deferAssert(string condStr, string msg="")
 {
-	const string deferAssert =
+	enum deferAssert =
 	// The "_deferAssert_line" is a workaround for DMD Bug #2887
-	"{ const long _deferAssert_line = __LINE__;\n"~
+	"{ enum long _deferAssert_line = __LINE__;\n"~
 	"    try\n"~
 	"    {\n"~
 	"        bool _deferAssert_condResult = ("~condStr~")?true:false;\n"~
@@ -65,9 +65,9 @@ void _deferAssertException(long line, string file, string condStr, string msg=""
 
 template deferEnsure(string value, string condStr, string msg="")
 {
-	const string deferEnsure =
+	enum deferEnsure =
 	// The "_deferAssert_line" is a workaround for DMD Bug #2887
-	"{ const long _deferAssert_line = __LINE__;\n"~
+	"{ enum long _deferAssert_line = __LINE__;\n"~
 	"    try\n"~
 	"    {\n"~
 	"        auto _ = ("~value~");\n"~
@@ -115,9 +115,9 @@ void _deferEnsureException(long line, string file, string valueStr, string condS
 
 template deferEnsureThrows(string stmtStr, TExpected, string msg="")
 {
-	const string deferEnsureThrows =
+	enum deferEnsureThrows =
 	// The "_deferAssert_line" is a workaround for DMD Bug #2887
-	"{ const long _deferAssert_line = __LINE__;\n"~
+	"{ enum long _deferAssert_line = __LINE__;\n"~
 	"    Object _deferAssert_caught=null;\n"~
 	"    try\n"~
 	"    {"~stmtStr~"}\n"~

@@ -15,24 +15,24 @@ private string genOSParam(string name, string[] values)
 		string osStr = enumOSToString(cast(OS)i);
 
 		str ~=
-			"const string "~name~"_"~osStr~" = "~escapeDDQS!string(value)~";\n"~
+			"enum string "~name~"_"~osStr~" = "~escapeDDQS!string(value)~";\n"~
 			"static if(os == OS."~osStr~")\n"~
-			"    const string "~name~" = "~name~"_"~osStr~";\n";
+			"    enum string "~name~" = "~name~"_"~osStr~";\n";
 	}
 	return str;
 }
 
 mixin(genEnum("OS", ["Windows"[], "Linux", "BSD", "OSX"]));
-version(Windows) const OS os = OS.Windows;
-version(linux)   const OS os = OS.Linux;
-version(freebsd) const OS os = OS.BSD;
-version(OSX)     const OS os = OS.OSX;
+version(Windows) enum OS os = OS.Windows;
+version(linux)   enum OS os = OS.Linux;
+version(freebsd) enum OS os = OS.BSD;
+version(OSX)     enum OS os = OS.OSX;
 
 mixin(genOSParam("objExt",  [ ".obj" [], ".o", ".o", ".o" ]));
 mixin(genOSParam("libExt",  [ ".lib" [], ".a", ".a", ".a" ]));
 mixin(genOSParam("exeExt",  [ ".exe" [], "",   "",   ""   ]));
 mixin(genOSParam("pathSep", [ "\\"   [], "/",  "/",  "/"  ]));
 mixin(genOSParam("nlStr",   [ "\r\n" [], "\n", "\n", "\n" ]));
-const string nlStr_Mac9 = "\r";
+enum nlStr_Mac9 = "\r";
 
 mixin(genOSParam("selfExeLink", [ ""[], "/proc/self/exe", "/proc/curproc/file", "/proc/curproc/file" ]));

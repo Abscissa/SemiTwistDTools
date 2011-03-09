@@ -98,7 +98,7 @@ template defineArg(alias cmdLineParser, string name, alias var, int flags = cast
 	}
 	else
 	{
-		const string defineArg = "\n"~
+		enum defineArg = "\n"~
 			"auto _cmdarg_refbox_"~name~" = new "~nameof!(RefBox)~"!("~typeof(var).stringof~")(&"~var.stringof~");\n"~
 			"auto _cmdarg_"~name~" = new Arg(_cmdarg_refbox_"~name~`, "`~name~`", `~desc.stringof~`);`~"\n"~
 			cmdLineParser.stringof~".addArg(_cmdarg_"~name~", cast(ArgFlag)("~flags.stringof~"));\n";
@@ -107,7 +107,7 @@ template defineArg(alias cmdLineParser, string name, alias var, int flags = cast
 
 template setArgAllowableValues(string name, allowableValues...)
 {
-	const string setArgAllowableValues =
+	enum setArgAllowableValues =
 		PreventStaticArray!(typeof(allowableValues[0])).stringof~"[] _cmdarg_allowablevals_"~name~";\n"
 		~_setArgAllowableValues!(name, allowableValues)
 		~"_cmdarg_"~name~".setAllowableValues(_cmdarg_allowablevals_"~name~");\n";
@@ -116,9 +116,9 @@ template setArgAllowableValues(string name, allowableValues...)
 private template _setArgAllowableValues(string name, allowableValues...)
 {
 	static if(allowableValues.length == 0)
-		const string _setArgAllowableValues = "";
+		enum _setArgAllowableValues = "";
 	else
-		const string _setArgAllowableValues =
+		enum _setArgAllowableValues =
 			"_cmdarg_allowablevals_"~name~" ~= "~allowableValues[0].stringof~";\n"
 			~ _setArgAllowableValues!(name, allowableValues[1..$]);
 }

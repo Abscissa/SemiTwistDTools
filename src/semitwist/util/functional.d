@@ -11,18 +11,18 @@ import semitwist.util.all;
 //TODO: Think about new naming scheme. Take a look at how tango does it.
 template makeDg2To1(string str, T)
 {
-	const string makeDg2To1 = "("~T.stringof~" a, "~T.stringof~" b){ return ("~str~"); }";
+	enum makeDg2To1 = "("~T.stringof~" a, "~T.stringof~" b){ return ("~str~"); }";
 	//pragma(msg, "makeDg2To1: "~makeDg2To1);
 }
 template makeDg2To1(string str, T1, T2)
 {
-	const string makeDg2To1 = "("~T1.stringof~" a, "~T2.stringof~" b){ return ("~str~"); }";
+	enum makeDg2To1 = "("~T1.stringof~" a, "~T2.stringof~" b){ return ("~str~"); }";
 	//pragma(msg, "makeDg2To1: "~makeDg2To1);
 }
 
 template makeDg1To1(string str, T)
 {
-	const string makeDg1To1 = "("~T.stringof~" a){ return ("~str~"); }";
+	enum makeDg1To1 = "("~T.stringof~" a){ return ("~str~"); }";
 	//pragma(msg, "makeDg1To1: "~makeDg1To1);
 }
 

@@ -25,8 +25,8 @@ class CmdArgs
 		shouldExit = !parse(args);
 	}
 	
-	const string sampleUsageMsg = "Usage: stbuild [options] target [mode] [options]";
-	const string defaultMode = Conf.modeRelease;
+	enum sampleUsageMsg = "Usage: stbuild [options] target [mode] [options]";
+	enum defaultMode = Conf.modeRelease;
 	
 	// Cmd line params
 	bool help = false;

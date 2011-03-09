@@ -16,7 +16,7 @@ import semitwist.cmd.all;
 void main(){}
 
 /+
-const string main_d_src = 
+enum main_d_src = 
 `// {0}
 // Written in the D programming language
 
@@ -34,8 +34,8 @@ int main(string[] args)
 void main(string[] args)
 {
 	// Prompt stuff
-	const string promptOverwrite = "Delete and overwrite (yes/no)? ";
-	const string msgFailedYesNo = "You must enter 'yes' or 'no', not '%s'.";
+	enum promptOverwrite = "Delete and overwrite (yes/no)? ";
+	enum msgFailedYesNo = "You must enter 'yes' or 'no', not '%s'.";
 	bool acceptYesNo(string input)
 	{
 		return input=="yes" || input=="no";
