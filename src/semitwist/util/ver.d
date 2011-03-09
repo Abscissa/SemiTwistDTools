@@ -12,6 +12,7 @@ import semitwist.util.all;
 
 //TODO: Support versions that have different semantics
 //TODO: Document ordering semantics of this
+//TODO: This should all work at compile-time
 struct Ver
 {
 	uint[] ver;
@@ -43,7 +44,14 @@ struct Ver
 
 Ver toVer(string str)
 {
-	return Ver( to!(uint[])(str.split(".")) );
+	auto strParts = str.ctfe_split(".");
+	uint[] verParts;
+	verParts.length = strParts.length;
+	
+	foreach(i, strPart; strParts)
+		verParts[i] = ctfe_to!uint(strPart);
+		
+	return Ver(verParts);
 }
 
 mixin(unittestSemiTwistDLib(q{

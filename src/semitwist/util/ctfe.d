@@ -150,6 +150,21 @@ bool ctfe_iswhite(dchar ch)
 	return false;
 }
 
+T ctfe_to(T)(string str) if(is(T==uint))
+{
+	T val = 0;
+	foreach(i; 0..str.length)
+	{
+		auto newVal = cast(ubyte)str[i];
+		if(newVal < cast(ubyte)'0' || newVal > cast(ubyte)'9')
+			throw new Exception("Invalid character");
+		
+		val *= 10;
+		val += newVal - cast(ubyte)'0';
+	}
+	
+	return val;
+}
 
 mixin(unittestSemiTwistDLib(q{
 
@@ -280,4 +295,18 @@ mixin(unittestSemiTwistDLib(q{
 
 	enum ctfe_subMapJoin_test_cj = ctfe_subMapJoin("こんにちわ、 だれさん。 ", "だれ", ["わたなべ"[], "ニク", "あおい"]);
 	mixin(deferEnsure!(`ctfe_subMapJoin_test_cj`, `_ == "こんにちわ、 わたなべさん。 こんにちわ、 ニクさん。 こんにちわ、 あおいさん。 "`));
+	
+	// ctfe_to!uint(string) ---------------------------
+	enum ctfe_to_uint_string_1 = ctfe_to!uint("0");
+	mixin(deferEnsure!(`ctfe_to_uint_string_1`, `_ == 0`));
+	
+	enum ctfe_to_uint_string_2 = ctfe_to!uint("9");
+	mixin(deferEnsure!(`ctfe_to_uint_string_2`, `_ == 9`));
+	
+	enum ctfe_to_uint_string_3 = ctfe_to!uint("42");
+	mixin(deferEnsure!(`ctfe_to_uint_string_3`, `_ == 42`));
+	
+	enum ctfe_to_uint_string_4 = ctfe_to!uint("65536");
+	mixin(deferEnsure!(`ctfe_to_uint_string_4`, `_ == 65536`));
+	
 }));
