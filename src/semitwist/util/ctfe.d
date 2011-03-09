@@ -79,6 +79,7 @@ T ctfe_join(T)(T[] strs, T delim) if(isSomeString!T)
 
 T ctfe_substitute(T)(T str, T match, T replace) if(isSomeString!T)
 {
+return "FOO!";
 	T value = "";
 	
 	static if(is(T == string))
@@ -151,21 +152,17 @@ bool ctfe_iswhite(dchar ch)
 }
 
 
-// 'unittestSection' relies on some of these functions.
-// So don't use unittestSection, and include these unittests
-// in the "preunittest" tests.
+// Since 'unittestSection' normally relies on some of these functions,
+// include these in the "meta unittests".
+//
+// Using 'unittestSection' is still ok because it does nothing
+// when SemiTwistDLib_metaunittest is defined.
 
-debug(SemiTwistDLib_unittest)
-	debug = SemiTwistDLib_ctfe;
-debug(SemiTwistDLib_preunittest)
-	debug = SemiTwistDLib_ctfe;
-
-debug(SemiTwistDLib_ctfe)
-unittest
-{
-	autoThrow = false;
-	writeUnittestSection("semitwist.util.ctfe");
-
+mixin(metaUnittestSemiTwistDLib(q{
+	
+	debug(SemiTwistDLib_metaunittest)
+		writeln("== meta unittest: semitwist.util.ctfe");
+	
 	// ctfe_find ---------------------------
 	mixin(deferEnsure!(q{ ctfe_find("abcde", 'd' ) }, q{ _==3 }));
 	mixin(deferEnsure!(q{ ctfe_find("abcde", 'X' ) }, q{ _==5 }));
@@ -293,4 +290,4 @@ unittest
 
 	const string ctfe_subMapJoin_test_cj = ctfe_subMapJoin("こんにちわ、 だれさん。 ", "だれ", ["わたなべ"[], "ニク", "あおい"]);
 	mixin(deferEnsure!(`ctfe_subMapJoin_test_cj`, `_ == "こんにちわ、 わたなべさん。 こんにちわ、 ニクさん。 こんにちわ、 あおいさん。 "`));
-}
+}));
