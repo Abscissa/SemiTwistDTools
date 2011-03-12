@@ -211,38 +211,32 @@ string unittestSection(string debugIdent, bool autoThrow=false)(string sectionNa
 		sectionName = "";
 	}
 	sectionName = ( sectionName==""? "" : ": "~sectionName ).escapeDDQS();
+	auto autoThrowStr = autoThrow? "true" : "false";
 	
-	return q{
-		debug(_semitwist_unittestSection_debugIdent_)
-		{
-			unittest
-			{
-				auto saveAutoThrow = semitwist.util.unittests.autoThrow;
-				semitwist.util.unittests.autoThrow = _semitwist_unittestSection_autoThrow_;
-				scope(exit) semitwist.util.unittests.autoThrow = saveAutoThrow;
-				
-				int _unittestSection_dummy_;
-				auto _unittestSection_moduleName_ =
-					unittestSection_demangle( qualifiedName!_unittestSection_dummy_() )
-						[
-							"void ".length ..
-							ctfe_find(unittestSection_demangle( qualifiedName!_unittestSection_dummy_() ), ".__unittest")
-						];
-
-				writeUnittestSection(
-					_unittestSection_moduleName_ ~
-					_semitwist_unittestSection_sectionName_
-				);
-				_semitwist_unittestSection_unittestBody_
-			}
-		}
-	}
-	.ctfe_substitute("\n", " ")
-	.ctfe_substitute("\r", "")
-	.ctfe_substitute("_semitwist_unittestSection_debugIdent_", debugIdent)
-	.ctfe_substitute("_semitwist_unittestSection_sectionName_", sectionName)
-	.ctfe_substitute("_semitwist_unittestSection_autoThrow_", autoThrow? "true" : "false")
-	.ctfe_substitute("_semitwist_unittestSection_unittestBody_", unittestBody);
+	return
+		"debug("~debugIdent~") "~
+		"{ "~
+		"	unittest "~
+		"	{ "~
+		"		auto saveAutoThrow = semitwist.util.unittests.autoThrow; "~
+		"		semitwist.util.unittests.autoThrow = "~autoThrowStr~"; "~
+		"		scope(exit) semitwist.util.unittests.autoThrow = saveAutoThrow; "~
+		"		 "~
+		"		int _unittestSection_dummy_; "~
+		"		auto _unittestSection_moduleName_ = "~
+		"			unittestSection_demangle( qualifiedName!_unittestSection_dummy_() ) "~
+		"				[ "~
+		"					\"void \".length .. "~
+		"					ctfe_find(unittestSection_demangle( qualifiedName!_unittestSection_dummy_() ), \".__unittest\") "~
+		"				]; "~
+		" "~
+		"		writeUnittestSection( "~
+		"			_unittestSection_moduleName_ ~ "~
+		"			"~sectionName~" "~
+		"		); "~
+		"		"~unittestBody~" "~
+		"	} "~
+		"} ";
 }
 alias mangledName unittestSection_mangledName;
 alias demangle unittestSection_demangle;
