@@ -81,15 +81,6 @@ T ctfe_substitute(T)(T str, T match, T replace) if(isSomeString!T)
 {
 	T value = "";
 	
-	static if(is(T == string))
-		alias immutable(ubyte)[] BaseType;
-	else static if(is(T == wstring))
-		alias immutable(ushort)[] BaseType;
-	else static if(is(T == dstring))
-		alias immutable(uint)[] BaseType;
-	else
-		static void BaseType;
-	
 	if(str.length < match.length)
 		return str;
 	
@@ -103,10 +94,8 @@ T ctfe_substitute(T)(T str, T match, T replace) if(isSomeString!T)
 		else
 		{
 			// Can't do "value ~= str[0];" because of DMD Issue #5722
-			static if(is(BaseType == void))
-				cast(BaseType)value ~= (cast(BaseType)str)[0];
-			else
-				value ~= [ str[0] ];
+			//TODO: Change back to "value ~= str[0];" when DMD Issue #5722 is fixed
+			value ~= [ str[0] ];
 
 			str = str[1 .. $];
 		}
