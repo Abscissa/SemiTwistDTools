@@ -338,7 +338,12 @@ class CmdLineParser
 			mixin(unbox!(argDefValue, "val"));
 
 			ret = ParseArgResult.Done;
-			if(valAsBool || valAsBools)
+			if(argDef.isSet && (valAsBool || valAsStr || valAsInt))
+			{
+				_errorMsg ~= `Switch given twice: "%s"`.formatln(cmdArg);
+				ret = ParseArgResult.Error;
+			}
+			else if(valAsBool || valAsBools)
 			{
 				bool val;
 				bool isMalformed=false;
