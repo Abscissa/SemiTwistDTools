@@ -103,9 +103,10 @@ class CmdArgs
 	private void showHeader()
 	{
 		cmd.echo(header);
-		cmd.echo("Copyright (c) 2009-2010 Nick Sabalausky");
+		cmd.echo("Copyright (c) 2009-2011 Nick Sabalausky");
 		cmd.echo("See LICENSE.txt for license info");
 		cmd.echo("Site: http://www.dsource.org/projects/semitwist");
+		cmd.echo();
 	}
 
 	void showHelpHowTo()
@@ -121,34 +122,34 @@ class CmdArgs
 		if(moreHelp)
 		{
 			showHeader();
-			cmd.echo(cmdLine.errorMsg);
 			stdout.flush();
+			auto confErr = "";
 			try
 				conf = new Conf(confFile);
 			catch(STBuildConfException e)
-			{
-				cmd.echo(e.msg);
-				cmd.echo;
-			}
+				confErr = e.msg;
 			cmd.echo(sampleUsageMsg);
 			cmd.echo;
 			showTargets();
 			showModes();
 			cmd.echo(cmdLine.getDetailedUsage());
+			if(confErr != "")
+				cmd.echo(confErr);
+			write(cmdLine.errorMsg);
 			return false;
 		}
 		if(!cmdLine.success || help)
 		{
 			showHeader();
-			cmd.echo(cmdLine.errorMsg);
+			auto confErr = "";
 			try
 				conf = new Conf(confFile);
 			catch(STBuildConfException e)
-			{
-				cmd.echo(e.msg);
-				cmd.echo;
-			}
+				confErr = e.msg;
 			showUsage();
+			if(confErr != "")
+				cmd.echo(confErr);
+			write(cmdLine.errorMsg);
 			return false;
 		}
 		
@@ -157,12 +158,9 @@ class CmdArgs
 		catch(STBuildConfException e)
 		{
 			showHeader();
-			cmd.echo(cmdLine.errorMsg);
-
-			cmd.echo(e.msg);
-			cmd.echo;
-			
 			showUsage();
+			cmd.echo(e.msg);
+			write(cmdLine.errorMsg);
 			return false;
 		}
 
@@ -176,17 +174,13 @@ class CmdArgs
 			break;
 		case 0:
 			showHeader();
-			cmd.echo;
-			cmd.echo("Target not specified");
-			cmd.echo;
 			showUsage();
+			cmd.echo("Target not specified");
 			return false;
 		default:
 			showHeader();
-			cmd.echo;
-			cmd.echo("Unexpected extra params:", targetMode[2..$]);
-			cmd.echo;
 			showUsage();
+			cmd.echo("Unexpected extra params:", targetMode[2..$]);
 			return false;
 		}
 		
@@ -210,17 +204,17 @@ class CmdArgs
 		// Move to CmdLine
 		if(find(conf.targets, target) == [])
 		{
+			showTargets();
 			cmd.echo("Target '%s' not defined".format(target));
 			cmd.echo;
-			showTargets();
 			showHelpHowTo();
 			return false;
 		}
 		if(find(conf.modes, mode) == [])
 		{
+			showModes();
 			cmd.echo("Mode '%s' not supported".format(mode));
 			cmd.echo;
-			showModes();
 			showHelpHowTo();
 			return false;
 		}

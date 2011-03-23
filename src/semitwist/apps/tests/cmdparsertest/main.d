@@ -53,14 +53,14 @@ void main(string[] args)
 	cmd.parse(args);
 	if(detailHelp)
 	{
-		writeln(cmd.errorMsg);
-		write(cmd.getDetailedUsage());
+		writeln(cmd.getDetailedUsage());
+		write(cmd.errorMsg);
 		return;
 	}
 	if(!cmd.success || help)
 	{
-		writeln(cmd.errorMsg);
-		write(cmd.getUsage(18));
+		writeln(cmd.getUsage(18));
+		write(cmd.errorMsg);
 		return;
 	}
 	writeln();
