@@ -29,7 +29,7 @@ import semitwist.apps.stmanage.stbuild.cmdArgs;
 import semitwist.apps.stmanage.stbuild.conf;
 
 enum appName = "STBuild";
-enum appVerStr = "0.02.1";
+enum appVerStr = "0.03";
 Ver appVer;
 static this()
 {

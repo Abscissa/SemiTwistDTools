@@ -23,7 +23,7 @@ module semitwist.apps.miniapps.ini2urlencode.main;
 
 import semitwist.cmd.all;
 
-enum appVerStr = "0.02";
+enum appVerStr = "0.03";
 Ver appVer;
 static this()
 {
