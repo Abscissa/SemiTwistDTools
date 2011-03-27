@@ -254,6 +254,12 @@ class Conf
 		auto start2 = `+foo -od_od -foo +o_o -of_of -C_C -oq_oq +O_O +foo`;
 		auto re2    = `-od_od -foo -of_o -of_of -C_C -oq_oq -od_O`;
 		
+		version(Posix)
+		{
+			re = re.replace(`"`, `'`);
+			xf = xf.replace(`"`, `'`);
+		}
+		
 		switches = ConfParser.splitSwitches(start);
 		convert(switches, BuildTool.rebuild);
 		mixin(deferEnsure!(`switchesToString(switches)`, `_ == re`));
