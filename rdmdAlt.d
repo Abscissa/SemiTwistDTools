@@ -319,6 +319,19 @@ private int rebuild(string root, string fullExe,
 		auto rspName = std.path.join(myOwnTmpDir,
 				"rdmd." ~ hash(root, compilerFlags) ~ ".rsp");
 
+		// On Posix, DMD can't handle shell quotes in its response files.
+		version(Posix)
+		{
+			todo = " "~std.string.join(compilerFlags.dup, " ")
+				~" -of"~fullExe
+				~" -od"~objDir
+				~" -I"~dirname(root)
+				~" "~root~" ";
+			foreach (k; myModules.keys) {
+				todo ~= k ~ " ";
+			}
+		}
+
 		std.file.write(rspName, todo);
 		todo = " " ~ shellQuote("@"~rspName);
 	}
