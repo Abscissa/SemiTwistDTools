@@ -9,7 +9,7 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 AFAIK, Windows doesn't have a 'pwd' command.
 So this might occasionally be useful.
 
-This has been tested to work with DMD 2.050
+This has been tested to work with DMD 2.052
 +/
 
 module semitwist.apps.miniapps.pwd.main;
