@@ -1,9 +1,6 @@
 // SemiTwist Library
 // Written in the D programming language.
 
-//TODO: Seriously Nick, you know better than to do all that concatenating
-//      instead of appending or an array builder.
-
 module semitwist.treeout;
 
 import std.array;
@@ -72,17 +69,32 @@ class XMLFormatter(bool _strip, string _indent="\t") : TreeFormatter
 	
 	override string processData(string content, int nodeDepth)
 	{
-		return fullIndent(nodeDepth)~"<![CDATA["~content~"]]>"~newline;
+		string str = fullIndent(nodeDepth);
+		str ~= "<![CDATA[";
+		str ~= content;
+		str ~= "]]>";
+		str ~= newline;
+		return str;
 	}
 	
 	override string processComment(string content, int nodeDepth)
 	{
-		return fullIndent(nodeDepth)~"<!--"~content~"-->"~newline;
+		string str = fullIndent(nodeDepth);
+		str ~= "<!--";
+		str ~= content;
+		str ~= "-->";
+		str ~= newline;
+		return str;
 	}
 	
 	override string processAttribute(string name, string value, int nodeDepth)
 	{
-		return ` %s="%s"`.format(toValidName(name), value);
+		string str = " ";
+		str ~= toValidName(name);
+		str ~= `="`;
+		str ~= value;
+		str ~= `"`;
+		return str;
 	}
 	
 	override string processNode(string name, string attributes, string content, int nodeDepth)
@@ -91,8 +103,8 @@ class XMLFormatter(bool _strip, string _indent="\t") : TreeFormatter
 			(content=="")? 
 			"%1$s<%3$s%4$s />%2$s"
 			:
-			("%1$s<%3$s%4$s>%2$s"
-			"%5$s"
+			("%1$s<%3$s%4$s>%2$s"~
+			"%5$s"~
 			"%1$s</%3$s>%2$s");
 			
 		return formatStr.format(fullIndent(nodeDepth), newline(), toValidName(name), attributes, content);
@@ -100,13 +112,21 @@ class XMLFormatter(bool _strip, string _indent="\t") : TreeFormatter
 	
 	override string reduceAttributes(string[] attributes, int nodeDepth)
 	{
-		return reduce!(`a~b`)(attributes);
+		string str;
+		foreach(attr; attributes)
+			str ~= attr;
+		return str;
+		//return reduce!(`a~b`)(attributes);
 //		return attributes.reduce!(`a~" "~b`)(); // Don't work
 	}
 	
 	override string reduceNodes(string[] nodes, int nodeDepth)
 	{
-		return reduce!(`a~b`)(nodes);
+		string str;
+		foreach(node; nodes)
+			str ~= node;
+		return str;
+		//return reduce!(`a~b`)(nodes);
 	}
 	
 	override string finalize(string content)
@@ -134,25 +154,37 @@ class JSONFormatter(bool _strip, string _indent="\t") : TreeFormatter
 	
 	string processString(string content)
 	{
-		return `"` ~ content.replace(`\`, `\\`).replace(`"`, `\"`) ~ `"`;
+		content = content.replace(`\`, `\\`).replace(`"`, `\"`);
+		string str = `"`;
+		str ~= content;
+		str ~= `"`;
+		return str;
 	}
 	
 	string processList(string[] elements, int nodeDepth)
 	{
-		return elements.length==0? "" :
-			elements.reduce
-			(
-				(string a, string b)
-				{
-					a ~= ", "~newline~fullIndent(nodeDepth)~b;
-					return a;
-				}
-			);
+		if(elements.length==0)
+			return "";
+		
+		string str;
+		string sep = ", ";
+		sep ~= newline;
+		sep ~= fullIndent(nodeDepth);
+		foreach(i, elem; elements)
+		{
+			if(i != 0)
+				str ~= sep;
+			str ~= elem;
+		}
+		return str;
 	}
 	
 	string processPair(string name, string content)
 	{
-		return "%s: %s".format(processString(name), content);
+		string str = processString(name);
+		str ~= ": ";
+		str ~= content;
+		return str;
 	}
 	
 	override string processComment(string content, int nodeDepth)
@@ -177,15 +209,39 @@ class JSONFormatter(bool _strip, string _indent="\t") : TreeFormatter
 	
 	string processNode(string name, string attributes, string content, int nodeDepth, bool nameless)
 	{
-		string attrAndContent = 
-			(attributes == "" && content == "")? "" :
-			(attributes != "" && content == "")? fullIndent(nodeDepth+1)~attributes~newline :
-			(attributes == "" && content != "")? fullIndent(nodeDepth+1)~content~newline :
-				fullIndent(nodeDepth+1)~attributes~", "~newline~fullIndent(nodeDepth+1)~content~newline;
-		
+		string attrAndContent = "";
+		if(attributes != "" && content == "")
+		{
+			attrAndContent = fullIndent(nodeDepth+1);
+			attrAndContent ~= attributes;
+			attrAndContent ~= newline;
+		}
+		else if(attributes == "" && content != "")
+		{
+			attrAndContent = fullIndent(nodeDepth+1);
+			attrAndContent ~= content;
+			attrAndContent ~= newline;
+		}
+		else if(attributes != "" && content != "")
+		{
+			attrAndContent = fullIndent(nodeDepth+1);
+			attrAndContent ~= attributes;
+			attrAndContent ~= ", ";
+			attrAndContent ~= newline;
+			attrAndContent ~= fullIndent(nodeDepth+1);
+			attrAndContent ~= content;
+			attrAndContent ~= newline;
+		}
+
 		name = nameless? "" : processString(name)~": ";
 		
-		return name~"{"~newline~attrAndContent~fullIndent(nodeDepth)~"}";
+		string str = name;
+		str ~= "{";
+		str ~= newline;
+		str ~= attrAndContent;
+		str ~= fullIndent(nodeDepth);
+		str ~= "}";
+		return str;
 
 /+		return
 			("%3$s{%2$s"
