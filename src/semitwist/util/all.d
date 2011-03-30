@@ -21,6 +21,7 @@ In SVN comments:
 module semitwist.util.all;
 
 public import semitwist.util.array;
+public import semitwist.util.container;
 public import semitwist.util.ctfe;
 public import semitwist.util.functional;
 public import semitwist.util.io;
