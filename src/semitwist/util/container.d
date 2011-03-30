@@ -8,8 +8,6 @@ import semitwist.util.all;
 final class Stack(T)
 {
 	private T[] data;
-	//private size_t _capacity;
-	//alias data.length capacity;
 	@property size_t capacity()
 	{
 		return data.length;
@@ -19,10 +17,6 @@ final class Stack(T)
 	{
 		return _length;
 	}
-	//size_t length;
-	//alias length _length;
-	//size_t capacity;
-	//alias capacity _capacity;
 	
 	this(size_t initialCapacity=1024)
 	{
@@ -39,7 +33,7 @@ final class Stack(T)
 	
 	T[] opSlice(size_t a, size_t b)
 	{
-		debug if(a >= _length || b >= _length)
+		debug if(a >= _length || b > _length)
 			throw new Exception("Invalid index");
 		
 		return data[a..b];
