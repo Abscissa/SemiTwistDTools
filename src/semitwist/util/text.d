@@ -408,9 +408,12 @@ private T[] unindentImpl(T)(T[] lines, T origStr=null) if(isSomeString!T)
 			(T str){ return str.strip()==""? null : leadingWhiteOf(str);}
 		);
 	else
+	{
+		string mapPredicate(T str){ return str.strip()==""? null : leadingWhiteOf(str);}
 		indents = array( std.algorithm.map!(
-			(T str){ return str.strip()==""? null : leadingWhiteOf(str);}
+			mapPredicate//(T str){ return str.strip()==""? null : leadingWhiteOf(str);}
 			)(lines) );
+	}
 
 	T shorterAndNonNull(T a, T b) {
 		if(a is null) return b;
