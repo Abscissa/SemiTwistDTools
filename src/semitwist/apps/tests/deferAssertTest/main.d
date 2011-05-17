@@ -8,7 +8,7 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 
 Make sure to pass "-debug=deferAssertTest_unittest" to DMD.
 
-This has been tested to work with DMD 2.052
+This has been tested to work with DMD 2.052 and 2.053
 +/
 
 module semitwist.apps.tests.deferAssertTest.main;

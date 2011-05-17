@@ -9,7 +9,6 @@ public import std.conv;
 public import std.string;
 public import std.array;
 public import std.algorithm : find, sort, reduce;
-public import std.iterator;
 public import std.file;
 public import std.path;
 public import std.process;

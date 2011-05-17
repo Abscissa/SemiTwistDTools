@@ -6,7 +6,7 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-This has been tested to work with DMD 2.052
+This has been tested to work with DMD 2.052 and 2.053
 +/
 
 module semitwist.apps.samples.cmdSample.main;

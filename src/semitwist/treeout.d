@@ -5,7 +5,7 @@ module semitwist.treeout;
 
 import std.array;
 import std.conv;
-import std.iterator;
+import std.range : ElementType;
 import std.regex;
 import std.stdio;
 import std.string;

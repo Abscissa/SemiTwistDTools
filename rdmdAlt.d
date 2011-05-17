@@ -4,7 +4,7 @@
 // applied for these issues:
 //   #4672, #4683, #4684, #4688, #4928, #4930
 // These are necessary for SemiTwist D Tools.
-// Plus this is fixed to compile on DMD 2.052.
+// Plus this is fixed to compile on DMD 2.052 and up.
 
 import std.algorithm, std.c.stdlib, std.exception, std.datetime,
     std.file, std.getopt,

@@ -5,7 +5,6 @@ module semitwist.util.reflect;
 
 import std.conv;
 import std.demangle;
-import std.iterator;
 import std.traits;
 
 import semitwist.util.all;
@@ -44,15 +43,6 @@ static if(!is(typeof( isStringType!(char[]) )))
 			is( T : wchar[] ) ||
 			is( T : dchar[] );
 	}
-}
-
-/// If T is a static array, it's changed to a dynamic array, otherwise just returns T.
-template PreventStaticArray(T)
-{
-	static if(isArray!(T))
-		private alias ElementType!(T)[] PreventStaticArray;
-	else
-		private alias T PreventStaticArray;
 }
 
 /// If T isn't an array, returns T[], otherwise returns T as-is.

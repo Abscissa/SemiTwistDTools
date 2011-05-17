@@ -108,7 +108,7 @@ template defineArg(alias cmdLineParser, string name, alias var, int flags = cast
 template setArgAllowableValues(string name, allowableValues...)
 {
 	enum setArgAllowableValues =
-		PreventStaticArray!(typeof(allowableValues[0])).stringof~"[] _cmdarg_allowablevals_"~name~";\n"
+		typeof(allowableValues[0]).stringof~"[] _cmdarg_allowablevals_"~name~";\n"
 		~_setArgAllowableValues!(name, allowableValues)
 		~"_cmdarg_"~name~".setAllowableValues(_cmdarg_allowablevals_"~name~");\n";
 }
