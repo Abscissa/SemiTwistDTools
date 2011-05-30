@@ -109,9 +109,9 @@ T[] toNativeEOLFromMac9(T)(T[] str)
 enum EscapeSequence
 {
 	DDQS, // D Double Quote String, ex: `"foo\t"` <--> `foo	`
-	
+	HTML, // ex: `&amp;` <--> `&`
+
 	//TODO: Implement these
-	//HTML, // ex: `&amp;` <--> `&`
 	//URI,  // ex: `%20` <--> ` `
 	//SQL,  //TODO: Include different types of SQL escaping (SQL's about as standardized as BASIC)
 }
@@ -143,6 +143,10 @@ T escape(T)(T str, EscapeSequence type) if(isSomeString!T)
 		ret = escapeDDQS(str);
 		break;
 		
+	case EscapeSequence.HTML:
+		ret = escapeHTML(str);
+		break;
+		
 	default:
 		throw new Exception("Unsupported EscapeSequence");
 	}
@@ -160,6 +164,10 @@ T unescape(T)(T str, EscapeSequence type) if(isSomeString!T)
 	{
 	case EscapeSequence.DDQS:
 		ret = unescapeDDQS(str);
+		break;
+		
+	case EscapeSequence.HTML:
+		ret = unescapeHTML(str);
 		break;
 		
 	default:
@@ -273,6 +281,29 @@ mixin(unittestSemiTwistDLib("Outputting some things", q{
 	writefln("%s%s", "unesc(esc):  ", unescapeDDQS(escapeDDQS(doubleQuoteTestStr)));
 }));
 +/
+
+/// Warning: This doesn't unescape all escape sequences yet.
+T unescapeHTML(T)(T str) if(isSomeString!T)
+{
+	auto ret = str;
+	
+	ret = ctfe_substitute!(T)(ret, "&lt;",  "<");
+	ret = ctfe_substitute!(T)(ret, "&gt;",  ">");
+	ret = ctfe_substitute!(T)(ret, "&amp;", "&");
+	
+	return ret;
+}
+
+T escapeHTML(T)(T str) if(isSomeString!T)
+{
+	auto ret = str;
+	
+	ret = ctfe_substitute!(T)(ret, "&", "&amp;");
+	ret = ctfe_substitute!(T)(ret, "<", "&lt;");
+	ret = ctfe_substitute!(T)(ret, ">", "&gt;");
+	
+	return ret;
+}
 
 /// Like std.string.indexOf, but with an optional 'start' parameter,
 /// and returns s.length when not found (instead of -1).
