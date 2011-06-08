@@ -13,6 +13,18 @@ import std.traits;
 
 import semitwist.util.all;
 
+string replicate(string str, int num)
+{
+	if(num < 1)
+		return "";
+	
+	string ret = "";
+	foreach(i; 0..num)
+		ret ~= str;
+		
+	return ret;
+}
+
 abstract class TreeFormatter
 {
 	string fullIndent(int nodeDepth)
