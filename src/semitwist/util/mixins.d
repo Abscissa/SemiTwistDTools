@@ -536,7 +536,7 @@ template getterLazy(string writeAccess, varType, string name, string genFunc="")
 		"	return _"~name~";\n"~
 		"}\n"~
 		((genFunc=="")?"":
-			"private "~varType.stringof~" _"~name~"_gen()\n"~
+			writeAccess~" "~varType.stringof~" _"~name~"_gen()\n"~
 			"{\n"~
 			genFunc~
 			"}\n"
