@@ -308,11 +308,20 @@ class CmdLineParser
 		}
 		
 		// Get suffix and arg name
-		auto suffixIndex = reduce!"a<b?a:b"( [
-			locate(argNoPrefix, ':'),
-			locate(argNoPrefix, '+'),
-			locate(argNoPrefix, '-')
-		] );
+		version(GNU)
+		{
+			auto tmp = [locate(argNoPrefix, ':'), locate(argNoPrefix, '+')];
+			tmp ~= locate(argNoPrefix, '-');
+			auto suffixIndex = reduce!"a<b?a:b"(tmp);
+		}
+		else
+		{
+			auto suffixIndex = reduce!"a<b?a:b"( [
+				locate(argNoPrefix, ':'),
+				locate(argNoPrefix, '+'),
+				locate(argNoPrefix, '-')
+			] );
+		}
 		name = argNoPrefix[0..suffixIndex];
 		suffix = suffixIndex < argNoPrefix.length ?
 				 argNoPrefix[suffixIndex..$] : "";

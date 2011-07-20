@@ -66,9 +66,21 @@ class Conf
 	enum string[] predefTargets = [targetAll];
 	enum string[] modes = [modeRelease, modeDebug, modeAll];
 
+	// GDC workaround
+	string[] getPredefTargets()
+	{
+		return predefTargets;
+	}
+
+	// GDC workaround
+	string[] getModes()
+	{
+		return modes;
+	}
+
 	string[] targetAllElems;
 	string[] modeAllElems;
-	
+
 	this(string filename)
 	{
 		auto parser = new ConfParser();
@@ -85,12 +97,22 @@ class Conf
 			);
 		}
 
-		targetAllElems = array(std.algorithm.filter!(
-			(a) { return a != targetAll; })(targets)
-		);//targets.allExcept(targetAll);
-		modeAllElems   = array(std.algorithm.filter!(
-			(a) { return a != modeAll; })(modes)
-		);//modes.allExcept(modeAll);
+		version(GNU)
+		{
+			foreach(e; std.algorithm.filter!((a) {return a != targetAll; } )(targets))
+				targetAllElems ~= e;
+			foreach(e; std.algorithm.filter!((a) {return a != modeAll; } )(modes))
+				modeAllElems ~= e;
+		}
+		else
+		{
+			targetAllElems = array(std.algorithm.filter!(
+				(a) { return a != targetAll; })(targets)
+			);//targets.allExcept(targetAll);
+			modeAllElems   = array(std.algorithm.filter!(
+				(a) { return a != modeAll; })(modes)
+			);//modes.allExcept(modeAll);
+		}
 	}
 	
 	private Switch[] getFlagsSafe(string target, string mode)
@@ -481,7 +503,7 @@ class Conf
 					switch(stmtCmd)
 					{
 					case "target":
-						setList(targets, stmtCmd, stmtPred, conf.predefTargets);
+						setList(targets, stmtCmd, stmtPred, conf.getPredefTargets);
 						break;
 					case "flags":
 						if(currTargets is null)

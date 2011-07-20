@@ -83,7 +83,7 @@ class CmdArgs
 	
 	private void showModes()
 	{
-		auto modes = Conf.modes;
+		auto modes = conf.getModes();
 		modes.sort();
 
 		cmd.echo("Modes:", modes);
@@ -210,7 +210,7 @@ class CmdArgs
 			showHelpHowTo();
 			return false;
 		}
-		if(find(conf.modes, mode) == [])
+		if(find(conf.getModes(), mode) == [])
 		{
 			showModes();
 			cmd.echo("Mode '%s' not supported".format(mode));
