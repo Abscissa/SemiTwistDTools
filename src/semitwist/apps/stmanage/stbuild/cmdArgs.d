@@ -168,7 +168,7 @@ class CmdArgs
 		{
 		case 2:
 			mode = targetMode[1];
-			//fallthrough
+			goto case;
 		case 1:
 			target = targetMode[0];
 			break;

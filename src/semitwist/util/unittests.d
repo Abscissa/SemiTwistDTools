@@ -1346,9 +1346,11 @@ mixin(unittestSemiTwistDLib("assertPred: Delegates", q{
                                            (22, 4, 5, 1.7)) ==
            "assertPred failed: arguments: [22], [4], [5], [1.7].");
 
-    assert(collectExceptionMsg(assertPred!((string[] s...){return canFind(s, "hello");}, "Failure!")
-                                          ("goodbye", "old", "friend")) ==
-           "assertPred failed: arguments: [goodbye], [old], [friend]: Failure!");
+	// Crashes DMD 2.054 (DMD Issue #6351):
+    //assert(collectExceptionMsg(assertPred!((string[] s...){return canFind(s, "hello");}, "Failure!")
+    //                                      ("goodbye", "old", "friend")) ==
+    //       "assertPred failed: arguments: [goodbye], [old], [friend]: Failure!");
+	
 }));
 
 //==============================================================================

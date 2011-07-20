@@ -436,7 +436,7 @@ private T[] unindentImpl(T)(T[] lines, T origStr=null) if(isSomeString!T)
 	T[] indents;
 	if(__ctfe)
 		indents = semitwist.util.functional.map( lines,
-			(T str){ return str.strip()==""? null : leadingWhiteOf(str);}
+			(T str){ return str.ctfe_strip()==""? null : leadingWhiteOf(str);}
 		);
 	else
 	{
@@ -564,7 +564,7 @@ T[] stripLinesTop(T)(T[] lines) if(isSomeString!T)
 	int firstLine = lines.length-1;
 
 	foreach(i, line; lines)
-	if(line.strip() != "")
+	if(line.ctfe_strip() != "")
 	{
 		firstLine = i;
 		break;
@@ -578,7 +578,7 @@ T[] stripLinesBottom(T)(T[] lines) if(isSomeString!T)
 	int lastLine = 0;
 
 	foreach_reverse(i, line; lines)
-	if(line.strip() != "")
+	if(line.ctfe_strip() != "")
 	{
 		lastLine = i;
 		break;
@@ -598,7 +598,7 @@ T[] stripLinesLeft(T)(T[] lines) if(isSomeString!T)
 {
 	// foreach(ref) doesn't work right at compile time: DMD Issue #3835
 	foreach(i, line; lines)
-		lines[i] = line.stripl();
+		lines[i] = line.ctfe_stripl();
 		
 	return lines;
 }
@@ -607,7 +607,7 @@ T[] stripLinesRight(T)(T[] lines) if(isSomeString!T)
 {
 	// foreach(ref) doesn't work right at compile time: DMD Issue #3835
 	foreach(i, line; lines)
-		lines[i] = line.stripr();
+		lines[i] = line.ctfe_stripr();
 		
 	return lines;
 }
@@ -616,7 +616,7 @@ T[] stripLinesLeftRight(T)(T[] lines) if(isSomeString!T)
 {
 	// foreach(ref) doesn't work right at compile time: DMD Issue #3835
 	foreach(i, line; lines)
-		lines[i] = line.strip();
+		lines[i] = line.ctfe_strip();
 	
 	return lines;
 }

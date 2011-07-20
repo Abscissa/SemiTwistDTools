@@ -4,9 +4,11 @@
 module semitwist.util.ctfe;
 
 import std.array;
+import std.range;
 import std.stdio;
 import std.string;
 import std.traits;
+import std.uni;
 
 import semitwist.util.all;
 
@@ -155,6 +157,63 @@ T ctfe_to(T)(string str) if(is(T==uint))
 	return val;
 }
 
+T ctfe_strip(T)(T str) if(isSomeString!T)
+{
+	if(!__ctfe)
+		return strip(str);
+	
+	return str.ctfe_stripl().ctfe_stripr();
+}
+
+T ctfe_stripl(T)(T str) if(isSomeString!T)
+{
+	if(!__ctfe)
+		return stripl(str);
+	
+	alias ElementEncodingType!T TChar;
+	
+	size_t startIndex = str.length;
+	
+	foreach(i, TChar ch; str)
+	if(!ctfe_isWhite(cast(dchar)ch))
+	{
+		startIndex = i;
+		break;
+	}
+	
+	return str[startIndex..$];
+}
+
+T ctfe_stripr(T)(T str) if(isSomeString!T)
+{
+	if(!__ctfe)
+		return stripr(str);
+	
+	alias ElementEncodingType!T TChar;
+	
+	size_t endIndex = 0;
+	
+	foreach_reverse(i, TChar ch; str)
+	if(!ctfe_isWhite(cast(dchar)ch))
+	{
+		endIndex = i+1;
+		break;
+	}
+	
+	return str[0..endIndex];
+}
+
+bool ctfe_isWhite(dchar ch)
+{
+	return
+		ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t' ||
+		ch == '\v' || ch == '\f' ||
+		ch == '\u2028' || ch == '\u2029' ||
+		ch == '\u0085' || ch == '\u00A0' || ch == '\u1680' || ch == '\u180E' ||
+		(ch >= '\u2000' && ch <= '\u200A') ||
+		ch == '\u202F' || ch == '\u205F' || ch == '\u3000';
+}
+
 mixin(unittestSemiTwistDLib(q{
 
 	// ctfe_find ---------------------------
@@ -297,5 +356,24 @@ mixin(unittestSemiTwistDLib(q{
 	
 	enum ctfe_to_uint_string_4 = ctfe_to!uint("65536");
 	mixin(deferEnsure!(`ctfe_to_uint_string_4`, `_ == 65536`));
+	
+	// ctfe_strip ---------------------------
+	enum ctfe_strip_test_1 = ctfe_strip(" \tHi \r\n");
+	mixin(deferEnsure!(`ctfe_strip_test_1`, `_ == "Hi"`));
+	
+	enum ctfe_strip_test_2 = ctfe_strip("Hi");
+	mixin(deferEnsure!(`ctfe_strip_test_2`, `_ == "Hi"`));
+	
+	enum ctfe_strip_test_3 = ctfe_strip(" \t \r\n");
+	mixin(deferEnsure!(`ctfe_strip_test_3`, `_ == ""`));
+	
+	enum ctfe_strip_test_4 = ctfe_strip("");
+	mixin(deferEnsure!(`ctfe_strip_test_4`, `_ == ""`));
+	
+	enum ctfe_strip_test_5 = ctfe_strip(" \tHi \r\n"w);
+	mixin(deferEnsure!(`ctfe_strip_test_5`, `_ == "Hi"w`));
+	
+	enum ctfe_strip_test_6 = ctfe_strip(" \tHi \r\n"d);
+	mixin(deferEnsure!(`ctfe_strip_test_6`, `_ == "Hi"d`));
 	
 }));
