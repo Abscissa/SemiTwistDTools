@@ -390,7 +390,7 @@ T[] indent(T)(T[] lines, T indentStr="\t") if(isSomeString!T)
 /// Unindents the lines of text as much as possible while preserving
 /// all relative indentation.
 ///
-/// Inconsistent indentation (on like that contain non-whitespace) is an error
+/// Inconsistent indentation (on lines that contain non-whitespace) is an error
 /// and throws an exception at runtime, or asserts when executed at compile-time.
 T unindent(T)(T str) if(isSomeString!T)
 {

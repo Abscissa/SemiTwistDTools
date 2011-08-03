@@ -2,7 +2,7 @@
 
 // This is a slight modification of RDMD r1400 with patches
 // applied for these issues:
-//   #4672, #4683, #4684, #4688, #4928, #4930
+//   #4672, #4683, #4684, #4688, #4928, #4930, #6102
 // These are necessary for SemiTwist D Tools.
 // Plus this is fixed to compile on DMD 2.052 and up.
 
@@ -154,7 +154,7 @@ int main(string[] args)
     }
    
     // Fetch dependencies
-    const myModules = getDependencies(root, objDir, compilerFlags);
+    const myDeps = getDependencies(root, objDir, compilerFlags);
 
     // Compute executable name, check for freshness, rebuild
     if (exe)
@@ -185,9 +185,9 @@ int main(string[] args)
     if (isNewer(root, exe) ||
             std.algorithm.find!
                 ((string a) {return isNewer(a, exe);})
-                (myModules.keys).length)
+                (myDeps.keys).length)
     {
-        invariant result = rebuild(root, exe, objDir, myModules, compilerFlags,
+        invariant result = rebuild(root, exe, objDir, myDeps, compilerFlags,
                                    addStubMain);
         if (result) return result;
     }
@@ -284,12 +284,12 @@ private string getObjPath(in string root, in string[] compilerFlags)
             "rdmd-" ~ basename(root) ~ '-' ~ hash(root, compilerFlags));
 }
 
-// Rebuild the executable fullExe starting from modules myModules
+// Rebuild the executable fullExe starting from modules in myDeps
 // passing the compiler flags compilerFlags. Generates one large
 // object file.
 
 private int rebuild(string root, string fullExe,
-        string objDir, in string[string] myModules,
+        string objDir, in string[string] myDeps,
         in string[] compilerFlags, bool addStubMain)
 {
     //auto todo = `..\SemiTwistDTools\bin\showargs`~" "~join(compilerFlags, " ")
@@ -299,9 +299,10 @@ private int rebuild(string root, string fullExe,
         ~" -od"~shellQuote(objDir)
         ~" -I"~shellQuote(dirname(root))
         ~" "~shellQuote(root)~" ";
-    foreach (k; map!(shellQuote)(myModules.keys)) {
-        todo ~= k ~ " ";
-    }
+	foreach (k, objectFile; myDeps)
+	if(objectFile !is null) {
+		todo ~= k.shellQuote() ~ " ";
+	}
 
     // Need to add the pesky void main(){}?
     if (addStubMain)
@@ -327,7 +328,8 @@ private int rebuild(string root, string fullExe,
 				~" -od"~objDir
 				~" -I"~dirname(root)
 				~" "~root~" ";
-			foreach (k; myModules.keys) {
+			foreach (k, objectFile; myDeps)
+			if(objectFile !is null) {
 				todo ~= k ~ " ";
 			}
 		}
@@ -372,8 +374,8 @@ private string[string] getDependencies(string rootModule, string objDir,
     immutable depsFilename = rootModule~".deps";
     immutable rootDir = dirname(rootModule);
     
-    // myModules maps module source paths to corresponding .o names
-    string[string] myModules;// = [ rootModule : d2obj(rootModule) ];
+    // myDeps maps dependency paths to corresponding .o name (or null, if not a D module)
+    string[string] myDeps;// = [ rootModule : d2obj(rootModule) ];
     // Must collect dependencies
     invariant depsGetter = /*"cd "~shellQuote(rootDir)~" && "
                              ~*/compiler~" "~std.string.join(compilerFlags.dup, " ")
@@ -393,18 +395,33 @@ private string[string] getDependencies(string rootModule, string objDir,
     auto depsReader = File(depsFilename);
     scope(exit) collectException(depsReader.close); // we don't care for errors
 
-    // Fetch all dependent modules and append them to myModules
-    auto pattern = new RegExp(r"^import\s+(\S+)\s+\((\S+)\)\s*$");
+    // Fetch all dependencies and append them to myDeps
+    auto pattern = new RegExp(r"^(import|file|binary|config)\s+([^\(]+)\(?([^\)]*)\)?\s*$");
     foreach (string line; lines(depsReader))
     {
         if (!pattern.test(line)) continue;
-        invariant moduleName = pattern[1], moduleSrc = pattern[2];
-        if (inALibrary(moduleName, moduleSrc)) continue;
-        invariant moduleObj = d2obj(moduleSrc);
-        myModules[moduleSrc] = moduleObj;
+		switch(pattern[1])
+		{
+		case "import":
+			invariant moduleName = pattern[2].strip(), moduleSrc = pattern[3].strip();
+			if (inALibrary(moduleName, moduleSrc)) continue;
+			invariant moduleObj = d2obj(moduleSrc);
+			myDeps[moduleSrc] = moduleObj;
+			break;
+			
+		case "file":
+			myDeps[pattern[3].strip()] = null;
+			break;
+			
+		case "binary", "config":
+			myDeps[pattern[2].strip()] = null;
+			break;
+			
+		default: assert(0);
+		}
     }
 
-    return myModules;
+    return myDeps;
 }
 
 /*private*/ string shellQuote(string arg)
