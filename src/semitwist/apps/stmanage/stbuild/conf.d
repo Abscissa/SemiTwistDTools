@@ -22,11 +22,7 @@ string buildToolExecName(BuildTool tool)
 	switch(tool)
 	{
 	case BuildTool.rdmd:
-		// rdmd-alt.d is needed to work around DMD Issue #4672
-		version(Windows)
-			return quoteArg(getExecPath()~".."~pathSep~"rdmdAlt");
-		else
-			return "rdmd "~quoteArg(getExecPath()~".."~pathSep~"rdmdAlt.d");
+		return "rdmd";
 	case BuildTool.rebuild:
 		return "rebuild";
 	case BuildTool.xfbuild:

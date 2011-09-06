@@ -73,35 +73,10 @@ int process(string target, string mode, bool verbose)
 	return errLevel;
 }
 
-void rdmdFixup(bool verbose)
-{
-	version(Windows)
-	{
-		auto execPath = getExecPath();
-		if(!exists(execPath~".."~pathSep~"rdmdAlt.exe"))
-		{
-			if(verbose)
-				cmd.echo("Pre-building fixed rdmd...");
-				
-			auto buildCmd =
-				"dmd "~
-				quoteArg(execPath~".."~pathSep~"rdmdAlt.d")~
-				" "~quoteArg("-of"~execPath~".."~pathSep~"rdmdAlt.exe");
-				
-			if(cmdArgs.showCmd)
-				cmd.echo(buildCmd);
-
-			system(buildCmd);
-		}
-	}
-}
-
 int build(string target, string mode, bool verbose)
 {
 	mixin(deferAssert!(`target != conf.targetAll`, "target 'all' passed to build()"));
 	mixin(deferAssert!(`mode != conf.modeAll`, "mode 'all' passed to build()"));
-
-	rdmdFixup(verbose);
 
 	if(verbose)
 		cmd.echo("Building %s %s...".format(target, mode));

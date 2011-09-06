@@ -111,10 +111,7 @@ TRet eval(TRet)(string code, string imports="", string rdmdOpts="")
 	std.file.write(tempName~".d", code);
 	scope(exit) cleanup(tempName);
 
-	//TODO: On Win, create rdmdAlt if it isn't already there
 	auto rdmdName = "rdmd";
-	version(Windows)
-		rdmdName = "rdmdAlt";
 
 	auto errlvl = system(rdmdName~" -of"~tempName~" "~rdmdOpts~" "~tempName~" "~to!string(cast(size_t)retValPipeWrite));
 	

@@ -47,7 +47,7 @@ class Cmd
 		flushAsserts();
 */
 		assert(_dir.exists());
-		assert(_dir.isdir());
+		assert(_dir.isDir());
 		assert(_dir.isabs());
 
 		//scope _dirStandard = _dir.dup.standard();
