@@ -774,11 +774,24 @@ bool is32Bit(BOM bom)
 
 Endian endianOf(BOM bom)
 {
-	final switch(bom)
+	// DMD 2.055 changed "LittleEndian" to "littleEndian", etc...
+	static if(__traits(compiles, Endian.littleEndian))
 	{
-	case BOM.UTF8: return endian;
-	case BOM.UTF16LE, BOM.UTF32LE: return Endian.LittleEndian;
-	case BOM.UTF16BE, BOM.UTF32BE: return Endian.BigEndian;
+		final switch(bom)
+		{
+		case BOM.UTF8: return endian;
+		case BOM.UTF16LE, BOM.UTF32LE: return Endian.littleEndian;
+		case BOM.UTF16BE, BOM.UTF32BE: return Endian.bigEndian;
+		}
+	}
+	else
+	{
+		final switch(bom)
+		{
+		case BOM.UTF8: return endian;
+		case BOM.UTF16LE, BOM.UTF32LE: return Endian.LittleEndian;
+		case BOM.UTF16BE, BOM.UTF32BE: return Endian.BigEndian;
+		}
 	}
 }
 

@@ -12,7 +12,7 @@ Calling 'seterrorlevel' by itself will set the errorlevel to 0.
 Calling 'seterrorlevel' with an invalid value will result in an error message
 and set the errorlevel to 1.
 
-This has been tested to work with DMD 2.052 through 2.054
+This has been tested to work with DMD 2.052 through 2.055
 +/
 
 module semitwist.apps.miniapps.seterrorlevel.main;

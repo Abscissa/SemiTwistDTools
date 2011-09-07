@@ -420,7 +420,7 @@ class Conf
 		{
 			mixin(initMember("conf", "filename"));
 
-			if(!exists(filename) || !isfile(filename))
+			if(!exists(filename) || !isFile(filename))
 				throw new STBuildConfException(
 					"Can't find configuration file '%s'".format(filename)
 				);
