@@ -87,7 +87,7 @@ final class Stack(T)
 	int opApply(int delegate(ref T) dg)
 	{
 		int result = 0;
-		foreach(ref T item; data)
+		foreach(ref T item; data[0.._length])
 		{
 			result = dg(item);
 			if(result)
@@ -99,7 +99,7 @@ final class Stack(T)
 	int opApply(int delegate(size_t, ref T) dg)
 	{
 		int result = 0;
-		foreach(size_t i, ref T item; data)
+		foreach(size_t i, ref T item; data[0.._length])
 		{
 			result = dg(i, item);
 			if(result)
