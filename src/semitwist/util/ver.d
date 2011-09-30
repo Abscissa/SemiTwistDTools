@@ -36,7 +36,13 @@ struct Ver
 		return this.opCmp(v) == 0;
 	}
 	
-	string toString()
+	const hash_t toHash()
+	{
+		auto str = toString();
+		return typeid(string).getHash(&str);
+	}
+
+	const string toString()
 	{
 		return join(to!(string[])(ver), ".");
 	}
