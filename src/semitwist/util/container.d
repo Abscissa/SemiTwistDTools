@@ -23,6 +23,12 @@ final class Stack(T)
 		data.length = initialCapacity;
 	}
 	
+	private this(Stack!T s)
+	{
+		data = s.data.dup;
+		_length = s._length;
+	}
+	
 	ref T opIndex(size_t i)
 	{
 		debug if(i >= _length)
@@ -79,9 +85,24 @@ final class Stack(T)
 		_length -= num;
 	}
 	
+	@property ref T top()
+	{
+		return data[_length-1];
+	}
+	
+	@property bool empty()
+	{
+		return _length == 0;
+	}
+	
 	void compact()
 	{
 		data.length = _length;
+	}
+	
+	@property Stack!T dup()
+	{
+		return new Stack!T(this);
 	}
 	
 	int opApply(int delegate(ref T) dg)
