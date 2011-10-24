@@ -18,6 +18,8 @@ public import std.stream: BOM;
 
 import semitwist.util.all;
 
+private alias semitwist.util.ctfe.ctfe_strip ctfe_strip;
+
 /**
 Notes:
 Anything in "data" must be doubly escaped.
