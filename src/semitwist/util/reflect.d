@@ -68,6 +68,30 @@ string qualifiedName(alias ident)()
 	return demangle(mangled[startIndex..$]);
 }
 
+/// Checks if object 'o' is, or is derived from, at least one of the given types.
+/// Example: if( isAny!(Foo, Bar, Baz)(foo) ) ...;
+template isAny(TList...) if(TList.length > 0)
+{
+	bool isAny(T)(T o) if(is(T : Object))
+	{
+		foreach(TTest; TList)
+		if(cast(TTest)o)
+			return true;
+		
+		return false;
+	}
+}
+
+/// Checks that object 'o' is not, and is not derived from, any of the given types.
+/// Example: if( isNone!(Foo, Bar, Baz)(foo) ) ...;
+template isNone(TList...) if(TList.length > 0)
+{
+	bool isNone(T)(T o) if(is(T : Object))
+	{
+		return !isAny!TList(o);
+	}
+}
+
 /++
 Calls .stringof on each argument then returns
 the results in an array of strings.
