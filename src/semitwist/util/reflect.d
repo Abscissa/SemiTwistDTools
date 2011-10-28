@@ -5,7 +5,9 @@ module semitwist.util.reflect;
 
 import std.conv;
 import std.demangle;
+import std.functional;
 import std.traits;
+import std.typetuple;
 
 import semitwist.util.all;
 
@@ -68,29 +70,93 @@ string qualifiedName(alias ident)()
 	return demangle(mangled[startIndex..$]);
 }
 
-/// Checks if object 'o' is, or is derived from, at least one of the given types.
-/// Example: if( isAny!(Foo, Bar, Baz)(foo) ) ...;
-template isAny(TList...) if(TList.length > 0)
+/// Checks if value 'a' is, or is implicitly castable to, or is derived from type T.
+template isType(T)
 {
-	bool isAny(T)(T o) if(is(T : Object))
+	bool isType(Ta)(Ta a)
+	{
+		static if(is(Ta : T))
+			return true;
+
+		else static if(!is(Ta : Object) || !is(T : Object))
+			return false;
+
+		else static if(!__traits(compiles, cast(T)a))
+			return false;
+
+		else
+			return cast(T)a !is null;
+	}
+}
+
+mixin(unittestSemiTwistDLib("isType", q{
+
+	class Foo {}
+	class Bar {}
+	auto f = new Foo();
+
+	mixin(deferAssert!(q{ isType!int(3)     }));
+	mixin(deferAssert!(q{ isType!double(3)  }));
+	mixin(deferAssert!(q{ !isType!string(3) }));
+	mixin(deferAssert!(q{ !isType!Foo(3)    }));
+	
+	mixin(deferAssert!(q{ isType!Foo(f)               }));
+	mixin(deferAssert!(q{ isType!Object(f)            }));
+	mixin(deferAssert!(q{ isType!Foo( cast(Object)f ) }));
+	mixin(deferAssert!(q{ !isType!Bar(f)              }));
+	mixin(deferAssert!(q{ !isType!int(f)              }));
+
+}));
+
+/// Checks if value 'a' is, or is implicitly castable to, or is derived from any of the TList types.
+/// Example: assert( isAnyType!(Foo, Bar, Baz)(foo) );
+template isAnyType(TList...)
+{
+	bool isAnyType(T)(T val)
 	{
 		foreach(TTest; TList)
-		if(cast(TTest)o)
+		if(isType!TTest(val))
 			return true;
 		
 		return false;
 	}
 }
 
-/// Checks that object 'o' is not, and is not derived from, any of the given types.
-/// Example: if( isNone!(Foo, Bar, Baz)(foo) ) ...;
-template isNone(TList...) if(TList.length > 0)
+/// Checks if value 'a' is, or is implicitly castable to, or is derived from all of the TList types.
+/// Example: assert( isAllTypes!(Foo, Bar, Baz)(foo) );
+template isAllTypes(TList...)
 {
-	bool isNone(T)(T o) if(is(T : Object))
+	bool isAllTypes(T)(T val)
 	{
-		return !isAny!TList(o);
+		foreach(TTest; TList)
+		if(!isType!TTest(val))
+			return false;
+		
+		return true;
 	}
 }
+
+mixin(unittestSemiTwistDLib("isAnyType / isAllTypes", q{
+
+	class Foo {}
+	class Bar {}
+	auto f = new Foo();
+
+	mixin(deferAssert!(q{  isAnyType !(int, double)(3) }));
+	mixin(deferAssert!(q{  isAllTypes!(int, double)(3) }));
+	mixin(deferAssert!(q{  isAnyType !(int, Foo)(3)    }));
+	mixin(deferAssert!(q{ !isAllTypes!(int, Foo)(3)    }));
+	mixin(deferAssert!(q{ !isAnyType !(Foo, Object)(3) }));
+
+	mixin(deferAssert!(q{  isAnyType !(Foo, Object)(f) }));
+	mixin(deferAssert!(q{  isAllTypes!(Foo, Object)(f) }));
+	mixin(deferAssert!(q{  isAnyType !(int, Foo)(f)    }));
+	mixin(deferAssert!(q{ !isAllTypes!(int, Foo)(f)    }));
+	mixin(deferAssert!(q{  isAnyType !(Bar, Foo)(f)    }));
+	mixin(deferAssert!(q{ !isAllTypes!(Bar, Foo)(f)    }));
+	mixin(deferAssert!(q{ !isAnyType !(int, Bar)(f)    }));
+
+}));
 
 /++
 Calls .stringof on each argument then returns
