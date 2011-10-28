@@ -31,20 +31,6 @@ template isAnyArray(T)
 		isAssociativeArray!(T);
 }
 
-// isStringType has been submitted for inclusion in Tango (ticket #1864),
-// so define it only if it doesn't already exist.
-static if(!is(typeof( isStringType!(char[]) )))
-{
-	/// Evaluates to true if T is char[], wchar[], or dchar[].
-	template isStringType(T)
-	{
-		enum bool isStringType =
-			is( T : char[]  ) ||
-			is( T : wchar[] ) ||
-			is( T : dchar[] );
-	}
-}
-
 /// If T isn't an array, returns T[], otherwise returns T as-is.
 template EnsureArray(T)
 {
