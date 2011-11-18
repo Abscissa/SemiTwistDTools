@@ -25,8 +25,10 @@ struct Ver
 				return this.ver[i] - v.ver[i];
 		}
 		
-		if(this.ver.length != v.ver.length)
-			return this.ver.length - v.ver.length;
+		if(this.ver.length > v.ver.length)
+			return 1;
+		else if(this.ver.length < v.ver.length)
+			return -1;
 		
 		return 0;
 	}

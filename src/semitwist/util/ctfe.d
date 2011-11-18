@@ -3,6 +3,7 @@
 
 module semitwist.util.ctfe;
 
+import std.algorithm;
 import std.array;
 import std.range;
 import std.stdio;
@@ -20,7 +21,8 @@ T[] ctfe_pad(T)(T[] str, int length, bool padLeft, T[] padChar=" ")
 {
 	if(str.length < length)
 	{
-		auto padding = ctfe_repeat!(T)(padChar, length - str.length);
+		auto paddingSize = min(length - str.length, int.max);
+		auto padding = ctfe_repeat!(T)(padChar, paddingSize);
 		
 		if(padLeft)
 			str = padding ~ str;
@@ -110,7 +112,7 @@ T[] ctfe_split(T)(T str, T delim) if(isSomeString!T)
 {
 	T[] arr;
 	auto currStr = str;
-	int index;
+	size_t index;
 	while((index=ctfe_find(currStr, delim)) < currStr.length)
 	{
 		arr ~= currStr[0..index];
@@ -236,7 +238,7 @@ mixin(unittestSemiTwistDLib(q{
 	mixin(deferEnsure!(q{ ctfe_find("aabbcc", "cc") }, q{ _==4 }));
 
 	mixin(deferEnsure!(q{ ctfe_find("abc", "abcde") }, q{ _==3 }));
-	
+
 	// ctfe_split ---------------------------
 	mixin(deferEnsure!(q{ ctfe_split("a--b-b--ccc---d----e--", "--") }, q{ _==["a","b-b","ccc","-d","","e",""] }));
 	mixin(deferEnsure!(q{ ctfe_split("-Xa", "-X") }, q{ _==["","a"] }));
@@ -247,7 +249,7 @@ mixin(unittestSemiTwistDLib(q{
 	mixin(deferEnsure!(q{ ctfe_iswhite('\r') }, q{ _==true  }));
 	mixin(deferEnsure!(q{ ctfe_iswhite('\n') }, q{ _==true  }));
 	mixin(deferEnsure!(q{ ctfe_iswhite('X')  }, q{ _==false }));
-	
+
 	// ctfe_join ---------------------------
 	mixin(deferEnsure!(q{ ctfe_join([""," ","","A","","BC","","D"," ",""], "\n") }, q{ _=="\n \n\nA\n\nBC\n\nD\n \n" }));
 	//mixin(traceVal!(q{ "\n"~ctfe_join([""," ","","A","","BC","","D"," ",""], "\n").escapeDDQS() }));
@@ -276,7 +278,6 @@ mixin(unittestSemiTwistDLib(q{
 	
 	enum dstring ctfe_substitute_test_8 = ctfe_substitute("こんにちわ"d, "にち"d, "ばん"d);
 	mixin(deferEnsure!(q{ ctfe_substitute_test_8 }, q{ _=="こんばんわ"d }));
-	
 	
 	// ctfe_pad ---------------------------
 	enum ctfe_pad_test_1 = ctfe_pad("Hi", 5);
@@ -330,7 +331,7 @@ mixin(unittestSemiTwistDLib(q{
 
 	enum ctfe_repeat_test_日本語3 = ctfe_repeat("日本語", 3);
 	mixin(deferEnsure!(`ctfe_repeat_test_日本語3`, `_ == "日本語日本語日本語"`));
-	
+
 	// ctfe_subMapJoin ---------------------------
 	enum ctfe_subMapJoin_test_c = ctfe_subMapJoin("Hi WHO. ", "WHO", ["Joey", "Q", "Sue"]);
 	mixin(deferEnsure!(`ctfe_subMapJoin_test_c`, `_ == "Hi Joey. Hi Q. Hi Sue. "`));
@@ -343,7 +344,7 @@ mixin(unittestSemiTwistDLib(q{
 
 	enum ctfe_subMapJoin_test_cj = ctfe_subMapJoin("こんにちわ、 だれさん。 ", "だれ", ["わたなべ", "ニク", "あおい"]);
 	mixin(deferEnsure!(`ctfe_subMapJoin_test_cj`, `_ == "こんにちわ、 わたなべさん。 こんにちわ、 ニクさん。 こんにちわ、 あおいさん。 "`));
-	
+
 	// ctfe_to!uint(string) ---------------------------
 	enum ctfe_to_uint_string_1 = ctfe_to!uint("0");
 	mixin(deferEnsure!(`ctfe_to_uint_string_1`, `_ == 0`));
@@ -356,7 +357,7 @@ mixin(unittestSemiTwistDLib(q{
 	
 	enum ctfe_to_uint_string_4 = ctfe_to!uint("65536");
 	mixin(deferEnsure!(`ctfe_to_uint_string_4`, `_ == 65536`));
-	
+
 	// ctfe_strip ---------------------------
 	enum ctfe_strip_test_1 = ctfe_strip(" \tHi \r\n");
 	mixin(deferEnsure!(`ctfe_strip_test_1`, `_ == "Hi"`));
@@ -375,5 +376,6 @@ mixin(unittestSemiTwistDLib(q{
 	
 	enum ctfe_strip_test_6 = ctfe_strip(" \tHi \r\n"d);
 	mixin(deferEnsure!(`ctfe_strip_test_6`, `_ == "Hi"d`));
-	
+
 }));
+

@@ -190,7 +190,7 @@ T toEndian(T)(T data, Endian en) if(is(T==ushort) || is(T==uint))
 string getExec()
 {
 	auto file = new char[4*1024];
-	int filenameLength;
+	size_t filenameLength;
 	version (Win32)
 		filenameLength = GetModuleFileNameA(null, file.ptr, file.length-1);
 	else version(OSX)

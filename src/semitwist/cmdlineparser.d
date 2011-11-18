@@ -421,7 +421,7 @@ class CmdLineParser
 			else if(valAsInt || valAsInts)
 			{
 				int val;
-				uint parseAte;
+				size_t parseAte;
 				if(suffix.length > 1 && suffix[0] == ':')
 				{
 					string trimmedSuffix = strip(suffix[1..$]);

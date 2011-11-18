@@ -154,7 +154,7 @@ class Conf
 		return numConverted;
 	}
 	
-	private static int removePrefix(ref Switch[] switches, string prefix)
+	private static size_t removePrefix(ref Switch[] switches, string prefix)
 	{
 		int[] switchIndicies = [];
 		foreach(int index, Switch sw; switches)
@@ -189,7 +189,7 @@ class Conf
 	
 	private static void moveSourceFileToEnd(ref Switch[] switches)
 	{
-		int sourceIndex = switches.length;
+		size_t sourceIndex = switches.length;
 		
 		foreach(int i, Switch sw; switches)
 		if( !sw.data.startsWith("-") && !sw.data.startsWith("+") )

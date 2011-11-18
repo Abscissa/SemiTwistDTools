@@ -63,7 +63,7 @@ string qualifiedName(alias ident)()
 	string mangled = mangledName!ident;
 	
 	// Work around DMD Issue #5718: Can't demangle symbol defined inside unittest block
-	int startIndex = ctfe_find(mangled, "_D");
+	auto startIndex = ctfe_find(mangled, "_D");
 	if(startIndex == mangled.length)
 		startIndex = 0;
 	

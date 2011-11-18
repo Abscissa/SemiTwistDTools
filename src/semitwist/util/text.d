@@ -310,14 +310,14 @@ T escapeHTML(T)(T str) if(isSomeString!T)
 /// Like std.string.indexOf, but with an optional 'start' parameter,
 /// and returns s.length when not found (instead of -1).
 //TODO*: Unittest these
-int locate(Char)(in Char[] s, dchar c, int start=0, CaseSensitive cs = CaseSensitive.yes)
+size_t locate(Char)(in Char[] s, dchar c, size_t start=0, CaseSensitive cs = CaseSensitive.yes)
 {
 	auto index = std.string.indexOf(s[start..$], c, cs);
 	return (index == -1)? s.length : index + start;
 }
 
 /// ditto
-int locatePrior(Char)(in Char[] s, dchar c, int start=int.max, CaseSensitive cs = CaseSensitive.yes)
+size_t locatePrior(Char)(in Char[] s, dchar c, size_t start=int.max, CaseSensitive cs = CaseSensitive.yes)
 {
 	if(start > s.length)
 		start = s.length;
@@ -327,14 +327,14 @@ int locatePrior(Char)(in Char[] s, dchar c, int start=int.max, CaseSensitive cs 
 }
 
 /// ditto
-int locate(Char1, Char2)(in Char1[] s, in Char2[] sub, int start=0, CaseSensitive cs = CaseSensitive.yes)
+size_t locate(Char1, Char2)(in Char1[] s, in Char2[] sub, size_t start=0, CaseSensitive cs = CaseSensitive.yes)
 {
 	auto index = std.string.indexOf(s[start..$], sub, cs);
 	return (index == -1)? s.length : index + start;
 }
 
 /// ditto
-int locatePrior(Char1, Char2)(in Char1[] s, in Char2[] sub, int start=int.max, CaseSensitive cs = CaseSensitive.yes)
+size_t locatePrior(Char1, Char2)(in Char1[] s, in Char2[] sub, size_t start=int.max, CaseSensitive cs = CaseSensitive.yes)
 {
 	if(start > s.length)
 		start = s.length;
@@ -563,7 +563,7 @@ T[] stripLinesBox(T)(T[] str) if(isSomeString!T)
 
 T[] stripLinesTop(T)(T[] lines) if(isSomeString!T)
 {
-	int firstLine = lines.length-1;
+	auto firstLine = lines.length-1;
 
 	foreach(i, line; lines)
 	if(line.ctfe_strip() != "")
@@ -577,7 +577,7 @@ T[] stripLinesTop(T)(T[] lines) if(isSomeString!T)
 
 T[] stripLinesBottom(T)(T[] lines) if(isSomeString!T)
 {
-	int lastLine = 0;
+	size_t lastLine = 0;
 
 	foreach_reverse(i, line; lines)
 	if(line.ctfe_strip() != "")
@@ -1053,3 +1053,4 @@ mixin(unittestSemiTwistDLib(q{
 	}.normalize();
 	mixin(deferEnsure!(q{ ctfe_normalize_dummy1 }, q{ _ == "// test\nvoid foo() {\n\tint x = 2;\n}" }));
 }));
+
