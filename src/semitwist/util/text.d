@@ -360,9 +360,9 @@ T stripNonPrintable(T)(T str) if(isSomeString!T)
 }
 
 /// Return value is number of code units
-uint nextCodePointSize(T)(T str) if(is(T==string) || is(T==wstring))
+size_t nextCodePointSize(T)(T str) if(is(T==string) || is(T==wstring))
 {
-	uint ret;
+	size_t ret;
 	str.decode(ret);
 	return ret;
 }
