@@ -117,7 +117,7 @@ final class Stack(T)
 		return result;
 	}
 	
-	int opApply(int delegate(size_t, ref T) dg)
+	int opApply(int delegate(ref size_t, ref T) dg)
 	{
 		int result = 0;
 		foreach(size_t i, ref T item; data[0.._length])
