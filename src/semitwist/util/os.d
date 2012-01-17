@@ -28,11 +28,11 @@ version(linux)   enum OS os = OS.Linux;
 version(freebsd) enum OS os = OS.BSD;
 version(OSX)     enum OS os = OS.OSX;
 
-mixin(genOSParam("objExt",  [ ".obj" [], ".o", ".o", ".o" ]));
-mixin(genOSParam("libExt",  [ ".lib" [], ".a", ".a", ".a" ]));
-mixin(genOSParam("exeExt",  [ ".exe" [], "",   "",   ""   ]));
-mixin(genOSParam("pathSep", [ "\\"   [], "/",  "/",  "/"  ]));
-mixin(genOSParam("nlStr",   [ "\r\n" [], "\n", "\n", "\n" ]));
+mixin(genOSParam("objExt", [ ".obj" [], ".o", ".o", ".o" ]));
+mixin(genOSParam("libExt", [ ".lib" [], ".a", ".a", ".a" ]));
+mixin(genOSParam("exeExt", [ ".exe" [], "",   "",   ""   ]));
+mixin(genOSParam("dirSep", [ "\\"   [], "/",  "/",  "/"  ]));
+mixin(genOSParam("nlStr",  [ "\r\n" [], "\n", "\n", "\n" ]));
 enum nlStr_Mac9 = "\r";
 
 mixin(genOSParam("selfExeLink", [ ""[], "/proc/self/exe", "/proc/curproc/file", "/proc/curproc/file" ]));
