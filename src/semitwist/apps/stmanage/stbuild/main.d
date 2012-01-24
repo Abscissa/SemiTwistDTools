@@ -29,7 +29,7 @@ import semitwist.apps.stmanage.stbuild.cmdArgs;
 import semitwist.apps.stmanage.stbuild.conf;
 
 enum appName = "STBuild";
-enum appVerStr = "0.03.1";
+enum appVerStr = "0.04";
 Ver appVer;
 static this()
 {
@@ -88,8 +88,8 @@ int build(string target, string mode, bool verbose)
 	int ret;
 	auto cmdLine =
 		buildToolExecName(cmdArgs.buildTool)~" "~
-		conf.getFlags(target, mode, cmdArgs.buildTool)~" "~
-		cmdArgs.extraArgs;
+		cmdArgs.extraArgs~" "~
+		conf.getFlags(target, mode, cmdArgs.buildTool);
 	
 	if(cmdArgs.showCmd) cmd.echo(cmdLine);
 	ret = system(cmdLine);

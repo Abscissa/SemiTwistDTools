@@ -103,7 +103,7 @@ class CmdArgs
 	private void showHeader()
 	{
 		cmd.echo(header);
-		cmd.echo("Copyright (c) 2009-2011 Nick Sabalausky");
+		cmd.echo("Copyright (c) 2009-2012 Nick Sabalausky");
 		cmd.echo("See LICENSE.txt for license info");
 		cmd.echo("Site: http://www.dsource.org/projects/semitwist");
 		cmd.echo();
