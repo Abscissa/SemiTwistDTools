@@ -3,7 +3,6 @@
 
 module semitwist.treeout;
 
-import std.ascii;
 import std.array;
 import std.conv;
 import std.range : ElementType;
@@ -12,10 +11,22 @@ import std.stdio;
 import std.string;
 import std.traits;
 
-import semitwist.util.all;
+version(DigitalMars)
+	private immutable isDM = true;
+else
+	private immutable isDM = false;
 
-private alias std.ascii.digits digits;
-private alias std.ascii.letters letters;
+static import std.compiler;
+static if(isDM && std.compiler.version_minor <= 53)
+	import std.ctype;
+else
+{
+	import std.ascii;
+	private alias std.ascii.digits digits;
+	private alias std.ascii.letters letters;
+}
+
+import semitwist.util.all;
 
 string replicate(string str, int num)
 {

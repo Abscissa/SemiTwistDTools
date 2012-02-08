@@ -21,6 +21,28 @@ import semitwist.util.all;
 
 private alias semitwist.util.ctfe.ctfe_strip ctfe_strip;
 
+// Work around limitations in DMD 2.052 and 2.053
+static if(!__traits(compiles, std.string.toLower(" ")))
+{
+	alias std.string.tolower toLower;
+	alias std.string.toupper toUpper;
+}
+
+static if(!__traits(compiles, std.string.splitLines("")))
+	alias std.string.splitlines splitLines;
+
+static if(!__traits(compiles, std.string.stripLeft("")))
+{
+	alias std.string.stripl stripLeft;
+	alias std.string.stripr stripRight;
+}
+
+static if(!__traits(compiles, std.uni.isWhite(' ')))
+{
+	static import std.ctype;
+	bool isWhite(dchar ch) { return std.ctype.isspace(ch) != 0; }
+}
+
 /**
 Notes:
 Anything in "data" must be doubly escaped.
