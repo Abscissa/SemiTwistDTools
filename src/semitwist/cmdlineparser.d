@@ -391,7 +391,7 @@ class CmdLineParser
 					val = strip(suffix[1..$]);
 
 					if(argDef.toLower)
-						val = val.tolower();
+						val = val.toLower();
 					
 					//TODO: DRY this
 					if(argDef.allowableValues.length > 0)

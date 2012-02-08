@@ -12,6 +12,7 @@ import std.traits;
 import std.stream;
 import std.string;
 import std.system;
+import std.uni;
 import std.utf;
 
 public import std.stream: BOM;
@@ -429,7 +430,7 @@ private T[] unindentImpl(T)(T[] lines, T origStr=null) if(isSomeString!T)
 		if(__ctfe)
 			return !ctfe_iswhite(ch);
 		else
-			return !iswhite(ch);
+			return !isWhite(ch);
 	}
 	T leadingWhiteOf(T str)
 		{ return str[ 0 .. $-find!(isNonWhite)(str).length ]; }
@@ -453,7 +454,7 @@ private T[] unindentImpl(T)(T[] lines, T origStr=null) if(isSomeString!T)
 		if(b is null) return a;
 		
 		return (a.length < b.length)? a : b;
-	};
+	}
 	auto shortestIndent = std.algorithm.reduce!(shorterAndNonNull)(indents);
 	
 	if(shortestIndent is null || shortestIndent == "")
@@ -461,7 +462,7 @@ private T[] unindentImpl(T)(T[] lines, T origStr=null) if(isSomeString!T)
 		if(origStr == null)
 			return stripLinesLeft(lines);
 		else
-			return [origStr.stripl()];
+			return [origStr.stripLeft()];
 	}
 		
 	foreach(i; 0..lines.length)
@@ -828,7 +829,7 @@ struct InsensitiveT(T) if(isSomeString!T)
 	private void updateFoldingCase()
 	{
 		// Phobos doesn't actually have a tofolding() yet
-		foldingCase = tolower(str);
+		foldingCase = toLower(str);
 	}
 	
 	const hash_t toHash()

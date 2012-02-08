@@ -5,8 +5,9 @@
 module semitwist.apps.stmanage.stbuild.conf;
 
 import std.conv;
-import std.string;
 import std.file;
+import std.string;
+import std.uni;
 
 import semitwist.cmd.all;
 
@@ -387,7 +388,7 @@ class Conf
 			{
 				if(inPlainSwitch)
 				{
-					if(iswhite(c))
+					if(isWhite(c))
 						inPlainSwitch = false;
 					else
 						ret[$-1].data ~= to!(string)(c);
@@ -406,7 +407,7 @@ class Conf
 						ret ~= Switch("", true);
 						inQuotedSwitch = true;
 					}
-					else if(!iswhite(c))
+					else if(!isWhite(c))
 					{
 						ret ~= Switch(to!(string)(c), false);
 						inPlainSwitch = true;
@@ -427,7 +428,7 @@ class Conf
 
 			auto input = cast(string)read(filename);
 			uint lineno = 1;
-			foreach(string line; input.splitlines())
+			foreach(string line; input.splitLines())
 			{
 				parseLine(line, lineno);
 				lineno++;

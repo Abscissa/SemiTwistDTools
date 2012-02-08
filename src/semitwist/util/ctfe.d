@@ -170,7 +170,7 @@ T ctfe_strip(T)(T str) if(isSomeString!T)
 T ctfe_stripl(T)(T str) if(isSomeString!T)
 {
 	if(!__ctfe)
-		return stripl(str);
+		return stripLeft(str);
 	
 	alias ElementEncodingType!T TChar;
 	
@@ -189,7 +189,7 @@ T ctfe_stripl(T)(T str) if(isSomeString!T)
 T ctfe_stripr(T)(T str) if(isSomeString!T)
 {
 	if(!__ctfe)
-		return stripr(str);
+		return stripRight(str);
 	
 	alias ElementEncodingType!T TChar;
 	

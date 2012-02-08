@@ -6,7 +6,7 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-This has been tested to work with DMD 2.052 through 2.055
+This has been tested to work with DMD 2.052 through 2.058
 +/
 
 module semitwist.apps.samples.cmdSample.main;
@@ -141,7 +141,7 @@ void main(string[] args)
 	string failureMsg = "Please enter 'coffee' or 'tea', not '{0}'";
 	bool accept(string input)
 	{
-		return ["coffee", "tea"].contains(tolower(input));
+		return ["coffee", "tea"].contains(toLower(input));
 	}
 	// This will *not* return until the user enters a valid choice,
 	// so we don't need to do any more validation.

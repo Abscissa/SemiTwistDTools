@@ -3,6 +3,7 @@
 
 module semitwist.treeout;
 
+import std.ascii;
 import std.array;
 import std.conv;
 import std.range : ElementType;
@@ -12,6 +13,9 @@ import std.string;
 import std.traits;
 
 import semitwist.util.all;
+
+private alias std.ascii.digits digits;
+private alias std.ascii.letters letters;
 
 string replicate(string str, int num)
 {

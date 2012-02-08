@@ -6,7 +6,7 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-This has been tested to work with DMD 2.052 through 2.055
+This has been tested to work with DMD 2.052 through 2.058
 +/
 
 //TODO: Clean all if stbuild.conf has changed
@@ -29,7 +29,7 @@ import semitwist.apps.stmanage.stbuild.cmdArgs;
 import semitwist.apps.stmanage.stbuild.conf;
 
 enum appName = "STBuild";
-enum appVerStr = "0.04";
+enum appVerStr = "0.04.1";
 Ver appVer;
 static this()
 {
