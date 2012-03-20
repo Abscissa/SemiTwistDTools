@@ -640,3 +640,117 @@ public string _genStringToEnum(string enumName, string[] enumValues)
 	
 	return ret;
 }
+
+/++
+Use verboseSection to display a message and timing info if verbosity is enabled.
+
+Usage:
+
+----
+bool verbose;
+
+void foo()
+{
+	mixin(verboseSection!"Running foo...");
+	[...code here...]
+}
+
+void bar()
+{
+	{
+		mixin(verboseSection!"Running bar stage 1...");
+		[...code here...]
+	}
+
+	{
+		mixin(verboseSection!"Running bar stage 2...");
+		[...code here...]
+	}
+}
+
+void main()
+{
+	verbose = false;
+	writeln("Verbose off");
+	foo();
+	bar();
+
+	verbose = true;
+	writeln("Verbose on");
+	foo();
+	bar();
+}
+----
+
+Output:
+
+----
+Verbose off
+Verbose on
+Running foo...261ms
+Running bar stage 1...7ms
+Running bar stage 2...3528ms
+----
+
+You can change the conditional expression to something other than the default
+of "verbose" by using setVerboseSectionCond:
+
+Usage:
+
+----
+struct Options
+{
+	bool verbose;
+}
+Options options;
+mixin(setVerboseSectionCond!"options.verbose");
+
+// Or:
+
+int verbosityLevel;
+mixin(setVerboseSectionCond!"verbosityLevel > 2");
+----
+
+Using setVerboseSectionCond only affects the current module.
+Use it again in each module desired.
++/
+template setVerboseSectionCond(string cond="verbose")
+{
+	immutable setVerboseSectionCond = `
+		private template verboseSection(alias msg)
+		{
+			enum verboseSection = verboseSectionEx!(`~cond.stringof~`, msg);
+		}
+	`;
+}
+
+// The default
+///ditto
+template verboseSection(alias msg)
+{
+	enum verboseSection = verboseSectionEx!("verbose", msg);
+}
+
+public import std.datetime : _semitwist_util_mixins_StopWatchType = StopWatch;
+public import std.stdio :
+	_semitwist_util_mixins_write = write,
+	_semitwist_util_mixins_writeln = writeln,
+	_semitwist_util_mixins_stdout = stdout;
+
+template verboseSectionEx(string verboseExpr, alias msg)
+{
+	immutable verboseSectionEx = `
+		_semitwist_util_mixins_StopWatchType _semitwist_util_mixins_stopWatch;
+		if(`~verboseExpr~`)
+		{
+			_semitwist_util_mixins_write(`~msg.stringof~`);
+			_semitwist_util_mixins_stdout.flush();
+			_semitwist_util_mixins_stopWatch.start();
+		}
+		scope(exit) if(`~verboseExpr~`)
+		{
+			_semitwist_util_mixins_writeln(_semitwist_util_mixins_stopWatch.peek.msecs, "ms");
+			_semitwist_util_mixins_stdout.flush();
+		}
+	`;
+}
