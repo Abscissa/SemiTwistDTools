@@ -642,7 +642,10 @@ public string _genStringToEnum(string enumName, string[] enumValues)
 }
 
 /++
-Use verboseSection to display a message and timing info if verbosity is enabled.
+Use verboseSection to display a message, flush it to the screen, and once the
+scope is over, display how much time the scope took to run. Message and timing
+info is only displayed when verbosity is enabled. Condition for "Is verbosity
+enabled?" can be customized with setVerboseSectionCond.
 
 Usage:
 
@@ -651,19 +654,20 @@ bool verbose;
 
 void foo()
 {
-	mixin(verboseSection!"Running foo...");
+	mixin(verboseSection!"Running foo");
 	[...code here...]
 }
 
 void bar()
 {
 	{
-		mixin(verboseSection!"Running bar stage 1...");
+		mixin(verboseSection!"Running bar stage 1");
 		[...code here...]
 	}
 
 	{
-		mixin(verboseSection!"Running bar stage 2...");
+		auto msg = "Running bar stage "~to!string(2);
+		mixin(verboseSection!msg);
 		[...code here...]
 	}
 }
@@ -743,7 +747,7 @@ template verboseSectionEx(string verboseExpr, alias msg)
 		_semitwist_util_mixins_StopWatchType _semitwist_util_mixins_stopWatch;
 		if(`~verboseExpr~`)
 		{
-			_semitwist_util_mixins_write(`~msg.stringof~`);
+			_semitwist_util_mixins_write(`~msg.stringof~` ~ "...");
 			_semitwist_util_mixins_stdout.flush();
 			_semitwist_util_mixins_stopWatch.start();
 		}
