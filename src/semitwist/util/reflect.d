@@ -3,6 +3,7 @@
 
 module semitwist.util.reflect;
 
+import std.compiler;
 import std.conv;
 import std.demangle;
 import std.functional;
@@ -202,7 +203,9 @@ unittest
 
 /// So you can tell whether to define opCmp/opEquals/etc with "ref const"
 /// or non-ref non-const parameters.
-static if(
+static if(vendor == Vendor.digitalMars && version_minor <= 55)
+	enum structLitsAreLValues = true; // Old compiler: DMD 2.058 and below
+else static if(
 	__traits(compiles, (){
 		struct Foo
 		{
