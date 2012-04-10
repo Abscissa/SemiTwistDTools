@@ -6,7 +6,7 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-This has been tested to work with DMD 2.052 through 2.058
+This has been tested to work with DMD 2.055 through 2.059
 +/
 
 //TODO: Clean all if stbuild.conf has changed
@@ -43,9 +43,9 @@ void moveMapFiles(string subDir=".")
 {
 	foreach(string name; dirEntries(".", SpanMode.shallow))
 	{
-		if(name.fnmatch("*.map"))
+		if(name.globMatch("*.map"))
 		{
-			auto newName = "obj/"~subDir~"/"~name.basename();
+			auto newName = "obj/"~subDir~"/"~name.baseName();
 			if(exists(newName))
 				remove(newName);
 			
@@ -110,7 +110,7 @@ int clean(string target, string mode, bool verbose)
 	if(exists(objDir))
 	foreach(string name; dirEntries(objDir, SpanMode.depth))
 	{
-		if(name.fnmatch("*.map") || name.basename().fnmatch("deps") || name.fnmatch("*"~objExt))
+		if(name.globMatch("*.map") || name.baseName().globMatch("deps") || name.globMatch("*"~objExt))
 			remove(name);
 	}
 		

@@ -5,11 +5,7 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-This has been tested to work with DMD 2.052 through 2.058
-
-In SVN comments:
-(B): Breaking changes
-(NB): Non-Breaking changes
+This has been tested to work with DMD 2.055 through 2.059
 +/
 
 // Potentially handy note:

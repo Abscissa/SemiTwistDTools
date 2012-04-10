@@ -17,6 +17,11 @@ struct Ver
 {
 	uint[] ver;
 	
+	static if(!structLitsAreLValues)
+	const int opCmp(const Ver v)
+	{
+		return this.opCmp(v);
+	}
 	const int opCmp(ref const(Ver) v)
 	{
 		for(int i=0; i < reduce!"a<b?a:b"([this.ver.length, v.ver.length]); i++)
@@ -33,15 +38,36 @@ struct Ver
 		return 0;
 	}
 	
+	static if(!structLitsAreLValues)
+	const bool opEquals(const Ver v)
+	{
+		return this.opEquals(v);
+	}
 	const bool opEquals(ref const(Ver) v)
 	{
 		return this.opCmp(v) == 0;
 	}
 	
-	const hash_t toHash()
+	static if(structLitsAreLValues)
 	{
-		auto str = toString();
-		return typeid(string).getHash(&str);
+		const hash_t toHash()
+		{
+			auto str = toString();
+			return typeid(string).getHash(&str);
+		}
+	}
+	else
+	{
+		const nothrow @trusted hash_t toHash()
+		{
+			string str;
+			try
+				str = toString();
+			catch(Exception e)
+				{} // Yes, that's right, I actually have to pull a Java
+				// and squelch exceptions for the time being. *$^@&!#
+			return typeid(string).getHash(&str);
+		}
 	}
 
 	const string toString()

@@ -48,7 +48,7 @@ class Cmd
 */
 		assert(_dir.exists());
 		assert(_dir.isDir());
-		assert(_dir.isabs());
+		assert(_dir.isAbsolute());
 
 		//scope _dirStandard = _dir.dup.standard();
 		//assert(_dir.toString() == _dirStandard.toString(), "_dir is not in standard form");

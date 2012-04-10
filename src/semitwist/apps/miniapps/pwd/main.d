@@ -6,10 +6,12 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-AFAIK, Windows doesn't have a 'pwd' command.
-So this might occasionally be useful.
+Windows doesn't have a 'pwd' command per se. Instead, it just has:
+	echo %CD%
+But this 'pwd' may be easier to remember. (Well, actually it's
+'semitwist-pwd', but you can rename the executable however you wish.)
 
-This has been tested to work with DMD 2.052 through 2.058
+This has been tested to work with DMD 2.055 through 2.059
 +/
 
 module semitwist.apps.miniapps.pwd.main;
@@ -19,5 +21,5 @@ import std.stdio;
 
 void main()
 {
-	writeln(rel2abs("."));
+	writeln(absolutePath("."));
 }

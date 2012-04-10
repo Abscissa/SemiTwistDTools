@@ -854,9 +854,19 @@ struct InsensitiveT(T) if(isSomeString!T)
 		foldingCase = toLower(str);
 	}
 	
-	const hash_t toHash()
+	static if(structLitsAreLValues)
 	{
-		return typeid(string).getHash(&foldingCase);
+		const hash_t toHash()
+		{
+			return typeid(string).getHash(&foldingCase);
+		}
+	}
+	else
+	{
+		const nothrow @trusted hash_t toHash()
+		{
+			return typeid(string).getHash(&foldingCase);
+		}
 	}
 	
 	void opAssign(T2)(T2 b) if(isInsensitive!T2 || isSomeString!T2)
@@ -878,18 +888,28 @@ struct InsensitiveT(T) if(isSomeString!T)
 		}
 	}
 	
-	InsensitiveT!T opBinary(string op)(InsensitiveT!T b) if(op=="~")
+	InsensitiveT!T opBinary(string op)(const InsensitiveT!T b) if(op=="~")
 	{
 		return InsensitiveT!T(str ~ b.str);
 	}
 	
-	InsensitiveT!T opOpAssign(string op)(ref InsensitiveT!T b) if(op=="~")
+	static if(!structLitsAreLValues)
+	InsensitiveT!T opOpAssign(string op)(const InsensitiveT!T b) if(op=="~")
+	{
+		return this.opOpAssign!op(b);
+	}
+	InsensitiveT!T opOpAssign(string op)(ref const InsensitiveT!T b) if(op=="~")
 	{
 		str ~= b.str;
 		foldingCase ~= b.foldingCase;
 		return this;
 	}
 	
+	static if(!structLitsAreLValues)
+	const bool opEquals(const InsensitiveT!T b)
+	{
+		return this.opEquals(b);
+	}
 	const bool opEquals(ref const InsensitiveT!T b)
 	{
 		/+if (str is b.str) return true;
@@ -898,6 +918,11 @@ struct InsensitiveT(T) if(isSomeString!T)
 		return this.opCmp(b) == 0;
 	}
 	
+	static if(!structLitsAreLValues)
+	const int opCmp(const InsensitiveT!T b)
+	{
+		return this.opCmp(b);
+	}
 	const int opCmp(ref const InsensitiveT!T b)
 	{
 		if (str   is b.str) return 0;

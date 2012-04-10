@@ -3,6 +3,7 @@
 
 module semitwist.util.ctfe;
 
+import std.ascii;
 import std.algorithm;
 import std.array;
 import std.range;

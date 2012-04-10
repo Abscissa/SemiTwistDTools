@@ -209,14 +209,14 @@ string getExec()
 /// Like getExec, but doesn't include the path.
 string getExecName()
 {
-	return getExec().basename();
+	return getExec().baseName();
 //	return getExecFilePath().file().trim();
 }
 
 /// Like getExec, but only returns the path (including trailing path separator).
 string getExecPath()
 {
-	return getExec().dirname() ~ dirSep;
+	return getExec().dirName() ~ dirSep;
 	//return getExecFilePath().path().trim();
 }
 
