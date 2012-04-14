@@ -28,15 +28,7 @@ import semitwist.cmd.all;
 import semitwist.apps.stmanage.stbuild.cmdArgs;
 import semitwist.apps.stmanage.stbuild.conf;
 
-enum appName = "STBuild";
-enum appVerStr = "0.04.1";
-Ver appVer;
-static this()
-{
-	appVer = appVerStr.toVer();
-}
-
-CmdArgs cmdArgs;
+Options cmdArgs;
 Conf conf;
 
 void moveMapFiles(string subDir=".")
@@ -119,9 +111,9 @@ int clean(string target, string mode, bool verbose)
 
 int main(string[] args)
 {
-	cmdArgs = new CmdArgs(args, appName~" v"~appVerStr);
-	if(cmdArgs.shouldExit)
-		return 1;
+	int errLevel = cmdArgs.process(args);
+	if(errLevel != -1)
+		return errLevel;
 
 	conf = cmdArgs.conf;
 
