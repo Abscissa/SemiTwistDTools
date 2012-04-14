@@ -201,23 +201,8 @@ unittest
 	mixin(deferEnsure!(`templateArgsToStrings_test`, `_ == ["i", "func1"]`));
 }+/
 
-/// So you can tell whether to define opCmp/opEquals/etc with "ref const"
-/// or non-ref non-const parameters.
-static if(vendor == Vendor.digitalMars && version_minor <= 55)
-	enum structLitsAreLValues = true; // Old compiler: DMD 2.058 and below
-else static if(
-	__traits(compiles, (){
-		struct Foo
-		{
-			const int opEquals(ref const Foo b)
-			{
-				return true;
-			}
-		}
-		
-		assert(Foo() == Foo());
-	})
-)
-	enum structLitsAreLValues = true; // Old compiler: DMD 2.058 and below
+/// So you can tell whether to define toHash as "nothrow @safe".
+static if(vendor == Vendor.digitalMars && version_minor <= 58)
+	enum useNoThrowSafeToHash = false; // Old compiler: DMD 2.058 and below
 else
-	enum structLitsAreLValues = false; // New compiler: DMD 2.059 and up
+	enum useNoThrowSafeToHash = true; // New compiler: DMD 2.059 and up
