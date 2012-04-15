@@ -133,8 +133,33 @@ class XMLFormatter(bool _strip, string _indent="\t") : TreeFormatter
 			("%1$s<%3$s%4$s>%2$s"~
 			"%5$s"~
 			"%1$s</%3$s>%2$s");
-			
-		return formatStr.format(fullIndent(nodeDepth), newline(), toValidName(name), attributes, content);
+		
+		auto currFullIndent = fullIndent(nodeDepth);
+		auto nl = newline();
+		auto validName = toValidName(name);
+		
+		auto str = currFullIndent;
+		str ~= "<";
+		str ~= validName;
+		str ~= attributes;
+		if(content=="")
+		{
+			str ~= " />";
+			str ~= nl;
+		}
+		else
+		{
+			str ~= ">";
+			str ~= nl;
+			str ~= content;
+			str ~= currFullIndent;
+			str ~= "</";
+			str ~= validName;
+			str ~= ">";
+			str ~= nl;
+		}
+
+		return str;
 	}
 	
 	override string reduceAttributes(string[] attributes, int nodeDepth)
@@ -269,17 +294,7 @@ class JSONFormatter(bool _strip, string _indent="\t") : TreeFormatter
 		str ~= fullIndent(nodeDepth);
 		str ~= "}";
 		return str;
-
-/+		return
-			("%3$s{%2$s"
-			"%4$s"
-			"%1$s}")
-			.format
-			(
-				fullIndent(nodeDepth), newline,
-				name, attrAndContent
-			);
-+/	}
+	}
 	
 	override string reduceAttributes(string[] attributes, int nodeDepth)
 	{
