@@ -1,6 +1,6 @@
 #!/bin/sh
 ./scripts/bootstrap_stbuild
-./bin/semitwist-stbuild-bootstrap all all -clean
-./bin/semitwist-stbuild-bootstrap all all -tool:rdmd
+./bin/semitwist-stbuild-bootstrap all all --clean
+./bin/semitwist-stbuild-bootstrap all all --tool=rdmd
 
 rm -f bin/semitwist-stbuild-bootstrap
