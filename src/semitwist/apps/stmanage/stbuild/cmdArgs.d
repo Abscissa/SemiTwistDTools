@@ -55,10 +55,13 @@ struct Options
 				--clean             Clean, don't build
 				--conf <filename>   Configuration file to use (default: "stbuild.conf")
 				--tool <tool>       Build tool ["rdmd", "re" or "xf"] (default: "rdmd")
-				-q,--quiet          Quiet, ie. don't show progress messages
+				-q, --quiet         Quiet, ie. don't show progress messages
 				--cmd               Show commands
 				-x <arg>            Pass extra argument to build tool
 			`.normalize();
+
+		if(args.length == 1)
+			return showHelpScreen();
 
 		getopt.endOfOptions = "";
 		try getopt.getopt(
@@ -81,28 +84,15 @@ struct Options
 		
 		targetMode = args[1..$];
 
-		if(help || args.contains("/?") || targetMode.length == 0)
-		{
-			try
-				conf = new Conf(confFile);
-			catch(STBuildConfException e)
-			{
-				cmd.echo(e.msg);
-				writeln(seeHelpMsg);
-				return 1;
-			}
-
-			showHeader();
-			showUsage();
-			return 0;
-		}
+		if(help || args.contains("/?"))
+			return showHelpScreen();
 
 		try
 			conf = new Conf(confFile);
 		catch(STBuildConfException e)
 		{
-			cmd.echo(e.msg);
-			writeln(seeHelpMsg);
+			stderr.writeln(e.msg);
+			stderr.writeln(seeHelpMsg);
 			return false;
 		}
 
@@ -115,9 +105,13 @@ struct Options
 			target = targetMode[0];
 			mode   = targetMode[1];
 			break;
+		case 0:
+			stderr.writeln("Must specify a target.");
+			stderr.writeln(seeHelpMsg);
+			return 1;
 		default:
-			writeln("Unexpected extra params: ", targetMode[2..$]);
-			writeln(seeHelpMsg);
+			stderr.writeln("Unexpected extra params: ", targetMode[2..$]);
+			stderr.writeln(seeHelpMsg);
 			return 1;
 		}
 		
@@ -133,8 +127,8 @@ struct Options
 			buildTool = BuildTool.xfbuild;
 			break;
 		default:
-			writeln("Unknown build tool: '", buildToolStr, "'");
-			writeln(seeHelpMsg);
+			stderr.writeln("Unknown build tool: '", buildToolStr, "'");
+			stderr.writeln(seeHelpMsg);
 			return 1;
 		}
 		
@@ -143,16 +137,16 @@ struct Options
 		// Move to CmdLine
 		if(find(conf.targets, target) == [])
 		{
-			writeln("Unknown target: '", target, "'");
+			stderr.writeln("Unknown target: '", target, "'");
 			showTargets();
-			writeln(seeHelpMsg);
+			stderr.writeln(seeHelpMsg);
 			return 1;
 		}
 		if(find(conf.getModes(), mode) == [])
 		{
-			writeln("Unknown mode: '", mode, "'");
+			stderr.writeln("Unknown mode: '", mode, "'");
 			showModes();
-			writeln(seeHelpMsg);
+			stderr.writeln(seeHelpMsg);
 			return 1;
 		}
 		
@@ -205,5 +199,24 @@ struct Options
 	{
 		writeln(infoHeader);
 		writeln();
+	}
+
+	private int showHelpScreen()
+	{
+		if(!conf)
+		{
+			try
+				conf = new Conf(confFile);
+			catch(STBuildConfException e)
+			{
+				stderr.writeln(e.msg);
+				stderr.writeln(seeHelpMsg);
+				return 1;
+			}
+		}
+
+		showHeader();
+		showUsage();
+		return 0;
 	}
 }
