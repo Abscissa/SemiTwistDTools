@@ -10,7 +10,7 @@ import semitwist.cmd.all;
 import semitwist.apps.stmanage.stbuild.conf;
 
 enum appName = "STBuild";
-enum appVerStr = "0.4.2";
+enum appVerStr = "0.5";
 enum Ver appVer = appVerStr.toVer();
 
 struct Options
