@@ -125,10 +125,44 @@ T[2][] toRangedPairs(alias splitCond = "b > a + 1", T)(T[] arr)
 	return ret;
 }
 
+/// If 'haystack' begins with 'needle', remove 'needle'
+T[] removeLeft(T)(T[] haystack, T[] needle)
+{
+	if(haystack.startsWith(needle))
+		haystack = haystack[needle.length .. $];
+	
+	return haystack;
+}
+
+/// If 'haystack' ends with 'needle', remove 'needle'
+T[] removeRight(T)(T[] haystack, T[] needle)
+{
+	if(haystack.endsWith(needle))
+		haystack = haystack[0 .. $-needle.length];
+	
+	return haystack;
+}
+
 mixin(unittestSemiTwistDLib(q{
 
 	// toRangedPairs
 	mixin(deferEnsure!(q{ [12,3,7,4,10,5,9,12].toRangedPairs() }, q{ _ == [[3,5], [7,7], [9,10], [12,12]] }));
 	mixin(deferEnsure!(q{ [1,20].toRangedPairs() }, q{ _ == [[1,1], [20,20]] }));
 
+	// removeLeft
+	mixin(deferEnsure!(q{ removeLeft("abcde", "ab") }, q{ _ == "cde" }));
+	mixin(deferEnsure!(q{ removeLeft("abcde", "aX") }, q{ _ == "abcde" }));
+	mixin(deferEnsure!(q{ removeLeft("abcde", "Xb") }, q{ _ == "abcde" }));
+	mixin(deferEnsure!(q{ removeLeft("abcde", "XX") }, q{ _ == "abcde" }));
+	mixin(deferEnsure!(q{ removeLeft([1,2,3,4], [1,2]) }, q{ _ == [3,4] }));
+	mixin(deferEnsure!(q{ removeLeft([1,2,3,4], [9,9]) }, q{ _ == [1,2,3,4] }));
+
+	// removeRight
+	mixin(deferEnsure!(q{ removeRight("abcde", "de") }, q{ _ == "abc" }));
+	mixin(deferEnsure!(q{ removeRight("abcde", "Xe") }, q{ _ == "abcde" }));
+	mixin(deferEnsure!(q{ removeRight("abcde", "dX") }, q{ _ == "abcde" }));
+	mixin(deferEnsure!(q{ removeRight("abcde", "XX") }, q{ _ == "abcde" }));
+	mixin(deferEnsure!(q{ removeRight([1,2,3,4], [3,4]) }, q{ _ == [1,2] }));
+	mixin(deferEnsure!(q{ removeRight([1,2,3,4], [9,9]) }, q{ _ == [1,2,3,4] }));
+	
 }));
