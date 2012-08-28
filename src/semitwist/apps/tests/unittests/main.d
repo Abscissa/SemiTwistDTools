@@ -8,7 +8,7 @@ $(WEB www.semitwist.com, Nick Sabalausky)
 
 This runs the SemiTwist D Tools unit tests.
 
-This has been tested to work with DMD 2.055 through 2.059
+This has been tested to work with DMD 2.055 through 2.060
 +/
 
 module semitwist.apps.tests.unittests.main;

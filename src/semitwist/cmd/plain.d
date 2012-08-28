@@ -131,7 +131,7 @@ class Cmd
 +/	
 	void echo(T...)(T args)
 	{
-		foreach(int i, T arg; args)
+		foreach(int i, arg; args)
 		{
 			if(i > 0) write(" ");
 			write(arg);

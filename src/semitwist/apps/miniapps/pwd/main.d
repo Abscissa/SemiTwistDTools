@@ -11,7 +11,7 @@ Windows doesn't have a 'pwd' command per se. Instead, it just has:
 But this 'pwd' may be easier to remember. (Well, actually it's
 'semitwist-pwd', but you can rename the executable however you wish.)
 
-This has been tested to work with DMD 2.055 through 2.059
+This has been tested to work with DMD 2.055 through 2.060
 +/
 
 module semitwist.apps.miniapps.pwd.main;
