@@ -936,6 +936,27 @@ alias InsensitiveT!string  Insensitive;
 alias InsensitiveT!wstring WInsensitive;
 alias InsensitiveT!dstring DInsensitive;
 
+//TODO: This is quick-n-dirty, do it more efficiently. (Or just
+//      replace with std.digest.toHexString in DMD 2.061)
+string toHexString(ubyte[] arr)
+{
+	if(arr.length == 0)
+		return "";
+
+	string str;
+	while(true)
+	{
+		str ~= format("%.2X", arr[0]);
+		
+		if(arr.length <= 1)
+			break;
+
+		arr = arr[1..$];
+	}
+	
+	return str;
+}
+
 mixin(unittestSemiTwistDLib(q{
 
 	// Insensitive
@@ -1085,5 +1106,9 @@ mixin(unittestSemiTwistDLib(q{
 			}
 	}.normalize();
 	mixin(deferEnsure!(q{ ctfe_normalize_dummy1 }, q{ _ == "// test\nvoid foo() {\n\tint x = 2;\n}" }));
+	
+	// toHexString
+	mixin(deferEnsure!(q{ toHexString([0x00, 0x12, 0x0A, 0xBC]) }, q{ _ == "00120ABC" } ));
+	mixin(deferEnsure!(q{ toHexString([0xF0])                   }, q{ _ == "F0"       } ));
+	mixin(deferEnsure!(q{ toHexString([])                       }, q{ _ == ""         } ));
 }));
-

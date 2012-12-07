@@ -5,9 +5,24 @@ module semitwist.util.array;
 
 import std.algorithm;
 import std.array;
+import std.conv;
 import std.functional;
+import std.random;
+import std.range;
 
 import semitwist.util.all;
+
+private alias std.algorithm.map map;
+
+class MissingKeyException : Exception
+{
+	string key;
+	this(string key)
+	{
+		this.key = key;
+		super(text("Required key '", key, "' is missing"));
+	}
+}
 
 size_t maxLength(T)(T[][] arrays)
 {
@@ -141,6 +156,23 @@ T[] removeRight(T)(T[] haystack, T[] needle)
 		haystack = haystack[0 .. $-needle.length];
 	
 	return haystack;
+}
+
+TVal getRequired(TVal, TKey)(TVal[TKey] aa, TKey key)
+{
+	if(auto valPtr = key in aa)
+		return *valPtr;
+	else
+		throw new MissingKeyException(key);
+}
+
+ubyte[] randomBytes(size_t numBytes)
+{
+	return
+		Random(unpredictableSeed)
+			.map!( (x) => cast(ubyte)x )()
+			.take(numBytes)
+			.array();
 }
 
 mixin(unittestSemiTwistDLib(q{
