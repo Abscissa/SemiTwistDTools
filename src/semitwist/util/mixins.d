@@ -155,44 +155,31 @@ template traceVal(bool useNewline, values...)
 }
 
 /++
-Easy way to output file/line. Useful for debugging.
+Easy way to output file/line for debugging.
 
 Usage:
 
 ----
-mixin(trace!());
-funcSuspectedOfCrashing1_notTheRealCause()
-mixin(trace!("--EASY TO VISUALLY GREP--"));
-funcSuspectedOfCrashing2_isTheRealCause()
-mixin(trace!());
-----
-
-Turns Into:
-
-----
-writefln("%s(%s): trace", __FILE__, __LINE__); stdout.flush();
-funcSuspectedOfCrashing1_notTheRealCause()
-writefln("%s%s(%s): trace", "--EASY TO VISUALLY GREP--", __FILE__, __LINE__); stdout.flush();
-funcSuspectedOfCrashing2_isTheRealCause()
-writefln("%s(%s): trace", __FILE__, __LINE__); stdout.flush();
+trace();
+someFunc();
+trace("Blah blah blah");
+int x = *(cast(int*)null); // Dereference null
+trace();
 ----
 
 Example Output:
 
 ----
 C:\path\file.d(1): trace
---EASY TO VISUALLY GREP--: C:\path\file.d(3): trace
+C:\path\file.d(3): Blah blah blah
 {segfault!}
 ----
 +/
-template trace(string prefix="")
+
+void trace(string file=__FILE__, size_t line=__LINE__)(string msg="trace")
 {
-	static if(prefix=="")
-		enum trace =
-			`writefln("%s(%s): trace", __FILE__, __LINE__); stdout.flush();`;
-	else
-		enum trace =
-			`writefln("%s: %s(%s): trace", `~prefix.stringof~`, __FILE__, __LINE__); stdout.flush();`;
+	writefln("%s(%s): %s", file, line, msg);
+	stdout.flush();
 }
 
 /++
