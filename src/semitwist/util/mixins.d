@@ -3,9 +3,9 @@
 
 module semitwist.util.mixins;
 
-import std.traits;
-import std.stdio;
 import std.conv;
+import std.stdio;
+import std.traits;
 
 import semitwist.util.all;
 
@@ -112,16 +112,6 @@ mixin(traceVal!("   myVar-1 "));
 mixin(traceVal!("min(4,7)", "max(4,7)")); // from tango.math.Math
 ----
 
-Turns Into:
-
-----
-int myVar=100;
-writefln("%s: %s", "myVar", myVar);
-writefln("%s: %s", "   myVar-1 ",   myVar-1 );
-writefln("%s: %s", "min(4,7)", min(4,7));
-writefln("%s: %s", "max(4,7)", max(4,7));
-----
-
 Outputs:
 
 ----
@@ -137,6 +127,11 @@ max(4,7): 7
 //      on data passed to writefln
 //      (ie, align name/value)
 //TODO: Messes up on "ctfe_repeat_test_日本語3"
+alias writefln _semitwist_traceVal_writefln;
+void _semitwist_traceVal_stdout_flush()
+{
+	stdout.flush();
+}
 template traceVal(values...)
 {
 	enum traceVal = traceVal!(false, values);
@@ -145,11 +140,11 @@ template traceVal(values...)
 template traceVal(bool useNewline, values...)
 {
 	static if(values.length == 0)
-		enum traceVal = "";
+		enum traceVal = "_semitwist_traceVal_stdout_flush();";
 	else
 	{
 		enum traceVal =
-			"writefln(\"%s:"~(useNewline?"\\n":" ")~"%s\", "~values[0].stringof~", "~unescapeDDQS(values[0].stringof)~");"
+			"_semitwist_traceVal_writefln(\"%s:"~(useNewline?"\\n":" ")~"%s\", "~values[0].stringof~", "~unescapeDDQS(values[0].stringof)~");"
 			~ traceVal!(useNewline, values[1..$]);
 	}
 }
