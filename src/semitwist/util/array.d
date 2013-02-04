@@ -12,7 +12,7 @@ import std.range;
 
 import semitwist.util.all;
 
-private alias std.algorithm.map map;
+private alias std.algorithm.map map_;
 
 class MissingKeyException : Exception
 {
@@ -170,7 +170,7 @@ ubyte[] randomBytes(size_t numBytes)
 {
 	return
 		Random(unpredictableSeed)
-			.map!( (x) => cast(ubyte)x )()
+			.map_!( (x) => cast(ubyte)x )()
 			.take(numBytes)
 			.array();
 }

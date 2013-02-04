@@ -73,9 +73,9 @@ void main(string[] args)
 	// - Outputs file and line information
 	showSectionHeader("semitwist.util.mixins: trace");
 
-	mixin(trace!());
-	mixin(trace!());
-	mixin(trace!("======== this is easy to spot ========"));
+	trace();
+	trace();
+	trace("======== this is easy to spot ========");
 	
 	cmd.pause();
 
