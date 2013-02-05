@@ -10,14 +10,21 @@ import semitwist.cmd.all;
 import semitwist.apps.stmanage.stbuild.conf;
 
 enum appName = "STBuild";
-enum appVerStr = "0.5.1";
+enum appVerStr = "0.5.2";
 enum Ver appVer = appVerStr.toVer();
+
+private enum confFileWin     = "stbuild-win.conf";
+private enum confFileLinux   = "stbuild-linux.conf";
+private enum confFileOSX     = "stbuild-osx.conf";
+private enum confFileBSD     = "stbuild-bsd.conf";
+private enum confFilePosix   = "stbuild-posix.conf";
+private enum confFileDefault = "stbuild.conf";
 
 struct Options
 {
 	bool     help;
 	bool     cleanOnly;
-	string   confFile = "stbuild.conf";
+	string   _confFile;
 	string   buildToolStr = "rdmd";
 	bool     quiet;
 	bool     showCmd;
@@ -36,14 +43,35 @@ struct Options
 
 	enum seeHelpMsg = "Run with --help to see usage.";
 	enum defaultMode = Conf.modeRelease;
-
+	
+	@property string confFile()
+	{
+		void setDefaultConfFile(string file)
+		{
+			if(_confFile == "" && exists(file))
+				_confFile = file;
+		}
+		version(Windows)      setDefaultConfFile(confFileWin);
+		version(linux)        setDefaultConfFile(confFileLinux);
+		version(FreeBSD)      setDefaultConfFile(confFileBSD);
+		version(OpenBSD)      setDefaultConfFile(confFileBSD);
+		version(NetBSD)       setDefaultConfFile(confFileBSD);
+		version(DragonFlyBSD) setDefaultConfFile(confFileBSD);
+		version(OSX)          setDefaultConfFile(confFileOSX);
+		version(Posix)        setDefaultConfFile(confFilePosix);
+		if(_confFile == "")
+			_confFile = confFileDefault;
+		
+		return _confFile;
+	}
+	
 	// Returns errorlevel program should exit immediately with.
 	// If returns -1, everything is OK and program should continue without exiting.
 	int process(string[] args)
 	{
 		infoHeader = (`
 				`~appName~` v`~appVerStr~`
-				Copyright (c) 2009-2012 Nick Sabalausky
+				Copyright (c) 2009-2013 Nick Sabalausky
 				See LICENSE.txt for license info
 				Site: http://www.dsource.org/projects/semitwist
 			`).normalize();
@@ -53,7 +81,7 @@ struct Options
 
 				--help              Displays this help screen and exits
 				--clean             Clean, don't build
-				--conf <filename>   Configuration file to use (default: "stbuild.conf")
+				--conf <filename>   Configuration file to use (default: "stbuild-(os).conf" or else "stbuild.conf")
 				--tool <tool>       Build tool ["rdmd", "re" or "xf"] (default: "rdmd")
 				-q, --quiet         Quiet, ie. don't show progress messages
 				--cmd               Show commands
@@ -69,7 +97,7 @@ struct Options
 			getopt.config.caseSensitive,
 			"help",     &help,
 			"clean",    &cleanOnly,
-			"conf",     &confFile,
+			"conf",     &_confFile,
 			"tool",     &buildToolStr,
 			"q|quiet",  &quiet,
 			"cmd",      &showCmd,
@@ -86,7 +114,7 @@ struct Options
 
 		if(help || args.contains("/?"))
 			return showHelpScreen();
-
+		
 		try
 			conf = new Conf(confFile);
 		catch(STBuildConfException e)
