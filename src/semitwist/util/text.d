@@ -5,6 +5,7 @@ module semitwist.util.text;
 
 import std.algorithm;
 import std.array;
+import std.compiler;
 import std.conv;
 import std.md5;
 import std.stdio;
@@ -20,28 +21,6 @@ public import std.stream: BOM;
 import semitwist.util.all;
 
 private alias semitwist.util.ctfe.ctfe_strip ctfe_strip;
-
-// Work around limitations in DMD 2.052 and 2.053
-static if(!__traits(compiles, std.string.toLower(" ")))
-{
-	alias std.string.tolower toLower;
-	alias std.string.toupper toUpper;
-}
-
-static if(!__traits(compiles, std.string.splitLines("")))
-	alias std.string.splitlines splitLines;
-
-static if(!__traits(compiles, std.string.stripLeft("")))
-{
-	alias std.string.stripl stripLeft;
-	alias std.string.stripr stripRight;
-}
-
-static if(!__traits(compiles, std.uni.isWhite(' ')))
-{
-	static import std.ctype;
-	bool isWhite(dchar ch) { return std.ctype.isspace(ch) != 0; }
-}
 
 /**
 Notes:
@@ -843,20 +822,20 @@ struct InsensitiveT(T) if(isSomeString!T)
 		updateFoldingCase();
 	}
 	
-	T toString()
+	T toString() const
 	{
 		return str;
 	}
 	
 	private void updateFoldingCase()
 	{
-		// Phobos doesn't actually have a tofolding() yet
+		// Phobos doesn't actually have a toFolding() right now
 		foldingCase = toLower(str);
 	}
 	
 	static if(useNoThrowSafeToHash)
 	{
-		const nothrow @trusted hash_t toHash()
+		const nothrow @trusted hash_t toHash() const
 		{
 			return typeid(string).getHash(&foldingCase);
 		}
@@ -900,7 +879,14 @@ struct InsensitiveT(T) if(isSomeString!T)
 		return this;
 	}
 	
-	const bool opEquals(ref const InsensitiveT!T b)
+	//TODO: Get rid of this "static if" (but not the func) after dropping support for DMD 2.058
+	static if(vendor != Vendor.digitalMars || version_minor >= 59)
+	const bool opEquals(const InsensitiveT!T b) const
+	{
+		return opEquals(b);
+	}
+
+	const bool opEquals(ref const InsensitiveT!T b) const
 	{
 		/+if (str is b.str) return true;
 		if (str is null || b.str is null) return false;
@@ -908,11 +894,19 @@ struct InsensitiveT(T) if(isSomeString!T)
 		return this.opCmp(b) == 0;
 	}
 	
-	const int opCmp(ref const InsensitiveT!T b)
+	//TODO: Get rid of this "static if" (but not the func) after dropping support for DMD 2.058
+	static if(vendor != Vendor.digitalMars || version_minor >= 59)
+	const int opCmp(const InsensitiveT!T b) const
 	{
-		if (str   is b.str) return 0;
-		if (str   is null ) return -1;
-		if (b.str is null ) return 1;
+		return opCmp(b);
+	}
+
+	const int opCmp(ref const InsensitiveT!T b) const
+	{
+		if(str   is null && b.str is null) return 0;
+		if(str   == b.str) return 0;
+		if(str   is null ) return -1;
+		if(b.str is null ) return 1;
 		return std.string.cmp(foldingCase, b.foldingCase);
 	}
 	

@@ -16,7 +16,7 @@ This is very basic:
 - Whitespace that's not inside a name or a value is trimmed.
 - There is no way to embed a newline in the name or value.
 
-This has been tested to work with DMD 2.058 through 2.059
+This has been tested to work with DMD 2.058 through 2.062
 +/
 
 module semitwist.apps.miniapps.ini2urlencode.main;

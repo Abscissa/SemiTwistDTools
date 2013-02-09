@@ -5,6 +5,7 @@ module semitwist.util.array;
 
 import std.algorithm;
 import std.array;
+import std.compiler;
 import std.conv;
 import std.functional;
 import std.random;
@@ -168,11 +169,27 @@ TVal getRequired(TVal, TKey)(TVal[TKey] aa, TKey key)
 
 ubyte[] randomBytes(size_t numBytes)
 {
-	return
-		Random(unpredictableSeed)
-			.map_!( (x) => cast(ubyte)x )()
-			.take(numBytes)
-			.array();
+	//TODO: Get rid of this ugly branch after dropping support for DMD 2.058
+	static if(vendor == Vendor.digitalMars || version_minor <= 58)
+	{
+		return
+			array(
+				take(
+					map_!( (x) => cast(ubyte)x )(
+						Random(unpredictableSeed)
+					),
+					numBytes
+				)
+			);
+	}
+	else
+	{
+		return
+			Random(unpredictableSeed)
+				.map_!( (x) => cast(ubyte)x )()
+				.take(numBytes)
+				.array();
+	}
 }
 
 mixin(unittestSemiTwistDLib(q{

@@ -17,7 +17,14 @@ struct Ver
 {
 	uint[] ver;
 	
-	const int opCmp(ref const(Ver) v)
+	//TODO: Get rid of this "static if" (but not the func) after dropping support for DMD 2.058
+	static if(vendor != Vendor.digitalMars || version_minor >= 59)
+	const int opCmp(const(Ver) v)
+	{
+		return opCmp(v);
+	}
+
+	const int opCmp(const(Ver) v)
 	{
 		for(int i=0; i < reduce!"a<b?a:b"([this.ver.length, v.ver.length]); i++)
 		{
@@ -33,7 +40,14 @@ struct Ver
 		return 0;
 	}
 	
-	const bool opEquals(ref const(Ver) v)
+	//TODO: Get rid of this "static if" (but not the func) after dropping support for DMD 2.058
+	static if(vendor != Vendor.digitalMars || version_minor >= 59)
+	const bool opEquals(const(Ver) v)
+	{
+		return opEquals(v);
+	}
+
+	const bool opEquals(const(Ver) v)
 	{
 		return this.opCmp(v) == 0;
 	}

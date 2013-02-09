@@ -6,7 +6,7 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-This has been tested to work with DMD 2.058 through 2.060
+This has been tested to work with DMD 2.058 through 2.062
 +/
 
 //TODO: Clean all if stbuild.conf has changed

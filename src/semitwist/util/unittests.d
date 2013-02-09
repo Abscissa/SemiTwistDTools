@@ -354,7 +354,7 @@ mixin(unittestSemiTwistDLib("assertPred: Comparison Operators", q{
             this.value = value;
         }
 
-        string toString()
+        string toString() const
         {
             return to!string(value);
         }
@@ -485,7 +485,7 @@ mixin(unittestSemiTwistDLib("assertPred: opCmp", q{
             return 0;
         }
 
-        string toString()
+        string toString() const
         {
             return to!string(value);
         }
@@ -642,7 +642,7 @@ mixin(unittestSemiTwistDLib("assertPred: opAssign", q{
             return this;
         }
 
-        string toString()
+        string toString() const
         {
             return to!string(value);
         }
@@ -664,7 +664,7 @@ mixin(unittestSemiTwistDLib("assertPred: opAssign", q{
             return IntWrapper_BadAssign(rhs.value);
         }
 
-        string toString()
+        string toString() const
         {
             return to!string(value);
         }
@@ -686,7 +686,7 @@ mixin(unittestSemiTwistDLib("assertPred: opAssign", q{
             return IntWrapper_BadReturn(-rhs.value);
         }
 
-        string toString()
+        string toString() const
         {
             return to!string(value);
         }
@@ -735,7 +735,7 @@ mixin(unittestSemiTwistDLib("assertPred: opAssign: Examples", q{
             return IntWrapper_BadAssign(rhs.value);
         }
 
-        string toString() { return to!string(value); }
+        string toString() const { return to!string(value); }
     }
 
     assert(collectExceptionMsg(assertPred!"opAssign"(IntWrapper_BadAssign(5), IntWrapper_BadAssign(2))) ==
@@ -762,7 +762,7 @@ mixin(unittestSemiTwistDLib("assertPred: opAssign: Examples", q{
             return IntWrapper_BadReturn(-rhs.value);
         }
 
-        string toString() { return to!string(value); }
+        string toString() const { return to!string(value); }
     }
 
     assert(collectExceptionMsg(assertPred!"opAssign"(IntWrapper_BadReturn(5), IntWrapper_BadReturn(2))) ==
@@ -1018,7 +1018,7 @@ mixin(unittestSemiTwistDLib("assertPred: Assignment Operators", q{
             return this;
         }
 
-        string toString()
+        string toString() const
         {
             return to!string(value);
         }
@@ -1042,7 +1042,7 @@ mixin(unittestSemiTwistDLib("assertPred: Assignment Operators", q{
             return IntWrapper_BadAssign(mixin("old " ~ op ~ " rhs.value"));
         }
 
-        string toString()
+        string toString() const
         {
             return to!string(value);
         }
@@ -1064,7 +1064,7 @@ mixin(unittestSemiTwistDLib("assertPred: Assignment Operators", q{
             return IntWrapper_BadReturn(rhs.value);
         }
 
-        string toString()
+        string toString() const
         {
             return to!string(value);
         }
@@ -1136,7 +1136,7 @@ mixin(unittestSemiTwistDLib("assertPred: Assignment Operators: Examples", q{
             return IntWrapper_BadAssign(mixin("old " ~ op ~ " rhs.value"));
         }
 
-        string toString() { return to!string(value); }
+        string toString() const { return to!string(value); }
     }
 
     assert(collectExceptionMsg(assertPred!"+="(IntWrapper_BadAssign(5),
@@ -1165,7 +1165,7 @@ mixin(unittestSemiTwistDLib("assertPred: Assignment Operators: Examples", q{
             return IntWrapper_BadReturn(rhs.value);
         }
 
-        string toString() { return to!string(value); }
+        string toString() const { return to!string(value); }
     }
 
     assert(collectExceptionMsg(assertPred!"+="(IntWrapper_BadReturn(5),
