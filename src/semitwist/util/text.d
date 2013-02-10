@@ -872,7 +872,7 @@ struct InsensitiveT(T) if(isSomeString!T)
 		return InsensitiveT!T(str ~ b.str);
 	}
 	
-	InsensitiveT!T opOpAssign(string op)(ref const InsensitiveT!T b) if(op=="~")
+	InsensitiveT!T opOpAssign(string op)(const InsensitiveT!T b) if(op=="~")
 	{
 		str ~= b.str;
 		foldingCase ~= b.foldingCase;

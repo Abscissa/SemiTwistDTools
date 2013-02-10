@@ -3,9 +3,10 @@
 
 module semitwist.util.ver;
 
-import std.stdio;
-import std.math;
+import std.compiler;
 import std.conv;
+import std.math;
+import std.stdio;
 import std.string;
 
 import semitwist.util.all;
@@ -24,7 +25,7 @@ struct Ver
 		return opCmp(v);
 	}
 
-	const int opCmp(const(Ver) v)
+	const int opCmp(ref const(Ver) v)
 	{
 		for(int i=0; i < reduce!"a<b?a:b"([this.ver.length, v.ver.length]); i++)
 		{
@@ -47,7 +48,7 @@ struct Ver
 		return opEquals(v);
 	}
 
-	const bool opEquals(const(Ver) v)
+	const bool opEquals(ref const(Ver) v)
 	{
 		return this.opCmp(v) == 0;
 	}
