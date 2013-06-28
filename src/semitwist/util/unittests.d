@@ -210,7 +210,7 @@ string unittestSection(string debugIdent, bool autoThrow=false)(string sectionNa
 		unittestBody = sectionName;
 		sectionName = "";
 	}
-	sectionName = ( sectionName==""? "" : ": "~sectionName ).escapeDDQS();
+	sectionName = escapeDDQS!string( ( sectionName==""? "" : ": "~sectionName ) );
 	auto autoThrowStr = autoThrow? "true" : "false";
 	
 	return
