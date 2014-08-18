@@ -7,7 +7,7 @@ import std.algorithm;
 import std.array;
 import std.compiler;
 import std.conv;
-import std.md5;
+import std.digest.md;
 import std.stdio;
 import std.traits;
 import std.stream;
@@ -702,7 +702,8 @@ T[] normalize(T)(T[] lines) if(isSomeString!T)
 	return lines;
 }
 
-string md5(string data)
+alias md5 = std.digest.md.md5Of;
+/+string md5(string data)
 {
 	MD5_CTX context;
 	context.start();
@@ -711,7 +712,7 @@ string md5(string data)
 	context.finish(digest);
 	
 	return digestToString(digest);
-}
+}+/
 
 immutable(ubyte)[] bomCodeOf(BOM bom)
 {

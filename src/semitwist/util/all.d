@@ -5,7 +5,7 @@
 Author:
 $(WEB www.semitwist.com, Nick Sabalausky)
 
-This has been tested to work with DMD 2.058 through 2.062
+This has been tested to work with DMD 2.061 through 2.065
 +/
 
 // Potentially handy note:

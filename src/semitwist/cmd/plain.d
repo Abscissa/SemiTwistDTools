@@ -220,7 +220,7 @@ class Cmd
 		{
 			write(msg);
 			stdout.flush();
-			stdin.readln(input);
+			input = stdin.readln();
 			input = strip(input);
 			
 			if(accept is null)
