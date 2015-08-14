@@ -1,7 +1,7 @@
 {
 	"name":        "semitwistdtools",
 	"description": "Misc collection of tools. Maybe a bit old.",
-	"homepage":    "https://bitbucket.org/Abscissa/semitwistdtools/",
+	"homepage":    "https://github.com/Abscissa/SemiTwistDTools",
 	"authors":     ["Nick Sabalausky"],
 	"license":     "zlib/libpng",
 	"copyright":   "©2009-2014 Nick Sabalausky",
