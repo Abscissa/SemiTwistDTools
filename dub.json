@@ -4,5 +4,6 @@
 	"homepage":    "https://bitbucket.org/Abscissa/semitwistdtools/",
 	"authors":     ["Nick Sabalausky"],
 	"license":     "zlib/libpng",
-	"copyright":   "©2009-2014 Nick Sabalausky"
+	"copyright":   "©2009-2014 Nick Sabalausky",
+	"excludedSourceFiles": ["src/semitwist/arsddom.d", "src/semitwist/apps/*"]
 }
