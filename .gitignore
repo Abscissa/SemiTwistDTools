@@ -4,3 +4,8 @@
 
 # /pnproj/
 /pnproj/*.pnps
+
+.dub/
+dub.selections.json
+libsemitwistdtools.a
+semitwistdtools.lib
