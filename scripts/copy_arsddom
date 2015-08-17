@@ -1,0 +1,3 @@
+#!/bin/sh
+mkdir $1/src/semitwist 2>/dev/null
+cp $2/src/semitwist/arsddom.d $1/src/semitwist
